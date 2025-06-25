@@ -1,4 +1,3 @@
-
 import MarketStats from "@/components/MarketStats";
 import ForexChart from "@/components/ForexChart";
 import ForexPerformance from "@/components/ForexPerformance";
@@ -9,7 +8,7 @@ const Index = () => {
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Forex Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-2">Men In Action LLC Forex Department</h1>
           <p className="text-muted-foreground">Welcome back to your trading platform</p>
         </header>
         
