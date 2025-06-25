@@ -1,30 +1,36 @@
+
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 
-const fetchBitcoinPrices = async () => {
-  const response = await fetch(
-    "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=180&interval=daily"
-  );
-  const data = await response.json();
+const fetchEurUsdHistorical = async () => {
+  // Mock historical EUR/USD data since we're using a free API
+  const mockData = [];
+  const baseRate = 1.0542;
   
-  // Format data for the chart - take last 6 months
-  return data.prices.slice(-180).map(([timestamp, price]: [number, number]) => ({
-    date: new Date(timestamp).toLocaleDateString('en-US', { month: 'short' }),
-    price: Math.round(price)
-  }));
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    const variation = (Math.random() - 0.5) * 0.02; // Small random variation
+    mockData.push({
+      date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      rate: parseFloat((baseRate + variation).toFixed(4))
+    });
+  }
+  
+  return mockData;
 };
 
-const PortfolioCard = () => {
-  const { data: priceData, isLoading } = useQuery({
-    queryKey: ['bitcoinPrices'],
-    queryFn: fetchBitcoinPrices,
+const ForexPerformance = () => {
+  const { data: rateData, isLoading } = useQuery({
+    queryKey: ['eurUsdHistorical'],
+    queryFn: fetchEurUsdHistorical,
     refetchInterval: 60000, // Refetch every minute
   });
 
   if (isLoading) {
     return (
       <div className="glass-card p-6 rounded-lg mb-8 animate-fade-in">
-        <h2 className="text-xl font-semibold mb-6">Bitcoin Performance</h2>
+        <h2 className="text-xl font-semibold mb-6">EUR/USD Performance</h2>
         <div className="w-full h-[200px] flex items-center justify-center">
           <span className="text-muted-foreground">Loading...</span>
         </div>
@@ -34,10 +40,10 @@ const PortfolioCard = () => {
 
   return (
     <div className="glass-card p-6 rounded-lg mb-8 animate-fade-in">
-      <h2 className="text-xl font-semibold mb-6">Bitcoin Performance</h2>
+      <h2 className="text-xl font-semibold mb-6">EUR/USD Performance</h2>
       <div className="w-full h-[200px]">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={priceData}>
+          <LineChart data={rateData}>
             <XAxis 
               dataKey="date" 
               stroke="#E6E4DD"
@@ -46,7 +52,8 @@ const PortfolioCard = () => {
             <YAxis 
               stroke="#E6E4DD"
               fontSize={12}
-              tickFormatter={(value) => `$${value}`}
+              domain={['dataMin - 0.01', 'dataMax + 0.01']}
+              tickFormatter={(value) => value.toFixed(4)}
             />
             <Tooltip 
               contentStyle={{ 
@@ -56,10 +63,11 @@ const PortfolioCard = () => {
               }}
               labelStyle={{ color: '#E6E4DD' }}
               itemStyle={{ color: '#8989DE' }}
+              formatter={(value) => [value.toFixed(4), 'Rate']}
             />
             <Line 
               type="monotone" 
-              dataKey="price" 
+              dataKey="rate" 
               stroke="#8989DE" 
               strokeWidth={2}
               dot={false}
@@ -71,4 +79,4 @@ const PortfolioCard = () => {
   );
 };
 
-export default PortfolioCard;
+export default ForexPerformance;

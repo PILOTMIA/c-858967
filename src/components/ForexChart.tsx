@@ -1,14 +1,15 @@
+
 import TradingViewWidget from 'react-tradingview-widget';
 
-const CryptoChart = () => {
+const ForexChart = () => {
   return (
     <div className="glass-card p-6 rounded-lg mb-8 animate-fade-in">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">Bitcoin Price</h2>
+        <h2 className="text-xl font-semibold">EUR/USD Chart</h2>
       </div>
       <div className="h-[400px] w-full">
         <TradingViewWidget
-          symbol="BINANCE:BTCUSDT"
+          symbol="FX:EURUSD"
           theme="dark"
           locale="en"
           autosize
@@ -19,11 +20,11 @@ const CryptoChart = () => {
           enable_publishing={false}
           hide_top_toolbar={false}
           save_image={false}
-          container_id="tradingview_chart"
+          container_id="tradingview_forex_chart"
         />
       </div>
     </div>
   );
 };
 
-export default CryptoChart;
+export default ForexChart;
