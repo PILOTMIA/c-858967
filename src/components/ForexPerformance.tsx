@@ -63,7 +63,7 @@ const ForexPerformance = () => {
               }}
               labelStyle={{ color: '#E6E4DD' }}
               itemStyle={{ color: '#8989DE' }}
-              formatter={(value) => [value.toFixed(4), 'Rate']}
+              formatter={(value) => [typeof value === 'number' ? value.toFixed(4) : value, 'Rate']}
             />
             <Line 
               type="monotone" 
