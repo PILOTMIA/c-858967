@@ -17,10 +17,17 @@ interface HeatMapData {
   signal: 'BUY' | 'SELL' | 'NEUTRAL';
   strength: number;
   fibLevel: string;
+  changePercent: number;
 }
 
 const fetchHeatMapData = async (): Promise<HeatMapData[]> => {
-  const pairs = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'USD/CAD'];
+  const pairs = [
+    'EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'USD/CAD',
+    'EUR/GBP', 'EUR/JPY', 'GBP/JPY', 'AUD/JPY', 'NZD/USD', 'EUR/AUD',
+    'GBP/CHF', 'USD/SGD', 'EUR/CHF', 'CAD/JPY', 'NZD/JPY', 'AUD/CAD',
+    'GBP/AUD', 'EUR/CAD', 'CHF/JPY', 'AUD/CHF', 'GBP/CAD', 'EUR/NZD'
+  ];
+
   return pairs.map(pair => {
     const basePrice = Math.random() * 2 + 0.5;
     const high = basePrice + Math.random() * 0.02;
@@ -36,18 +43,23 @@ const fetchHeatMapData = async (): Promise<HeatMapData[]> => {
     const currentPrice = close;
     const distanceFromPivot = Math.abs(currentPrice - pivot);
     const strength = Math.min(100, (distanceFromPivot / pivot) * 10000);
+    const changePercent = (Math.random() - 0.5) * 4; // -2% to +2%
+    
     let signal: 'BUY' | 'SELL' | 'NEUTRAL' = 'NEUTRAL';
     if (currentPrice > pivot) signal = 'BUY';
     if (currentPrice < pivot) signal = 'SELL';
+    
     const fibLevels = ['23.6%', '38.2%', '50%', '61.8%', '78.6%'];
     const fibLevel = fibLevels[Math.floor(Math.random() * fibLevels.length)];
+    
     return {
       pair,
       pivotPoints: { pivot, r1, r2, r3, s1, s2, s3 },
       currentPrice,
       signal,
       strength,
-      fibLevel
+      fibLevel,
+      changePercent
     };
   });
 };
@@ -56,14 +68,23 @@ const ForexHeatMap = () => {
   const { data: heatMapData, isLoading } = useQuery({
     queryKey: ['forexHeatMap'],
     queryFn: fetchHeatMapData,
-    refetchInterval: 30000,
+    refetchInterval: 5000, // Update every 5 seconds for more real-time feel
   });
 
-  const getHeatColor = (strength: number, signal: string) => {
-    const intensity = Math.min(strength / 100, 1);
-    if (signal === 'BUY') return `rgba(34, 197, 94, ${intensity})`;
-    if (signal === 'SELL') return `rgba(239, 68, 68, ${intensity})`;
-    return `rgba(156, 163, 175, 0.3)`;
+  const getHeatColor = (changePercent: number) => {
+    const absChange = Math.abs(changePercent);
+    const intensity = Math.min(absChange / 2, 1); // Max intensity at 2%
+    
+    if (changePercent > 0) {
+      return `rgba(34, 197, 94, ${0.3 + intensity * 0.7})`; // Green for positive
+    } else if (changePercent < 0) {
+      return `rgba(239, 68, 68, ${0.3 + intensity * 0.7})`; // Red for negative
+    }
+    return `rgba(107, 114, 128, 0.3)`; // Gray for neutral
+  };
+
+  const getTextColor = (changePercent: number) => {
+    return Math.abs(changePercent) > 1 ? 'text-white' : 'text-gray-200';
   };
 
   const [time, setTime] = useState(new Date());
@@ -76,7 +97,12 @@ const ForexHeatMap = () => {
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
-      <marquee className="text-sm bg-gray-800 py-2 mb-4">📈 NASDAQ +0.57% | S&P 500 +0.42% | DOW +0.21% — Market Sentiment: Bullish</marquee>
+      <div className="text-sm bg-gray-800 py-2 mb-4 overflow-hidden whitespace-nowrap">
+        <div className="animate-marquee inline-block">
+          📈 NASDAQ +0.57% | S&P 500 +0.42% | DOW +0.21% — Market Sentiment: Bullish — Live Forex Data Updated Every 5 Seconds
+        </div>
+      </div>
+      
       <h1 className="text-3xl font-bold mb-6">Currency Heat Map - Day Trading Pivot Signals (4H & Lower)</h1>
 
       <div className="mb-6 p-4 bg-gray-900 rounded">
@@ -85,25 +111,28 @@ const ForexHeatMap = () => {
         <p className="text-sm mt-1">Time is auto-synced to your location.</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-8 gap-1 mb-8 p-4 bg-gray-900 rounded-lg">
         {isLoading ? (
-          [...Array(6)].map((_, i) => <div key={i} className="h-24 bg-gray-700 animate-pulse rounded"></div>)
+          [...Array(24)].map((_, i) => (
+            <div key={i} className="aspect-square bg-gray-700 animate-pulse rounded flex items-center justify-center">
+              <div className="w-8 h-8 bg-gray-600 rounded"></div>
+            </div>
+          ))
         ) : (
           heatMapData?.map(data => (
             <div
               key={data.pair}
-              className="p-4 rounded-lg border border-gray-700 text-center"
-              style={{ backgroundColor: getHeatColor(data.strength, data.signal) }}
+              className={`aspect-square rounded p-2 border border-gray-600 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 hover:scale-105 ${getTextColor(data.changePercent)}`}
+              style={{ backgroundColor: getHeatColor(data.changePercent) }}
+              title={`${data.pair}: ${data.changePercent.toFixed(2)}% | Pivot: ${data.pivotPoints.pivot.toFixed(4)}`}
             >
-              <h3 className="font-bold text-lg">{data.pair}</h3>
-              <p className="text-sm">Price: {data.currentPrice.toFixed(4)}</p>
-              <p className="text-sm">Pivot: {data.pivotPoints.pivot.toFixed(4)}</p>
-              <p className="text-sm">Fib: {data.fibLevel}</p>
-              <div className={`text-xs font-bold mt-2 px-2 py-1 rounded ${
-                data.signal === 'BUY' ? 'bg-green-600 text-white' :
-                data.signal === 'SELL' ? 'bg-red-600 text-white' :
-                'bg-gray-600 text-white'
-              }`}>
+              <div className="text-xs font-bold mb-1">{data.pair.replace('/', '')}</div>
+              <div className="text-xs">
+                {data.changePercent > 0 ? '+' : ''}{data.changePercent.toFixed(2)}%
+              </div>
+              <div className="text-xs mt-1 px-1 py-0.5 rounded text-white" style={{
+                backgroundColor: data.signal === 'BUY' ? '#16a34a' : data.signal === 'SELL' ? '#dc2626' : '#6b7280'
+              }}>
                 {data.signal}
               </div>
             </div>

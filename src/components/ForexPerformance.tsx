@@ -2,10 +2,27 @@
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 
-const fetchEurUsdHistorical = async () => {
-  // Mock historical EUR/USD data since we're using a free API
+interface ForexPerformanceProps {
+  selectedPair?: string;
+}
+
+const fetchCurrencyHistorical = async (pair: string = 'EURUSD') => {
+  // Mock historical data for the selected currency pair
   const mockData = [];
-  const baseRate = 1.0542;
+  const baseRates: { [key: string]: number } = {
+    'EURUSD': 1.0542,
+    'GBPUSD': 1.2745,
+    'USDJPY': 149.85,
+    'USDCHF': 0.8745,
+    'AUDUSD': 0.6542,
+    'USDCAD': 1.3654,
+    'EURGBP': 0.8567,
+    'EURJPY': 158.45,
+    'GBPJPY': 189.75,
+    'AUDJPY': 98.15,
+  };
+  
+  const baseRate = baseRates[pair] || 1.0542;
   
   for (let i = 29; i >= 0; i--) {
     const date = new Date();
@@ -20,17 +37,21 @@ const fetchEurUsdHistorical = async () => {
   return mockData;
 };
 
-const ForexPerformance = () => {
+const ForexPerformance = ({ selectedPair = 'EURUSD' }: ForexPerformanceProps) => {
   const { data: rateData, isLoading } = useQuery({
-    queryKey: ['eurUsdHistorical'],
-    queryFn: fetchEurUsdHistorical,
-    refetchInterval: 60000, // Refetch every minute
+    queryKey: ['currencyHistorical', selectedPair],
+    queryFn: () => fetchCurrencyHistorical(selectedPair),
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
+
+  const formatPairDisplay = (pair: string) => {
+    return pair.replace(/([A-Z]{3})([A-Z]{3})/, '$1/$2');
+  };
 
   if (isLoading) {
     return (
       <div className="glass-card p-6 rounded-lg mb-8 animate-fade-in">
-        <h2 className="text-xl font-semibold mb-6">EUR/USD Performance</h2>
+        <h2 className="text-xl font-semibold mb-6">{formatPairDisplay(selectedPair)} Performance</h2>
         <div className="w-full h-[200px] flex items-center justify-center">
           <span className="text-muted-foreground">Loading...</span>
         </div>
@@ -40,7 +61,7 @@ const ForexPerformance = () => {
 
   return (
     <div className="glass-card p-6 rounded-lg mb-8 animate-fade-in">
-      <h2 className="text-xl font-semibold mb-6">EUR/USD Performance</h2>
+      <h2 className="text-xl font-semibold mb-6">{formatPairDisplay(selectedPair)} Performance</h2>
       <div className="w-full h-[200px]">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rateData}>
