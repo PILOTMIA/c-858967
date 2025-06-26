@@ -75,10 +75,11 @@ const ForexHeatMap = () => {
   const formatTime = (date: Date) => date.toLocaleTimeString();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 text-white p-8">
-      <h1 className="text-3xl font-bold mb-6">Currency Heat Map - Pivot Point Signals</h1>
+    <div className="min-h-screen bg-black text-white p-8">
+      <marquee className="text-sm bg-gray-800 py-2 mb-4">📈 NASDAQ +0.57% | S&P 500 +0.42% | DOW +0.21% — Market Sentiment: Bullish</marquee>
+      <h1 className="text-3xl font-bold mb-6">Currency Heat Map - Day Trading Pivot Signals (4H & Lower)</h1>
 
-      <div className="mb-6 p-4 bg-white bg-opacity-10 rounded">
+      <div className="mb-6 p-4 bg-gray-900 rounded">
         <h2 className="text-xl font-semibold mb-2">Current Time</h2>
         <p>{formatTime(time)}</p>
         <p className="text-sm mt-1">Time is auto-synced to your location.</p>
@@ -86,12 +87,12 @@ const ForexHeatMap = () => {
 
       <div className="grid grid-cols-3 gap-4 mb-8">
         {isLoading ? (
-          [...Array(6)].map((_, i) => <div key={i} className="h-24 bg-gray-200 animate-pulse rounded"></div>)
+          [...Array(6)].map((_, i) => <div key={i} className="h-24 bg-gray-700 animate-pulse rounded"></div>)
         ) : (
           heatMapData?.map(data => (
             <div
               key={data.pair}
-              className="p-4 rounded-lg border text-center"
+              className="p-4 rounded-lg border border-gray-700 text-center"
               style={{ backgroundColor: getHeatColor(data.strength, data.signal) }}
             >
               <h3 className="font-bold text-lg">{data.pair}</h3>
@@ -99,9 +100,9 @@ const ForexHeatMap = () => {
               <p className="text-sm">Pivot: {data.pivotPoints.pivot.toFixed(4)}</p>
               <p className="text-sm">Fib: {data.fibLevel}</p>
               <div className={`text-xs font-bold mt-2 px-2 py-1 rounded ${
-                data.signal === 'BUY' ? 'bg-green-500 text-white' :
-                data.signal === 'SELL' ? 'bg-red-500 text-white' :
-                'bg-gray-500 text-white'
+                data.signal === 'BUY' ? 'bg-green-600 text-white' :
+                data.signal === 'SELL' ? 'bg-red-600 text-white' :
+                'bg-gray-600 text-white'
               }`}>
                 {data.signal}
               </div>
@@ -113,28 +114,23 @@ const ForexHeatMap = () => {
       <form
         action="https://formsubmit.co/OPMENINACTIONLLC@GMAIL.COM"
         method="POST"
-        className="bg-white bg-opacity-10 p-4 rounded mb-8"
+        className="bg-gray-900 p-4 rounded mb-8"
       >
         <h2 className="text-lg font-bold mb-2">Join Our Newsletter</h2>
         <input type="email" name="email" required placeholder="Enter your email" className="p-2 rounded text-black w-full" />
         <input type="hidden" name="_captcha" value="false" />
         <p className="text-xs mt-2">By subscribing, you agree to receive marketing emails from Men In Action LLC. Your information is kept private and never sold.</p>
-        <button type="submit" className="mt-2 bg-green-600 text-white px-4 py-2 rounded">Subscribe</button>
+        <button type="submit" className="mt-2 bg-green-700 text-white px-4 py-2 rounded">Subscribe</button>
       </form>
 
       <div className="mb-4">
-        <a href="https://t.me/meninactionvip" target="_blank" rel="noopener noreferrer" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Join the VIP Telegram</a>
+        <a href="https://t.me/meninactionvip" target="_blank" rel="noopener noreferrer" className="inline-block bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">Join the VIP Telegram</a>
       </div>
 
       <div className="mb-8">
-        <a href="https://www.amazon.com/Technical-Analysis-Journal-Forex-Manual/dp/B0D2KCG97N/ref=sr_1_1?sr=8-1" target="_blank" rel="noopener noreferrer" className="inline-block bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded">
+        <a href="https://www.amazon.com/Technical-Analysis-Journal-Forex-Manual/dp/B0D2KCG97N/ref=sr_1_1?sr=8-1" target="_blank" rel="noopener noreferrer" className="inline-block bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
           Buy the Book: Technical Analysis Journal Forex Manual
         </a>
-      </div>
-
-      <div className="grid grid-cols-2 gap-6">
-        <iframe src="https://www.forexfactory.com/calendar" title="Forex Calendar" className="w-full h-96 bg-white rounded"></iframe>
-        <iframe src="https://tradingeconomics.com/calendar" title="Trading Economics" className="w-full h-96 bg-white rounded"></iframe>
       </div>
     </div>
   );
