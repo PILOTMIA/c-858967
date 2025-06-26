@@ -83,7 +83,7 @@ const ForexHeatMap = () => {
   });
 
   const getHeatColor = (changePercent: number) => {
-    const absChange = Math.abs(changePercent);
+    const absChange = Math.abs(changePercent || 0); // Add null check
     const intensity = Math.min(absChange / 2, 1); // Max intensity at 2%
     
     if (changePercent > 0) {
@@ -95,7 +95,7 @@ const ForexHeatMap = () => {
   };
 
   const getTextColor = (changePercent: number) => {
-    return Math.abs(changePercent) > 1 ? 'text-white' : 'text-gray-200';
+    return Math.abs(changePercent || 0) > 1 ? 'text-white' : 'text-gray-200';
   };
 
   const formatPairDisplay = (pair: string) => {
@@ -148,11 +148,11 @@ const ForexHeatMap = () => {
               key={data.pair}
               className={`aspect-square rounded p-2 border border-gray-600 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 hover:scale-105 ${getTextColor(data.changePercent)}`}
               style={{ backgroundColor: getHeatColor(data.changePercent) }}
-              title={`${data.pair}: ${data.changePercent.toFixed(2)}% | Price: ${formatPrice(data.pair, data.currentPrice)} | Pivot: ${formatPrice(data.pair, data.pivotPoints.pivot)}`}
+              title={`${data.pair}: ${(data.changePercent || 0).toFixed(2)}% | Price: ${formatPrice(data.pair, data.currentPrice)} | Pivot: ${formatPrice(data.pair, data.pivotPoints.pivot)}`}
             >
               <div className="text-xs font-bold mb-1">{formatPairDisplay(data.pair)}</div>
               <div className="text-xs">
-                {data.changePercent > 0 ? '+' : ''}{data.changePercent.toFixed(2)}%
+                {(data.changePercent || 0) > 0 ? '+' : ''}{(data.changePercent || 0).toFixed(2)}%
               </div>
               <div className="text-xs mt-1 px-1 py-0.5 rounded text-white" style={{
                 backgroundColor: data.signal === 'BUY' ? '#16a34a' : data.signal === 'SELL' ? '#dc2626' : '#6b7280'
