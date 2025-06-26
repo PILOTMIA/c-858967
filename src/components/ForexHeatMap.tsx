@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import CorrelationAnalysis from "./CorrelationAnalysis";
 
 interface HeatMapData {
   pair: string;
@@ -25,14 +26,24 @@ const fetchHeatMapData = async (): Promise<HeatMapData[]> => {
     'EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'USD/CAD',
     'EUR/GBP', 'EUR/JPY', 'GBP/JPY', 'AUD/JPY', 'NZD/USD', 'EUR/AUD',
     'GBP/CHF', 'USD/SGD', 'EUR/CHF', 'CAD/JPY', 'NZD/JPY', 'AUD/CAD',
-    'GBP/AUD', 'EUR/CAD', 'CHF/JPY', 'AUD/CHF', 'GBP/CAD', 'EUR/NZD'
+    'GBP/AUD', 'EUR/CAD', 'CHF/JPY', 'AUD/CHF', 'GBP/CAD', 'EUR/NZD',
+    'XAUUSD', 'XTIUSD' // Added GOLD and WTI CRUDE
   ];
 
   return pairs.map(pair => {
-    const basePrice = Math.random() * 2 + 0.5;
-    const high = basePrice + Math.random() * 0.02;
-    const low = basePrice - Math.random() * 0.02;
-    const close = basePrice + (Math.random() - 0.5) * 0.01;
+    let basePrice;
+    // Set realistic base prices for commodities
+    if (pair === 'XAUUSD') {
+      basePrice = 2000 + Math.random() * 100; // Gold around $2000-2100
+    } else if (pair === 'XTIUSD') {
+      basePrice = 70 + Math.random() * 20; // Oil around $70-90
+    } else {
+      basePrice = Math.random() * 2 + 0.5;
+    }
+    
+    const high = basePrice + Math.random() * 0.02 * basePrice;
+    const low = basePrice - Math.random() * 0.02 * basePrice;
+    const close = basePrice + (Math.random() - 0.5) * 0.01 * basePrice;
     const pivot = (high + low + close) / 3;
     const r1 = 2 * pivot - low;
     const r2 = pivot + (high - low);
@@ -87,6 +98,19 @@ const ForexHeatMap = () => {
     return Math.abs(changePercent) > 1 ? 'text-white' : 'text-gray-200';
   };
 
+  const formatPairDisplay = (pair: string) => {
+    if (pair === 'XAUUSD') return 'GOLD';
+    if (pair === 'XTIUSD') return 'OIL';
+    return pair.replace('/', '');
+  };
+
+  const formatPrice = (pair: string, price: number) => {
+    if (pair === 'XAUUSD' || pair === 'XTIUSD') {
+      return price.toFixed(2);
+    }
+    return price.toFixed(4);
+  };
+
   const [time, setTime] = useState(new Date());
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
@@ -99,7 +123,7 @@ const ForexHeatMap = () => {
     <div className="min-h-screen bg-black text-white p-8">
       <div className="text-sm bg-gray-800 py-2 mb-4 overflow-hidden whitespace-nowrap">
         <div className="animate-marquee inline-block">
-          📈 NASDAQ +0.57% | S&P 500 +0.42% | DOW +0.21% — Market Sentiment: Bullish — Live Forex Data Updated Every 5 Seconds
+          📈 NASDAQ +0.57% | S&P 500 +0.42% | DOW +0.21% — Market Sentiment: Bullish — Live Forex Data Updated Every 5 Seconds — GOLD: $2,055.32 (+0.8%) — OIL: $78.45 (-1.2%)
         </div>
       </div>
       
@@ -113,7 +137,7 @@ const ForexHeatMap = () => {
 
       <div className="grid grid-cols-8 gap-1 mb-8 p-4 bg-gray-900 rounded-lg">
         {isLoading ? (
-          [...Array(24)].map((_, i) => (
+          [...Array(26)].map((_, i) => (
             <div key={i} className="aspect-square bg-gray-700 animate-pulse rounded flex items-center justify-center">
               <div className="w-8 h-8 bg-gray-600 rounded"></div>
             </div>
@@ -124,9 +148,9 @@ const ForexHeatMap = () => {
               key={data.pair}
               className={`aspect-square rounded p-2 border border-gray-600 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 hover:scale-105 ${getTextColor(data.changePercent)}`}
               style={{ backgroundColor: getHeatColor(data.changePercent) }}
-              title={`${data.pair}: ${data.changePercent.toFixed(2)}% | Pivot: ${data.pivotPoints.pivot.toFixed(4)}`}
+              title={`${data.pair}: ${data.changePercent.toFixed(2)}% | Price: ${formatPrice(data.pair, data.currentPrice)} | Pivot: ${formatPrice(data.pair, data.pivotPoints.pivot)}`}
             >
-              <div className="text-xs font-bold mb-1">{data.pair.replace('/', '')}</div>
+              <div className="text-xs font-bold mb-1">{formatPairDisplay(data.pair)}</div>
               <div className="text-xs">
                 {data.changePercent > 0 ? '+' : ''}{data.changePercent.toFixed(2)}%
               </div>
@@ -139,6 +163,8 @@ const ForexHeatMap = () => {
           ))
         )}
       </div>
+
+      <CorrelationAnalysis heatMapData={heatMapData} />
 
       <form
         action="https://formsubmit.co/OPMENINACTIONLLC@GMAIL.COM"

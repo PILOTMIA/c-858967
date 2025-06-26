@@ -20,6 +20,8 @@ const fetchCurrencyHistorical = async (pair: string = 'EURUSD') => {
     'EURJPY': 158.45,
     'GBPJPY': 189.75,
     'AUDJPY': 98.15,
+    'XAUUSD': 2055.32, // Gold price
+    'XTIUSD': 78.45,   // Oil price
   };
   
   const baseRate = baseRates[pair] || 1.0542;
@@ -30,7 +32,7 @@ const fetchCurrencyHistorical = async (pair: string = 'EURUSD') => {
     const variation = (Math.random() - 0.5) * 0.02; // Small random variation
     mockData.push({
       date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      rate: parseFloat((baseRate + variation).toFixed(4))
+      rate: parseFloat((baseRate + variation * baseRate).toFixed(pair === 'XAUUSD' || pair === 'XTIUSD' ? 2 : 4))
     });
   }
   
@@ -45,7 +47,16 @@ const ForexPerformance = ({ selectedPair = 'EURUSD' }: ForexPerformanceProps) =>
   });
 
   const formatPairDisplay = (pair: string) => {
+    if (pair === 'XAUUSD') return 'GOLD';
+    if (pair === 'XTIUSD') return 'WTI CRUDE';
     return pair.replace(/([A-Z]{3})([A-Z]{3})/, '$1/$2');
+  };
+
+  const formatPrice = (value: any) => {
+    if (selectedPair === 'XAUUSD' || selectedPair === 'XTIUSD') {
+      return `$${typeof value === 'number' ? value.toFixed(2) : value}`;
+    }
+    return typeof value === 'number' ? value.toFixed(4) : value;
   };
 
   if (isLoading) {
@@ -74,7 +85,7 @@ const ForexPerformance = ({ selectedPair = 'EURUSD' }: ForexPerformanceProps) =>
               stroke="#E6E4DD"
               fontSize={12}
               domain={['dataMin - 0.01', 'dataMax + 0.01']}
-              tickFormatter={(value) => value.toFixed(4)}
+              tickFormatter={(value) => formatPrice(value)}
             />
             <Tooltip 
               contentStyle={{ 
@@ -84,7 +95,7 @@ const ForexPerformance = ({ selectedPair = 'EURUSD' }: ForexPerformanceProps) =>
               }}
               labelStyle={{ color: '#E6E4DD' }}
               itemStyle={{ color: '#8989DE' }}
-              formatter={(value) => [typeof value === 'number' ? value.toFixed(4) : value, 'Rate']}
+              formatter={(value) => [formatPrice(value), 'Price']}
             />
             <Line 
               type="monotone" 

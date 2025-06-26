@@ -17,10 +17,16 @@ const ForexChart = ({ onPairChange }: ForexChartProps) => {
     }
   };
 
+  const getTradingViewSymbol = (pair: string) => {
+    if (pair === 'XAUUSD') return 'TVC:GOLD';
+    if (pair === 'XTIUSD') return 'TVC:USOIL';
+    return `FX:${pair}`;
+  };
+
   return (
     <div className="glass-card p-6 rounded-lg mb-8 animate-fade-in">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">Live Forex Chart</h2>
+        <h2 className="text-xl font-semibold">Live Chart</h2>
         <CurrencySelector 
           selectedPair={selectedPair}
           onPairChange={handlePairChange}
@@ -28,7 +34,7 @@ const ForexChart = ({ onPairChange }: ForexChartProps) => {
       </div>
       <div className="h-[400px] w-full">
         <TradingViewWidget
-          symbol={`FX:${selectedPair}`}
+          symbol={getTradingViewSymbol(selectedPair)}
           theme="dark"
           locale="en"
           autosize
@@ -39,7 +45,7 @@ const ForexChart = ({ onPairChange }: ForexChartProps) => {
           enable_publishing={false}
           hide_top_toolbar={false}
           save_image={false}
-          container_id={`tradingview_forex_chart_${selectedPair}`}
+          container_id={`tradingview_chart_${selectedPair}`}
         />
       </div>
     </div>

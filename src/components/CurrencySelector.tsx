@@ -21,6 +21,8 @@ const CurrencySelector = ({ selectedPair, onPairChange }: CurrencySelectorProps)
     { symbol: 'EURJPY', display: 'EUR/JPY' },
     { symbol: 'GBPJPY', display: 'GBP/JPY' },
     { symbol: 'AUDJPY', display: 'AUD/JPY' },
+    { symbol: 'XAUUSD', display: 'GOLD' },
+    { symbol: 'XTIUSD', display: 'WTI CRUDE' },
   ];
 
   const handlePairSelect = (symbol: string) => {
@@ -41,7 +43,7 @@ const CurrencySelector = ({ selectedPair, onPairChange }: CurrencySelectorProps)
       </button>
       
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-600 rounded shadow-lg z-10 min-w-full">
+        <div className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-600 rounded shadow-lg z-10 min-w-full max-h-60 overflow-y-auto">
           {currencyPairs.map((pair) => (
             <button
               key={pair.symbol}
