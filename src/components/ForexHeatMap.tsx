@@ -1,10 +1,9 @@
-
 /**
  * Finalized with Telegram API integration for @MIAFREEFOREX
  * Note: Actual Telegram API polling requires a backend proxy for secure token handling.
  */
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import CorrelationAnalysis from "./CorrelationAnalysis";
 
@@ -19,17 +18,45 @@ interface HeatMapData {
     s2: number;
     s3: number;
   };
+  weeklyPivots: {
+    pivot: number;
+    r1: number;
+    s1: number;
+  };
+  monthlyPivots: {
+    pivot: number;
+    r1: number;
+    s1: number;
+  };
   currentPrice: number;
   signal: 'BUY' | 'SELL' | 'NEUTRAL';
   strength: number;
   fibLevel: string;
   changePercent: number;
+  stdDevChannel: {
+    direction: 'BULLISH' | 'BEARISH' | 'SIDEWAYS';
+    upperBand: number;
+    lowerBand: number;
+    middleLine: number;
+  };
+  closestPivot: {
+    level: number;
+    type: string;
+    distance: number;
+  };
+  riskReward: number;
 }
 
 interface SignalData {
   text: string;
-  imageUrl?: string;
   time: string;
+  imageUrl?: string;
+  entry: number;
+  stopLoss: number;
+  takeProfit1: number;
+  takeProfit2?: number;
+  riskReward: number;
+  pips: number;
 }
 
 const fetchHeatMapData = async (): Promise<HeatMapData[]> => {
@@ -47,6 +74,7 @@ const fetchHeatMapData = async (): Promise<HeatMapData[]> => {
     else if (pair === 'XTIUSD') basePrice = 70 + Math.random() * 20;
     else basePrice = Math.random() * 2 + 0.5;
 
+    // Daily pivot calculation
     const high = basePrice + Math.random() * 0.02 * basePrice;
     const low = basePrice - Math.random() * 0.02 * basePrice;
     const close = basePrice + (Math.random() - 0.5) * 0.01 * basePrice;
@@ -57,26 +85,93 @@ const fetchHeatMapData = async (): Promise<HeatMapData[]> => {
     const s1 = 2 * pivot - high;
     const s2 = pivot - (high - low);
     const s3 = low - 2 * (high - pivot);
+
+    // Weekly pivot calculation (simulated with wider range)
+    const weeklyHigh = basePrice + Math.random() * 0.05 * basePrice;
+    const weeklyLow = basePrice - Math.random() * 0.05 * basePrice;
+    const weeklyClose = basePrice + (Math.random() - 0.5) * 0.02 * basePrice;
+    const weeklyPivot = (weeklyHigh + weeklyLow + weeklyClose) / 3;
+    const weeklyR1 = 2 * weeklyPivot - weeklyLow;
+    const weeklyS1 = 2 * weeklyPivot - weeklyHigh;
+
+    // Monthly pivot calculation (simulated with even wider range)
+    const monthlyHigh = basePrice + Math.random() * 0.08 * basePrice;
+    const monthlyLow = basePrice - Math.random() * 0.08 * basePrice;
+    const monthlyClose = basePrice + (Math.random() - 0.5) * 0.03 * basePrice;
+    const monthlyPivot = (monthlyHigh + monthlyLow + monthlyClose) / 3;
+    const monthlyR1 = 2 * monthlyPivot - monthlyLow;
+    const monthlyS1 = 2 * monthlyPivot - monthlyHigh;
+
     const currentPrice = close;
+    
+    // Standard Deviation Channel (144 candles simulation)
+    const stdDev = basePrice * 0.005; // Simulated standard deviation
+    const middleLine = basePrice;
+    const upperBand = middleLine + (2 * stdDev);
+    const lowerBand = middleLine - (2 * stdDev);
+    
+    let channelDirection: 'BULLISH' | 'BEARISH' | 'SIDEWAYS' = 'SIDEWAYS';
+    if (currentPrice > middleLine + stdDev) channelDirection = 'BULLISH';
+    else if (currentPrice < middleLine - stdDev) channelDirection = 'BEARISH';
+
+    // Find closest pivot
+    const allPivots = [
+      { level: pivot, type: 'Daily Pivot' },
+      { level: r1, type: 'Daily R1' },
+      { level: s1, type: 'Daily S1' },
+      { level: weeklyPivot, type: 'Weekly Pivot' },
+      { level: weeklyR1, type: 'Weekly R1' },
+      { level: weeklyS1, type: 'Weekly S1' },
+      { level: monthlyPivot, type: 'Monthly Pivot' },
+      { level: monthlyR1, type: 'Monthly R1' },
+      { level: monthlyS1, type: 'Monthly S1' }
+    ];
+
+    const closestPivot = allPivots.reduce((closest, current) => {
+      const currentDistance = Math.abs(currentPrice - current.level);
+      const closestDistance = Math.abs(currentPrice - closest.level);
+      return currentDistance < closestDistance ? current : closest;
+    });
+
     const distanceFromPivot = Math.abs(currentPrice - pivot);
     const strength = Math.min(100, (distanceFromPivot / pivot) * 10000);
     const changePercent = (Math.random() - 0.5) * 4;
 
     let signal: 'BUY' | 'SELL' | 'NEUTRAL' = 'NEUTRAL';
-    if (currentPrice > pivot) signal = 'BUY';
-    if (currentPrice < pivot) signal = 'SELL';
+    if (currentPrice > pivot && channelDirection === 'BULLISH') signal = 'BUY';
+    if (currentPrice < pivot && channelDirection === 'BEARISH') signal = 'SELL';
 
     const fibLevels = ['23.6%', '38.2%', '50%', '61.8%', '78.6%'];
     const fibLevel = fibLevels[Math.floor(Math.random() * fibLevels.length)];
 
+    // Calculate risk/reward ratio
+    const riskReward = signal === 'BUY' ? 
+      (r1 - currentPrice) / (currentPrice - s1) : 
+      signal === 'SELL' ? 
+      (currentPrice - s1) / (r1 - currentPrice) : 1;
+
     return {
       pair,
       pivotPoints: { pivot, r1, r2, r3, s1, s2, s3 },
+      weeklyPivots: { pivot: weeklyPivot, r1: weeklyR1, s1: weeklyS1 },
+      monthlyPivots: { pivot: monthlyPivot, r1: monthlyR1, s1: monthlyS1 },
       currentPrice,
       signal,
       strength,
       fibLevel,
-      changePercent
+      changePercent,
+      stdDevChannel: {
+        direction: channelDirection,
+        upperBand,
+        lowerBand,
+        middleLine
+      },
+      closestPivot: {
+        level: closestPivot.level,
+        type: closestPivot.type,
+        distance: Math.abs(currentPrice - closestPivot.level)
+      },
+      riskReward: Math.abs(riskReward)
     };
   });
 };
@@ -91,6 +186,8 @@ const ForexHeatMap = () => {
   const [selectedPair, setSelectedPair] = useState<string>('EUR/USD');
   const [time, setTime] = useState(new Date());
   const [signal, setSignal] = useState<SignalData | null>(null);
+  const [lotSize, setLotSize] = useState<number>(0.1);
+  const [accountCurrency, setAccountCurrency] = useState<string>('USD');
 
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
@@ -100,8 +197,6 @@ const ForexHeatMap = () => {
   useEffect(() => {
     const fetchSignal = async () => {
       try {
-        // Note: For production, this should be a secure backend endpoint
-        // that handles the Telegram API token securely
         const res = await fetch("/api/telegram-signals", {
           method: 'GET',
           cache: 'no-cache',
@@ -118,26 +213,36 @@ const ForexHeatMap = () => {
         }
       } catch (err) {
         console.error("Failed to fetch Telegram signal", err);
-        // Generate fresh mock data with current timestamp
-        const signals = [
-          "🚀 EURUSD LONG SIGNAL\n\nEntry: 1.0845\nSL: 1.0820\nTP1: 1.0880\nTP2: 1.0920\n\nRisk Management: 2% per trade",
-          "💎 GBPUSD SHORT SIGNAL\n\nEntry: 1.2630\nSL: 1.2670\nTP1: 1.2580\nTP2: 1.2540\n\nWatch for resistance break",
-          "⭐ GOLD BREAKOUT\n\nEntry: 2055\nSL: 2040\nTP1: 2080\nTP2: 2100\n\nInflation hedge active",
-          "🔥 USDJPY MOMENTUM\n\nEntry: 148.50\nSL: 147.80\nTP1: 149.20\nTP2: 150.00\n\nBoJ intervention watch"
+        // Generate enhanced mock signal with risk/reward
+        const mockSignals = [
+          {
+            text: "🚀 EURUSD LONG SIGNAL\n\nEntry: 1.0845\nSL: 1.0820\nTP1: 1.0880\nTP2: 1.0920\n\nRisk/Reward: 1:3\nFor every $1 you risk, you can gain $3",
+            entry: 1.0845,
+            stopLoss: 1.0820,
+            takeProfit1: 1.0880,
+            takeProfit2: 1.0920,
+            riskReward: 3,
+            pips: 35,
+            time: new Date().toLocaleTimeString(),
+          },
+          {
+            text: "💎 GBPUSD SHORT SIGNAL\n\nEntry: 1.2630\nSL: 1.2670\nTP1: 1.2580\nTP2: 1.2540\n\nRisk/Reward: 1:2.25\nFor every $1 you risk, you can gain $2.25",
+            entry: 1.2630,
+            stopLoss: 1.2670,
+            takeProfit1: 1.2580,
+            takeProfit2: 1.2540,
+            riskReward: 2.25,
+            pips: 50,
+            time: new Date().toLocaleTimeString(),
+          }
         ];
         
-        const randomSignal = signals[Math.floor(Math.random() * signals.length)];
-        setSignal({
-          text: randomSignal,
-          time: new Date().toLocaleTimeString(),
-        });
+        const randomSignal = mockSignals[Math.floor(Math.random() * mockSignals.length)];
+        setSignal(randomSignal);
       }
     };
     
-    // Fetch immediately
     fetchSignal();
-    
-    // Then fetch every 30 minutes for more current data
     const interval = setInterval(fetchSignal, 30 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
@@ -146,18 +251,18 @@ const ForexHeatMap = () => {
   
   const getHeatColor = (changePercent: number) => {
     const absChange = Math.abs(changePercent || 0);
-    const intensity = Math.min(absChange / 2, 1);
+    const intensity = Math.min(absChange / 4, 0.4); // Reduced intensity for subtlety
     
     if ((changePercent || 0) > 0) {
-      return `rgba(34, 197, 94, ${0.3 + intensity * 0.7})`;
+      return `rgba(34, 197, 94, ${0.1 + intensity * 0.3})`;
     } else if ((changePercent || 0) < 0) {
-      return `rgba(239, 68, 68, ${0.3 + intensity * 0.7})`;
+      return `rgba(239, 68, 68, ${0.1 + intensity * 0.3})`;
     }
-    return `rgba(107, 114, 128, 0.3)`;
+    return `rgba(107, 114, 128, 0.1)`;
   };
 
   const getTextColor = (changePercent: number) => {
-    return Math.abs(changePercent || 0) > 1 ? 'text-white' : 'text-gray-200';
+    return 'text-gray-100'; // Consistent text color
   };
 
   const formatPairDisplay = (pair: string) => {
@@ -170,6 +275,15 @@ const ForexHeatMap = () => {
     return pair === 'XAUUSD' || pair === 'XTIUSD' ? price.toFixed(2) : price.toFixed(4);
   };
 
+  const calculatePipValue = (pair: string, lotSize: number) => {
+    if (pair.includes('JPY')) {
+      return (0.01 * lotSize * 100000) / 100; // For JPY pairs
+    }
+    return (0.0001 * lotSize * 100000) / 1; // For other pairs
+  };
+
+  const selectedPairData = heatMapData?.find(data => data.pair === selectedPair);
+
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="text-sm bg-gray-800 py-2 mb-4 overflow-hidden whitespace-nowrap">
@@ -178,12 +292,59 @@ const ForexHeatMap = () => {
         </div>
       </div>
 
-      <h1 className="text-3xl font-bold mb-6">Currency Heat Map - Day Trading Pivot Signals (4H & Lower)</h1>
+      <h1 className="text-3xl font-bold mb-6">Currency Heat Map - Day Trading Pivot Signals (Weekly & Monthly Levels)</h1>
 
       <div className="mb-6 p-4 bg-gray-900 rounded">
         <h2 className="text-xl font-semibold mb-2">Current Time</h2>
         <p>{formatTime(time)}</p>
         <p className="text-sm mt-1">Time is auto-synced to your location.</p>
+      </div>
+
+      {/* Pip Calculator */}
+      <div className="mb-6 p-4 bg-gray-900 rounded">
+        <h2 className="text-xl font-semibold mb-4">Pip Calculator</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Lot Size</label>
+            <input
+              type="number"
+              step="0.01"
+              value={lotSize}
+              onChange={(e) => setLotSize(parseFloat(e.target.value) || 0.1)}
+              className="w-full p-2 bg-gray-800 border border-gray-600 rounded text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Account Currency</label>
+            <select
+              value={accountCurrency}
+              onChange={(e) => setAccountCurrency(e.target.value)}
+              className="w-full p-2 bg-gray-800 border border-gray-600 rounded text-white"
+            >
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Selected Pair</label>
+            <select
+              value={selectedPair}
+              onChange={(e) => setSelectedPair(e.target.value)}
+              className="w-full p-2 bg-gray-800 border border-gray-600 rounded text-white"
+            >
+              {heatMapData?.map(data => (
+                <option key={data.pair} value={data.pair}>{data.pair}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        {selectedPairData && (
+          <div className="mt-4 p-3 bg-gray-800 rounded">
+            <p className="text-lg font-bold">Pip Value: ${calculatePipValue(selectedPair, lotSize).toFixed(2)} per pip</p>
+            <p className="text-sm text-gray-300">Risk/Reward Ratio: 1:{selectedPairData.riskReward.toFixed(2)}</p>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-8 gap-1 mb-8 p-4 bg-gray-900 rounded-lg">
@@ -198,7 +359,7 @@ const ForexHeatMap = () => {
               onClick={() => setSelectedPair(data.pair)}
               className={`aspect-square rounded p-2 border border-gray-600 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 hover:scale-105 ${getTextColor(data.changePercent)}`}
               style={{ backgroundColor: getHeatColor(data.changePercent) }}
-              title={`${data.pair}: ${(data.changePercent || 0).toFixed(2)}% | Price: ${formatPrice(data.pair, data.currentPrice)} | Pivot: ${formatPrice(data.pair, data.pivotPoints.pivot)}`}
+              title={`${data.pair}: ${(data.changePercent || 0).toFixed(2)}% | Current: ${formatPrice(data.pair, data.currentPrice)} | Closest Pivot: ${data.closestPivot.type} at ${formatPrice(data.pair, data.closestPivot.level)}`}
             >
               <div className="text-xs font-bold mb-1">{formatPairDisplay(data.pair)}</div>
               <div className="text-xs">
@@ -214,14 +375,69 @@ const ForexHeatMap = () => {
         )}
       </div>
 
+      {/* Detailed Analysis for Selected Pair */}
+      {selectedPairData && (
+        <div className="mb-8 p-4 bg-gray-900 rounded">
+          <h2 className="text-xl font-semibold mb-4">Detailed Analysis: {selectedPair}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="p-3 bg-gray-800 rounded">
+              <h3 className="font-bold text-green-400 mb-2">4H Standard Deviation Channel (144 candles)</h3>
+              <p className="text-sm">Direction: <span className={`font-bold ${selectedPairData.stdDevChannel.direction === 'BULLISH' ? 'text-green-400' : selectedPairData.stdDevChannel.direction === 'BEARISH' ? 'text-red-400' : 'text-yellow-400'}`}>{selectedPairData.stdDevChannel.direction}</span></p>
+              <p className="text-sm">Upper Band: {formatPrice(selectedPair, selectedPairData.stdDevChannel.upperBand)}</p>
+              <p className="text-sm">Lower Band: {formatPrice(selectedPair, selectedPairData.stdDevChannel.lowerBand)}</p>
+            </div>
+            
+            <div className="p-3 bg-gray-800 rounded">
+              <h3 className="font-bold text-blue-400 mb-2">Weekly Pivots</h3>
+              <p className="text-sm">Pivot: {formatPrice(selectedPair, selectedPairData.weeklyPivots.pivot)}</p>
+              <p className="text-sm">R1: {formatPrice(selectedPair, selectedPairData.weeklyPivots.r1)}</p>
+              <p className="text-sm">S1: {formatPrice(selectedPair, selectedPairData.weeklyPivots.s1)}</p>
+            </div>
+            
+            <div className="p-3 bg-gray-800 rounded">
+              <h3 className="font-bold text-purple-400 mb-2">Monthly Pivots</h3>
+              <p className="text-sm">Pivot: {formatPrice(selectedPair, selectedPairData.monthlyPivots.pivot)}</p>
+              <p className="text-sm">R1: {formatPrice(selectedPair, selectedPairData.monthlyPivots.r1)}</p>
+              <p className="text-sm">S1: {formatPrice(selectedPair, selectedPairData.monthlyPivots.s1)}</p>
+            </div>
+            
+            <div className="p-3 bg-gray-800 rounded col-span-full">
+              <h3 className="font-bold text-yellow-400 mb-2">Next Signal Analysis</h3>
+              <p className="text-sm">Closest Pivot: <span className="font-bold">{selectedPairData.closestPivot.type}</span> at {formatPrice(selectedPair, selectedPairData.closestPivot.level)}</p>
+              <p className="text-sm">Distance: {formatPrice(selectedPair, selectedPairData.closestPivot.distance)} ({(selectedPairData.closestPivot.distance / selectedPairData.currentPrice * 10000).toFixed(0)} pips)</p>
+              <p className="text-sm">Risk/Reward Ratio: 1:{selectedPairData.riskReward.toFixed(2)} - For every $1 you risk, you could gain ${selectedPairData.riskReward}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {signal && (
         <div className="bg-gray-900 rounded p-4 mb-8">
           <h2 className="text-xl font-semibold mb-4">📡 Signal of the Day (via @MIAFREEFOREX)</h2>
           <p className="text-sm text-gray-400 mb-2">Posted: {signal.time}</p>
-          <p className="text-white whitespace-pre-wrap">{signal.text}</p>
-          {signal.imageUrl && (
-            <img src={signal.imageUrl} alt="Chart of the Day" className="mt-4 w-full rounded" />
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-white whitespace-pre-wrap mb-4">{signal.text}</p>
+              {signal.imageUrl && (
+                <img src={signal.imageUrl} alt="Chart of the Day" className="w-full rounded" />
+              )}
+            </div>
+            <div className="p-4 bg-gray-800 rounded">
+              <h3 className="font-bold text-green-400 mb-3">Risk/Reward Analysis</h3>
+              <div className="space-y-2 text-sm">
+                <p>Entry: {signal.entry}</p>
+                <p>Stop Loss: {signal.stopLoss}</p>
+                <p>Take Profit 1: {signal.takeProfit1}</p>
+                {signal.takeProfit2 && <p>Take Profit 2: {signal.takeProfit2}</p>}
+                <p className="text-lg font-bold text-green-400">Risk/Reward: 1:{signal.riskReward}</p>
+                <p className="text-yellow-400">Potential Pips: {signal.pips}</p>
+                <p className="text-gray-300 text-xs mt-2">
+                  This means for every $1 you risk, you have the potential to gain ${signal.riskReward}. 
+                  Always use proper risk management and never risk more than 1-2% of your account per trade.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
