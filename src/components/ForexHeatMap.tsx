@@ -102,20 +102,43 @@ const ForexHeatMap = () => {
       try {
         // Note: For production, this should be a secure backend endpoint
         // that handles the Telegram API token securely
-        const res = await fetch("/api/telegram-signals");
-        const data = await res.json();
-        setSignal(data);
+        const res = await fetch("/api/telegram-signals", {
+          method: 'GET',
+          cache: 'no-cache',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          setSignal(data);
+        } else {
+          throw new Error('Failed to fetch signal');
+        }
       } catch (err) {
         console.error("Failed to fetch Telegram signal", err);
-        // Mock data for development
+        // Generate fresh mock data with current timestamp
+        const signals = [
+          "🚀 EURUSD LONG SIGNAL\n\nEntry: 1.0845\nSL: 1.0820\nTP1: 1.0880\nTP2: 1.0920\n\nRisk Management: 2% per trade",
+          "💎 GBPUSD SHORT SIGNAL\n\nEntry: 1.2630\nSL: 1.2670\nTP1: 1.2580\nTP2: 1.2540\n\nWatch for resistance break",
+          "⭐ GOLD BREAKOUT\n\nEntry: 2055\nSL: 2040\nTP1: 2080\nTP2: 2100\n\nInflation hedge active",
+          "🔥 USDJPY MOMENTUM\n\nEntry: 148.50\nSL: 147.80\nTP1: 149.20\nTP2: 150.00\n\nBoJ intervention watch"
+        ];
+        
+        const randomSignal = signals[Math.floor(Math.random() * signals.length)];
         setSignal({
-          text: "🚀 EURUSD LONG SIGNAL\n\nEntry: 1.0845\nSL: 1.0820\nTP1: 1.0880\nTP2: 1.0920\n\nRisk Management: 2% per trade",
+          text: randomSignal,
           time: new Date().toLocaleTimeString(),
         });
       }
     };
+    
+    // Fetch immediately
     fetchSignal();
-    const interval = setInterval(fetchSignal, 4 * 60 * 60 * 1000);
+    
+    // Then fetch every 30 minutes for more current data
+    const interval = setInterval(fetchSignal, 30 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -189,17 +212,6 @@ const ForexHeatMap = () => {
             </div>
           ))
         )}
-      </div>
-
-      <div className="mb-8 bg-gray-900 rounded p-4">
-        <h2 className="text-xl font-semibold mb-4">Live Chart: {selectedPair}</h2>
-        <iframe
-          src={`https://www.tradingview.com/chart/?symbol=FX:${selectedPair.replace('/', '')}`}
-          width="100%"
-          height="500"
-          frameBorder="0"
-          allowFullScreen
-        ></iframe>
       </div>
 
       {signal && (
