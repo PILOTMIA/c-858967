@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import CorrelationAnalysis from "./CorrelationAnalysis";
@@ -100,15 +101,21 @@ const fetchHeatMapData = async (): Promise<HeatMapData[]> => {
 
     const currentPrice = close;
     
-    // Standard Deviation Channel (144 candles simulation)
-    const stdDev = basePrice * 0.005; // Simulated standard deviation
+    // Standard Deviation Channel with more realistic direction logic
+    const stdDev = basePrice * 0.005;
     const middleLine = basePrice;
     const upperBand = middleLine + (2 * stdDev);
     const lowerBand = middleLine - (2 * stdDev);
     
+    // More dynamic channel direction based on price position and momentum
+    const pricePositionInChannel = (currentPrice - lowerBand) / (upperBand - lowerBand);
+    const momentum = (Math.random() - 0.5) * 2; // Simulated momentum
+    
     let channelDirection: 'BULLISH' | 'BEARISH' | 'SIDEWAYS' = 'SIDEWAYS';
-    if (currentPrice > middleLine + stdDev) channelDirection = 'BULLISH';
-    else if (currentPrice < middleLine - stdDev) channelDirection = 'BEARISH';
+    if (pricePositionInChannel > 0.7 && momentum > 0.2) channelDirection = 'BULLISH';
+    else if (pricePositionInChannel < 0.3 && momentum < -0.2) channelDirection = 'BEARISH';
+    else if (Math.abs(momentum) < 0.1) channelDirection = 'SIDEWAYS';
+    else channelDirection = momentum > 0 ? 'BULLISH' : 'BEARISH';
 
     // Find closest pivot
     const allPivots = [
@@ -131,11 +138,22 @@ const fetchHeatMapData = async (): Promise<HeatMapData[]> => {
 
     const distanceFromPivot = Math.abs(currentPrice - pivot);
     const strength = Math.min(100, (distanceFromPivot / pivot) * 10000);
-    const changePercent = (Math.random() - 0.5) * 4;
+    
+    // More dynamic change percent that updates
+    const timeBasedVariation = Math.sin(Date.now() / 10000) * 2; // Creates variation over time
+    const changePercent = (Math.random() - 0.5) * 4 + timeBasedVariation * 0.5;
 
+    // More dynamic signal generation
     let signal: 'BUY' | 'SELL' | 'NEUTRAL' = 'NEUTRAL';
-    if (currentPrice > pivot && channelDirection === 'BULLISH') signal = 'BUY';
-    if (currentPrice < pivot && channelDirection === 'BEARISH') signal = 'SELL';
+    const signalStrength = Math.abs(changePercent) + Math.abs(momentum);
+    
+    if (channelDirection === 'BULLISH' && currentPrice > pivot && signalStrength > 1.5) {
+      signal = 'BUY';
+    } else if (channelDirection === 'BEARISH' && currentPrice < pivot && signalStrength > 1.5) {
+      signal = 'SELL';
+    } else if (Math.random() > 0.7) { // Add some randomness to prevent all neutrals
+      signal = Math.random() > 0.5 ? 'BUY' : 'SELL';
+    }
 
     const fibLevels = ['23.6%', '38.2%', '50%', '61.8%', '78.6%'];
     const fibLevel = fibLevels[Math.floor(Math.random() * fibLevels.length)];
