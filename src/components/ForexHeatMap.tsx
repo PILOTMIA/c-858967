@@ -1,11 +1,7 @@
-/**
- * Finalized with Telegram API integration for @MIAFREEFOREX
- * Note: Actual Telegram API polling requires a backend proxy for secure token handling.
- */
-
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import CorrelationAnalysis from "./CorrelationAnalysis";
+import MarketClock from "./MarketClock";
 
 interface HeatMapData {
   pair: string;
@@ -189,6 +185,15 @@ const ForexHeatMap = () => {
   const [lotSize, setLotSize] = useState<number>(0.1);
   const [accountCurrency, setAccountCurrency] = useState<string>('USD');
 
+  // COT Data currency pairs - same as in COTData component
+  const cotCurrencyPairs = [
+    'EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'USD/CAD',
+    'NZD/USD', 'EUR/GBP', 'EUR/JPY', 'GBP/JPY', 'AUD/JPY', 'CAD/JPY',
+    'CHF/JPY', 'EUR/CHF', 'EUR/AUD', 'GBP/CHF', 'AUD/CHF', 'NZD/JPY',
+    'GBP/AUD', 'EUR/CAD', 'GBP/CAD', 'AUD/CAD', 'EUR/NZD', 'GBP/NZD',
+    'XAUUSD', 'XTIUSD'
+  ];
+
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(interval);
@@ -294,6 +299,8 @@ const ForexHeatMap = () => {
 
       <h1 className="text-3xl font-bold mb-6">Currency Heat Map - Day Trading Pivot Signals (Weekly & Monthly Levels)</h1>
 
+      <MarketClock />
+
       <div className="mb-6 p-4 bg-gray-900 rounded">
         <h2 className="text-xl font-semibold mb-2">Current Time</h2>
         <p>{formatTime(time)}</p>
@@ -378,7 +385,24 @@ const ForexHeatMap = () => {
       {/* Detailed Analysis for Selected Pair */}
       {selectedPairData && (
         <div className="mb-8 p-4 bg-gray-900 rounded">
-          <h2 className="text-xl font-semibold mb-4">Detailed Analysis: {selectedPair}</h2>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+            <h2 className="text-xl font-semibold mb-2 md:mb-0">Detailed Analysis</h2>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium">Select Pair:</label>
+              <select
+                value={selectedPair}
+                onChange={(e) => setSelectedPair(e.target.value)}
+                className="p-2 bg-gray-800 border border-gray-600 rounded text-white min-w-[120px]"
+              >
+                {cotCurrencyPairs.map(pair => (
+                  <option key={pair} value={pair}>{pair}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          
+          <h3 className="text-lg font-bold mb-3 text-blue-400">{selectedPair}</h3>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="p-3 bg-gray-800 rounded">
               <h3 className="font-bold text-green-400 mb-2">4H Standard Deviation Channel (144 candles)</h3>
