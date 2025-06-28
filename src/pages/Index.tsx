@@ -9,6 +9,7 @@ import FedWatchTool from "@/components/FedWatchTool";
 import COTData from "@/components/COTData";
 import ClientSignup from "@/components/ClientSignup";
 import TradingBot from "@/components/TradingBot";
+import KnowledgeBase from "@/components/KnowledgeBase";
 
 const Index = () => {
   const [selectedCurrencyPair, setSelectedCurrencyPair] = useState('EURUSD');
@@ -25,7 +26,7 @@ const Index = () => {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold text-white">Trading Command Center</h1>
-              <p className="text-gray-300 text-sm">Men In Action LLC - Live Market Analysis</p>
+              <p className="text-gray-300 text-sm">Men In Action LLC - Live Market Analysis & Education</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-green-400 text-sm font-mono">
@@ -76,6 +77,9 @@ const Index = () => {
             </div>
           </div>
         </div>
+
+        {/* Knowledge Base Section */}
+        <KnowledgeBase />
 
         {/* Chart & Performance Analysis */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
