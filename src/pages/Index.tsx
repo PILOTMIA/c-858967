@@ -10,6 +10,7 @@ import COTData from "@/components/COTData";
 import ClientSignup from "@/components/ClientSignup";
 import TradingBot from "@/components/TradingBot";
 import KnowledgeBase from "@/components/KnowledgeBase";
+import RealTimeData from "@/components/RealTimeData";
 
 const Index = () => {
   const [selectedCurrencyPair, setSelectedCurrencyPair] = useState('EURUSD');
@@ -58,6 +59,7 @@ const Index = () => {
           </div>
           <div className="space-y-6">
             <FedWatchTool />
+            <RealTimeData />
             <div className="bg-gray-900 p-4 rounded-lg">
               <h3 className="text-lg font-bold text-white mb-2">Market Sessions</h3>
               <div className="space-y-2 text-sm">
