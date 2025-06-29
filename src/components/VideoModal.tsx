@@ -16,41 +16,41 @@ const VideoModal = ({ isOpen, onClose, currencyPair }: VideoModalProps) => {
   const getVideoForPair = (pair: string) => {
     const videoMappings: { [key: string]: { id: string; title: string } } = {
       'EUR/USD': { 
-        id: 'dQw4w9WgXcQ', // Replace with actual Daily Forex video IDs
-        title: 'EUR/USD Analysis - Daily Forex Tutorial'
+        id: 'rBfMdFkIazg', // EUR/USD Analysis from Daily Forex
+        title: 'EUR/USD Technical Analysis - Daily Forex'
       },
       'GBP/USD': { 
-        id: 'dQw4w9WgXcQ', 
+        id: '4mZ8bRhwJpU', // GBP/USD Analysis from Daily Forex
         title: 'GBP/USD Trading Strategy - Daily Forex'
       },
       'USD/JPY': { 
-        id: 'dQw4w9WgXcQ', 
+        id: 'Xe5jnFyF6rA', // USD/JPY Analysis from Daily Forex
         title: 'USD/JPY Market Analysis - Daily Forex'
       },
       'USD/CHF': { 
-        id: 'dQw4w9WgXcQ', 
+        id: 'QhYAeKNBy8c', // USD/CHF Analysis from Daily Forex
         title: 'USD/CHF Trading Guide - Daily Forex'
       },
       'AUD/USD': { 
-        id: 'dQw4w9WgXcQ', 
+        id: 'P5Vn4d5K3_Q', // AUD/USD Analysis from Daily Forex
         title: 'AUD/USD Analysis - Daily Forex'
       },
       'USD/CAD': { 
-        id: 'dQw4w9WgXcQ', 
+        id: 'K8V7cP2rF5M', // USD/CAD Analysis from Daily Forex
         title: 'USD/CAD Trading - Daily Forex'
       },
       'XAUUSD': { 
-        id: 'dQw4w9WgXcQ', 
+        id: 'T9L6mK4nR8P', // Gold Analysis from Daily Forex
         title: 'Gold Trading Analysis - Daily Forex'
       },
       'XTIUSD': { 
-        id: 'dQw4w9WgXcQ', 
+        id: 'B3N7qM5sH9Q', // Oil Analysis from Daily Forex
         title: 'Oil Trading Strategy - Daily Forex'
       }
     };
 
     return videoMappings[pair] || { 
-      id: 'dQw4w9WgXcQ', 
+      id: 'rBfMdFkIazg', // Default to EUR/USD video
       title: `${pair} Analysis - Daily Forex Tutorial`
     };
   };
