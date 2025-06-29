@@ -11,7 +11,6 @@ import ClientSignup from "@/components/ClientSignup";
 import TradingBot from "@/components/TradingBot";
 import KnowledgeBase from "@/components/KnowledgeBase";
 import RealTimeData from "@/components/RealTimeData";
-import EconomicCalendar from "@/components/EconomicCalendar";
 
 const Index = () => {
   const [selectedCurrencyPair, setSelectedCurrencyPair] = useState('EURUSD');
@@ -80,9 +79,6 @@ const Index = () => {
             </div>
           </div>
         </div>
-
-        {/* Economic Calendar - New Addition */}
-        <EconomicCalendar />
 
         {/* Knowledge Base Section */}
         <KnowledgeBase />
