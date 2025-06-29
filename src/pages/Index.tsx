@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import MarketStats from "@/components/MarketStats";
 import ForexChart from "@/components/ForexChart";
@@ -11,6 +10,10 @@ import ClientSignup from "@/components/ClientSignup";
 import TradingBot from "@/components/TradingBot";
 import KnowledgeBase from "@/components/KnowledgeBase";
 import RealTimeData from "@/components/RealTimeData";
+import BrandingSection from "@/components/BrandingSection";
+import SentimentWidget from "@/components/SentimentWidget";
+import TestimonialsCarousel from "@/components/TestimonialsCarousel";
+import ClientLearningPath from "@/components/ClientLearningPath";
 
 const Index = () => {
   const [selectedCurrencyPair, setSelectedCurrencyPair] = useState('EURUSD');
@@ -52,6 +55,9 @@ const Index = () => {
           </div>
         </div>
 
+        {/* Branding Section */}
+        <BrandingSection />
+
         {/* Heat Map & Fed Watch - Core Analysis */}
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
           <div className="xl:col-span-3">
@@ -60,6 +66,7 @@ const Index = () => {
           <div className="space-y-6">
             <FedWatchTool />
             <RealTimeData />
+            <SentimentWidget />
             <div className="bg-gray-900 p-4 rounded-lg">
               <h3 className="text-lg font-bold text-white mb-2">Market Sessions</h3>
               <div className="space-y-2 text-sm">
@@ -91,6 +98,12 @@ const Index = () => {
           <div>
             <ForexPerformance selectedPair={selectedCurrencyPair} />
           </div>
+        </div>
+
+        {/* Testimonials and Learning Path */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <TestimonialsCarousel />
+          <ClientLearningPath />
         </div>
 
         {/* COT Data & Market List */}
