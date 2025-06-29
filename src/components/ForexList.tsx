@@ -1,6 +1,7 @@
-
-import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
+import { ArrowUpIcon, ArrowDownIcon, Play } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import VideoModal from "./VideoModal";
 
 interface ForexPair {
   pair: string;
@@ -87,59 +88,91 @@ const ForexList = () => {
     refetchInterval: 15000, // Refetch every 15 seconds for more real-time feel
   });
 
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [selectedPair, setSelectedPair] = useState<string>('');
+
+  const handleVideoClick = (pair: string) => {
+    setSelectedPair(pair);
+    setVideoModalOpen(true);
+  };
+
   if (isLoading) {
     return <div className="glass-card rounded-lg p-6 animate-pulse">Loading...</div>;
   }
 
   return (
-    <div className="glass-card rounded-lg p-6 animate-fade-in">
-      <h2 className="text-xl font-semibold mb-6">Major Forex Pairs</h2>
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="text-left text-sm text-muted-foreground">
-              <th className="pb-4">Pair</th>
-              <th className="pb-4">Rate</th>
-              <th className="pb-4">Change</th>
-              <th className="pb-4">Volume</th>
-            </tr>
-          </thead>
-          <tbody>
-            {forexPairs?.map((forex) => (
-              <tr key={forex.pair} className="border-t border-secondary">
-                <td className="py-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs font-bold">
-                      {forex.base}
-                    </div>
-                    <div>
-                      <p className="font-medium">{forex.pair}</p>
-                      <p className="text-sm text-muted-foreground">{forex.base}/{forex.quote}</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="py-4">{forex.rate.toFixed(4)}</td>
-                <td className="py-4">
-                  <span
-                    className={`flex items-center gap-1 ${
-                      forex.changePercent >= 0 ? "text-success" : "text-warning"
-                    }`}
-                  >
-                    {forex.changePercent >= 0 ? (
-                      <ArrowUpIcon className="w-3 h-3" />
-                    ) : (
-                      <ArrowDownIcon className="w-3 h-3" />
-                    )}
-                    {Math.abs(forex.changePercent * 100).toFixed(2)}%
-                  </span>
-                </td>
-                <td className="py-4">{forex.volume.toFixed(1)}B</td>
+    <>
+      <div className="glass-card rounded-lg p-6 animate-fade-in">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold">Major Forex Pairs</h2>
+          <div className="text-sm text-blue-400">
+            📺 Click pairs for educational videos
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="text-left text-sm text-muted-foreground">
+                <th className="pb-4">Pair</th>
+                <th className="pb-4">Rate</th>
+                <th className="pb-4">Change</th>
+                <th className="pb-4">Volume</th>
+                <th className="pb-4">Learn</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {forexPairs?.map((forex) => (
+                <tr key={forex.pair} className="border-t border-secondary hover:bg-gray-800/50 transition-colors">
+                  <td className="py-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs font-bold">
+                        {forex.base}
+                      </div>
+                      <div>
+                        <p className="font-medium">{forex.pair}</p>
+                        <p className="text-sm text-muted-foreground">{forex.base}/{forex.quote}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4">{forex.rate.toFixed(4)}</td>
+                  <td className="py-4">
+                    <span
+                      className={`flex items-center gap-1 ${
+                        forex.changePercent >= 0 ? "text-success" : "text-warning"
+                      }`}
+                    >
+                      {forex.changePercent >= 0 ? (
+                        <ArrowUpIcon className="w-3 h-3" />
+                      ) : (
+                        <ArrowDownIcon className="w-3 h-3" />
+                      )}
+                      {Math.abs(forex.changePercent * 100).toFixed(2)}%
+                    </span>
+                  </td>
+                  <td className="py-4">{forex.volume.toFixed(1)}B</td>
+                  <td className="py-4">
+                    <button
+                      onClick={() => handleVideoClick(forex.pair)}
+                      className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors text-sm"
+                      title={`Watch educational video for ${forex.pair}`}
+                    >
+                      <Play className="w-3 h-3" />
+                      Video
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+
+      <VideoModal 
+        isOpen={videoModalOpen}
+        onClose={() => setVideoModalOpen(false)}
+        currencyPair={selectedPair}
+      />
+    </>
   );
 };
 

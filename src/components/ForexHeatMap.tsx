@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import CorrelationAnalysis from "./CorrelationAnalysis";
 import MarketClock from "./MarketClock";
+import VideoModal from "./VideoModal";
 
 interface HeatMapData {
   pair: string;
@@ -293,6 +294,8 @@ const ForexHeatMap = () => {
   const [signal, setSignal] = useState<SignalData | null>(null);
   const [lotSize, setLotSize] = useState<number>(0.1);
   const [accountCurrency, setAccountCurrency] = useState<string>('USD');
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [selectedVideoSpair, setSelectedVideoPair] = useState<string>('');
 
   // COT Data currency pairs - same as in COTData component
   const cotCurrencyPairs = [
@@ -360,6 +363,12 @@ const ForexHeatMap = () => {
     const interval = setInterval(fetchSignal, 30 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const handlePairClick = (pair: string) => {
+    setSelectedPair(pair);
+    setSelectedVideoPair(pair);
+    setVideoModalOpen(true);
+  };
 
   const formatTime = (date: Date) => date.toLocaleTimeString();
   
@@ -472,10 +481,10 @@ const ForexHeatMap = () => {
           heatMapData?.map(data => (
             <div
               key={data.pair}
-              onClick={() => setSelectedPair(data.pair)}
-              className={`aspect-square rounded p-2 border border-gray-600 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 hover:scale-105 ${getTextColor(data.changePercent)}`}
+              onClick={() => handlePairClick(data.pair)}
+              className={`aspect-square rounded p-2 border border-gray-600 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 hover:scale-105 hover:border-blue-400 ${getTextColor(data.changePercent)}`}
               style={{ backgroundColor: getHeatColor(data.changePercent) }}
-              title={`${data.pair}: ${(data.changePercent || 0).toFixed(2)}% | Current: ${formatPrice(data.pair, data.currentPrice)} | Closest Pivot: ${data.closestPivot.type} at ${formatPrice(data.pair, data.closestPivot.level)}`}
+              title={`${data.pair}: ${(data.changePercent || 0).toFixed(2)}% | Current: ${formatPrice(data.pair, data.currentPrice)} | Closest Pivot: ${data.closestPivot.type} at ${formatPrice(data.pair, data.closestPivot.level)} | Click to watch educational video`}
             >
               <div className="text-xs font-bold mb-1">{formatPairDisplay(data.pair)}</div>
               <div className="text-xs">
@@ -486,9 +495,19 @@ const ForexHeatMap = () => {
               }}>
                 {data.signal}
               </div>
+              <div className="text-xs text-blue-400 mt-1">📺 Video</div>
             </div>
           ))
         )}
+      </div>
+
+      {/* Add educational note */}
+      <div className="mb-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+        <h3 className="text-lg font-bold text-blue-400 mb-2">📚 Educational Content Available</h3>
+        <p className="text-gray-300 text-sm">
+          Click on any currency pair above to watch educational videos from the Daily Forex YouTube channel. 
+          Learn trading strategies, market analysis, and key concepts for each pair.
+        </p>
       </div>
 
       {/* Detailed Analysis for Selected Pair */}
@@ -665,6 +684,12 @@ const ForexHeatMap = () => {
           Buy the Book: Technical Analysis Journal Forex Manual
         </a>
       </div>
+
+      <VideoModal 
+        isOpen={videoModalOpen}
+        onClose={() => setVideoModalOpen(false)}
+        currencyPair={selectedVideoSpair}
+      />
     </div>
   );
 };
