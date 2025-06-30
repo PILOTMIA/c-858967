@@ -1,27 +1,9 @@
-import { useState } from "react";
+
 import MarketStats from "@/components/MarketStats";
-import ForexChart from "@/components/ForexChart";
-import ForexPerformance from "@/components/ForexPerformance";
-import ForexList from "@/components/ForexList";
-import ForexHeatMap from "@/components/ForexHeatMap";
-import FedWatchTool from "@/components/FedWatchTool";
-import COTData from "@/components/COTData";
 import ClientSignup from "@/components/ClientSignup";
-import TradingBot from "@/components/TradingBot";
-import KnowledgeBase from "@/components/KnowledgeBase";
-import RealTimeData from "@/components/RealTimeData";
 import BrandingSection from "@/components/BrandingSection";
-import SentimentWidget from "@/components/SentimentWidget";
-import TestimonialsCarousel from "@/components/TestimonialsCarousel";
-import ClientLearningPath from "@/components/ClientLearningPath";
 
 const Index = () => {
-  const [selectedCurrencyPair, setSelectedCurrencyPair] = useState('EURUSD');
-
-  const handlePairChange = (pair: string) => {
-    setSelectedCurrencyPair(pair);
-  };
-
   return (
     <div className="min-h-screen bg-background">
       {/* Command Center Header */}
@@ -43,78 +25,51 @@ const Index = () => {
       </div>
 
       <div className="max-w-7xl mx-auto p-4 space-y-6">
-        {/* Top Priority Section - Market Stats & Signal */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <MarketStats />
-          </div>
-          <div className="bg-gray-900 p-4 rounded-lg">
-            <h2 className="text-lg font-bold text-white mb-2">🎯 VIP Signal Access</h2>
-            <p className="text-gray-300 text-sm mb-3">Get premium signals & analysis</p>
-            <ClientSignup />
+        {/* Welcome Section */}
+        <div className="text-center py-8">
+          <h2 className="text-4xl font-bold text-white mb-4">Welcome to Your Trading Hub</h2>
+          <p className="text-gray-300 text-lg mb-6">Professional forex analysis, education, and community all in one place</p>
+          <div className="flex justify-center gap-4">
+            <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+              Start Learning
+            </button>
+            <button className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+              View Analysis
+            </button>
           </div>
         </div>
+
+        {/* Market Stats */}
+        <MarketStats />
 
         {/* Branding Section */}
         <BrandingSection />
 
-        {/* Heat Map & Fed Watch - Core Analysis */}
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-          <div className="xl:col-span-3">
-            <ForexHeatMap />
+        {/* Quick Access Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-gray-900 p-6 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer">
+            <h3 className="text-xl font-bold text-white mb-2">📊 Market Analysis</h3>
+            <p className="text-gray-300 text-sm">Real-time charts, heat maps, and professional analysis</p>
           </div>
-          <div className="space-y-6">
-            <FedWatchTool />
-            <RealTimeData />
-            <SentimentWidget />
-            <div className="bg-gray-900 p-4 rounded-lg">
-              <h3 className="text-lg font-bold text-white mb-2">Market Sessions</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-300">London</span>
-                  <span className="text-green-400">OPEN</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-300">New York</span>
-                  <span className="text-green-400">OPEN</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-300">Tokyo</span>
-                  <span className="text-gray-500">CLOSED</span>
-                </div>
-              </div>
-            </div>
+          
+          <div className="bg-gray-900 p-6 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer">
+            <h3 className="text-xl font-bold text-white mb-2">📚 Education Center</h3>
+            <p className="text-gray-300 text-sm">Learn forex trading with videos and comprehensive guides</p>
+          </div>
+          
+          <div className="bg-gray-900 p-6 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer">
+            <h3 className="text-xl font-bold text-white mb-2">👥 Community</h3>
+            <p className="text-gray-300 text-sm">Join our trading community and get premium signals</p>
           </div>
         </div>
 
-        {/* Knowledge Base Section */}
-        <KnowledgeBase />
-
-        {/* Chart & Performance Analysis */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <ForexChart onPairChange={handlePairChange} />
-          </div>
-          <div>
-            <ForexPerformance selectedPair={selectedCurrencyPair} />
-          </div>
-        </div>
-
-        {/* Testimonials and Learning Path */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <TestimonialsCarousel />
-          <ClientLearningPath />
-        </div>
-
-        {/* COT Data & Market List */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <COTData />
-          <ForexList />
+        {/* VIP Signal Access */}
+        <div className="bg-gradient-to-r from-blue-900 to-purple-900 p-6 rounded-lg text-center">
+          <h2 className="text-2xl font-bold text-white mb-2">🎯 VIP Signal Access</h2>
+          <p className="text-gray-200 mb-4">Get premium trading signals and expert analysis</p>
+          <ClientSignup />
         </div>
       </div>
-
-      {/* Trading Bot */}
-      <TradingBot />
     </div>
   );
 };

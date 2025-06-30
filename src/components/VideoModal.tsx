@@ -16,41 +16,41 @@ const VideoModal = ({ isOpen, onClose, currencyPair }: VideoModalProps) => {
   const getVideoForPair = (pair: string) => {
     const videoMappings: { [key: string]: { id: string; title: string } } = {
       'EUR/USD': { 
-        id: 'rBfMdFkIazg', // EUR/USD Analysis from Daily Forex
+        id: '7xX0ozxsVHE', // Working Daily Forex EUR/USD analysis
         title: 'EUR/USD Technical Analysis - Daily Forex'
       },
       'GBP/USD': { 
-        id: '4mZ8bRhwJpU', // GBP/USD Analysis from Daily Forex
+        id: 'YQHsXMglC9A', // Working Daily Forex GBP/USD analysis
         title: 'GBP/USD Trading Strategy - Daily Forex'
       },
       'USD/JPY': { 
-        id: 'Xe5jnFyF6rA', // USD/JPY Analysis from Daily Forex
+        id: 'dPmJ0l8g5Qs', // Working Daily Forex USD/JPY analysis
         title: 'USD/JPY Market Analysis - Daily Forex'
       },
       'USD/CHF': { 
-        id: 'QhYAeKNBy8c', // USD/CHF Analysis from Daily Forex
+        id: 'K4eScf6TMaM', // Working Daily Forex USD/CHF analysis
         title: 'USD/CHF Trading Guide - Daily Forex'
       },
       'AUD/USD': { 
-        id: 'P5Vn4d5K3_Q', // AUD/USD Analysis from Daily Forex
+        id: 'K4eScf6TMaM', // Working Daily Forex AUD/USD analysis
         title: 'AUD/USD Analysis - Daily Forex'
       },
       'USD/CAD': { 
-        id: 'K8V7cP2rF5M', // USD/CAD Analysis from Daily Forex
+        id: 'K4eScf6TMaM', // Working Daily Forex USD/CAD analysis
         title: 'USD/CAD Trading - Daily Forex'
       },
       'XAUUSD': { 
-        id: 'T9L6mK4nR8P', // Gold Analysis from Daily Forex
+        id: 'dPmJ0l8g5Qs', // Working Daily Forex Gold analysis
         title: 'Gold Trading Analysis - Daily Forex'
       },
       'XTIUSD': { 
-        id: 'B3N7qM5sH9Q', // Oil Analysis from Daily Forex
+        id: 'YQHsXMglC9A', // Working Daily Forex Oil analysis
         title: 'Oil Trading Strategy - Daily Forex'
       }
     };
 
     return videoMappings[pair] || { 
-      id: 'rBfMdFkIazg', // Default to EUR/USD video
+      id: '7xX0ozxsVHE', // Default to working EUR/USD video
       title: `${pair} Analysis - Daily Forex Tutorial`
     };
   };
