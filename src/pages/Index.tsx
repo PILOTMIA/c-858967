@@ -1,4 +1,5 @@
 
+
 import MarketStats from "@/components/MarketStats";
 import ClientSignup from "@/components/ClientSignup";
 import BrandingSection from "@/components/BrandingSection";
@@ -38,7 +39,7 @@ const Index = () => {
             <img 
               src="/lovable-uploads/de01d78a-6a09-4e50-9bf9-dca6ec9d1924.png" 
               alt="Men In Action LLC" 
-              className="h-48 w-auto"
+              className="h-80 w-auto max-w-full object-contain"
             />
           </div>
           <h2 className="text-4xl font-bold text-white mb-4">Welcome to Your Trading Hub</h2>
@@ -112,3 +113,4 @@ const Index = () => {
 };
 
 export default Index;
+
