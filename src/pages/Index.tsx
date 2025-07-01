@@ -1,8 +1,7 @@
-
-
 import MarketStats from "@/components/MarketStats";
 import ClientSignup from "@/components/ClientSignup";
 import BrandingSection from "@/components/BrandingSection";
+import ChatBot from "@/components/ChatBot";
 
 const Index = () => {
   return (
@@ -108,9 +107,10 @@ const Index = () => {
           </p>
         </div>
       </div>
+
+      <ChatBot />
     </div>
   );
 };
 
 export default Index;
-
