@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +25,12 @@ const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
   const [showVipPrompt, setShowVipPrompt] = useState(false);
+
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const tradingKnowledge = {
     'forex': `Forex (Foreign Exchange) is the global market for trading currencies. Key points:
@@ -187,17 +192,22 @@ What would you like to know more about?`
         <CardContent>
           <div className="h-64 overflow-y-auto mb-4 space-y-2">
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`p-2 rounded text-sm ${
-                  message.isBot
-                    ? 'bg-blue-900/30 text-blue-100'
-                    : 'bg-gray-700 text-white ml-4'
-                }`}
-              >
-                {message.text}
+              <div key={message.id} className="space-y-1">
+                <div
+                  className={`p-2 rounded text-sm ${
+                    message.isBot
+                      ? 'bg-blue-900/30 text-blue-100'
+                      : 'bg-gray-700 text-white ml-4'
+                  }`}
+                >
+                  {message.text}
+                </div>
+                <div className="text-xs text-right text-gray-400">
+                  {message.timestamp.toLocaleTimeString()}
+                </div>
               </div>
             ))}
+            <div ref={chatEndRef} />
           </div>
           
           {showVipPrompt ? (
@@ -230,7 +240,7 @@ What would you like to know more about?`
                 placeholder="Ask about trading..."
                 className="bg-gray-800 border-gray-600 text-white"
               />
-              <Button onClick={handleSendMessage} size="sm">
+              <Button onClick={handleSendMessage} size="sm" disabled={showVipPrompt || !inputMessage.trim()}>
                 <Send className="w-4 h-4" />
               </Button>
             </div>
