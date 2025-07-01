@@ -1,9 +1,13 @@
+
 import MarketStats from "@/components/MarketStats";
 import ClientSignup from "@/components/ClientSignup";
 import BrandingSection from "@/components/BrandingSection";
 import ChatBot from "@/components/ChatBot";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Command Center Header */}
@@ -47,10 +51,16 @@ const Index = () => {
             Transform your trading journey with expert guidance and real-time market insights.
           </p>
           <div className="flex justify-center gap-4">
-            <button className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold transition-colors shadow-lg">
+            <button 
+              onClick={() => navigate('/education')}
+              className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold transition-colors shadow-lg"
+            >
               Start Learning Today
             </button>
-            <button className="bg-gray-700 hover:bg-gray-600 text-white px-8 py-4 rounded-lg font-semibold transition-colors border border-gray-600">
+            <button 
+              onClick={() => navigate('/market-analysis')}
+              className="bg-gray-700 hover:bg-gray-600 text-white px-8 py-4 rounded-lg font-semibold transition-colors border border-gray-600"
+            >
               View Live Analysis
             </button>
           </div>
@@ -64,19 +74,28 @@ const Index = () => {
 
         {/* Quick Access Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-lg hover:from-gray-800 hover:to-gray-700 transition-all duration-300 cursor-pointer border border-gray-700 shadow-lg">
+          <div 
+            onClick={() => navigate('/market-analysis')}
+            className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-lg hover:from-gray-800 hover:to-gray-700 transition-all duration-300 cursor-pointer border border-gray-700 shadow-lg"
+          >
             <div className="text-3xl mb-3">📊</div>
             <h3 className="text-xl font-bold text-white mb-2">Market Analysis</h3>
             <p className="text-gray-300 text-sm">Real-time charts, heat maps, and professional analysis from our expert team</p>
           </div>
           
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-lg hover:from-gray-800 hover:to-gray-700 transition-all duration-300 cursor-pointer border border-gray-700 shadow-lg">
+          <div 
+            onClick={() => navigate('/education')}
+            className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-lg hover:from-gray-800 hover:to-gray-700 transition-all duration-300 cursor-pointer border border-gray-700 shadow-lg"
+          >
             <div className="text-3xl mb-3">📚</div>
             <h3 className="text-xl font-bold text-white mb-2">Education Center</h3>
             <p className="text-gray-300 text-sm">Learn forex trading with comprehensive guides and video tutorials</p>
           </div>
           
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-lg hover:from-gray-800 hover:to-gray-700 transition-all duration-300 cursor-pointer border border-gray-700 shadow-lg">
+          <div 
+            onClick={() => navigate('/community')}
+            className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-lg hover:from-gray-800 hover:to-gray-700 transition-all duration-300 cursor-pointer border border-gray-700 shadow-lg"
+          >
             <div className="text-3xl mb-3">👥</div>
             <h3 className="text-xl font-bold text-white mb-2">Community</h3>
             <p className="text-gray-300 text-sm">Join our exclusive trading community and get premium signals</p>
