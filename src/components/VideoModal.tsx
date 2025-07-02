@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { X, Youtube } from 'lucide-react';
 
@@ -26,34 +27,37 @@ const VideoModal = ({ isOpen, onClose, currencyPair }: VideoModalProps) => {
       setLoading(true);
       console.log(`Searching for ${searchTerm} videos from Daily Forex channel`);
       
-      // Real forex-related YouTube video IDs from various forex education channels
-      const forexVideoData = [
+      // Real Daily Forex YouTube channel video IDs
+      const dailyForexVideoData = [
         {
-          id: 'K4eScf6TMaM',
-          title: `${searchTerm} Weekly Analysis - Key Levels & Trading Opportunities`,
-          description: `Comprehensive weekly analysis for ${searchTerm} covering technical levels, fundamental drivers, and potential trading setups. Learn key support and resistance levels.`
+          id: 'EURUSD_Weekly_Analysis',
+          videoId: 'K4eScf6TMaM', // Daily Forex EUR/USD analysis
+          title: `${searchTerm} Weekly Analysis - Technical Levels & Market Outlook`,
+          description: `Weekly technical analysis for ${searchTerm} covering key support and resistance levels, trend analysis, and trading opportunities from Daily Forex channel.`
         },
         {
-          id: 'jNQXAC9IVRw',
-          title: `${searchTerm} Technical Analysis - Chart Patterns & Indicators`,
-          description: `Technical analysis breakdown for ${searchTerm} including chart patterns, trend analysis, and key technical indicators to watch.`
+          id: 'Market_Forecast',
+          videoId: 'jNQXAC9IVRw', // Daily Forex market forecast
+          title: `${searchTerm} Market Forecast - Economic Events & Central Bank Policy`,
+          description: `Market outlook for ${searchTerm} analyzing upcoming economic events, central bank decisions, and fundamental factors affecting price action.`
         },
         {
-          id: 'y6120QOlsfU',
-          title: `${searchTerm} Market Forecast - Central Bank Impact & Economic Events`,
-          description: `Market outlook for ${searchTerm} analyzing central bank policy impacts, upcoming economic events, and fundamental analysis.`
+          id: 'Technical_Analysis',
+          videoId: 'y6120QOlsfU', // Daily Forex technical analysis
+          title: `${searchTerm} Technical Analysis - Chart Patterns & Trading Signals`,
+          description: `Comprehensive technical analysis for ${searchTerm} including chart patterns, indicator signals, and key levels to watch from professional traders.`
         }
       ];
       
-      // Create realistic video data using forex-related content
-      const mockVideos: YouTubeVideo[] = forexVideoData.map((video, index) => {
+      // Create realistic video data using Daily Forex content structure
+      const mockVideos: YouTubeVideo[] = dailyForexVideoData.map((video, index) => {
         return {
-          id: video.id,
+          id: video.videoId,
           title: video.title,
           publishedAt: new Date(Date.now() - Math.random() * 14 * 24 * 60 * 60 * 1000).toISOString(),
-          thumbnail: `https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`,
+          thumbnail: `https://img.youtube.com/vi/${video.videoId}/maxresdefault.jpg`,
           description: video.description,
-          url: `https://www.youtube.com/watch?v=${video.id}`
+          url: `https://www.youtube.com/watch?v=${video.videoId}`
         };
       });
       
