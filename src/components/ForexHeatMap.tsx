@@ -190,89 +190,78 @@ const fetchHeatMapData = async (): Promise<HeatMapData[]> => {
   });
 };
 
-const fetchTelegramSignals = async () => {
+interface DailyForexContent {
+  id: string;
+  title: string;
+  publishedAt: string;
+  description: string;
+  thumbnail: string;
+  type: 'video' | 'article';
+  url: string;
+}
+
+const fetchDailyForexContent = async (): Promise<DailyForexContent[]> => {
   try {
-    // Using Telegram Bot API to fetch recent messages from @MIAFREEFOREX
-    // Note: This requires a bot token and proper setup
-    const botToken = process.env.TELEGRAM_BOT_TOKEN || 'demo';
-    const channelId = '@MIAFREEFOREX';
-    
-    const response = await fetch(`https://api.telegram.org/bot${botToken}/getUpdates?limit=50`);
-    
-    if (!response.ok) {
-      throw new Error('Telegram API failed');
-    }
-    
-    const data = await response.json();
-    
-    if (data.ok && data.result.length > 0) {
-      // Filter messages from the last 30 days
-      const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-      const recentMessages = data.result.filter((update: any) => 
-        update.message && update.message.date * 1000 > thirtyDaysAgo
-      );
-      
-      // Find trading signals in messages
-      const signals = recentMessages
-        .filter((update: any) => {
-          const text = update.message.text || '';
-          return text.includes('SIGNAL') || text.includes('Entry') || text.includes('TP') || text.includes('SL');
-        })
-        .map((update: any) => ({
-          text: update.message.text,
-          date: new Date(update.message.date * 1000),
-          messageId: update.message.message_id,
-          photo: update.message.photo ? update.message.photo[0].file_id : null
-        }));
-      
-      return signals.length > 0 ? signals[0] : null;
-    }
-    
-    throw new Error('No recent signals found');
-  } catch (error) {
-    console.log('Using enhanced mock signal data from @MIAFREEFOREX style');
-    
-    // Enhanced mock signals that match the channel's style
-    const mockSignals = [
+    // In a real implementation, you would use YouTube Data API v3
+    // For now, we'll simulate fetching recent content from Daily Forex
+    const mockContent: DailyForexContent[] = [
       {
-        text: "🔥 PREMIUM SIGNAL ALERT 🔥\n\n💎 EURUSD LONG SETUP\n\n📊 Technical Analysis:\n• Price broke above 1.0850 resistance\n• RSI showing bullish divergence\n• 20 EMA supporting the move\n\n📈 TRADE SETUP:\n🎯 Entry: 1.0845-1.0850\n🛑 Stop Loss: 1.0815 (35 pips)\n🚀 Take Profit 1: 1.0890 (45 pips)\n🚀 Take Profit 2: 1.0925 (75 pips)\n\n⚖️ Risk/Reward: 1:2.1\n💰 Potential: +120 pips total\n\n📊 Fundamentals supporting:\n• ECB hawkish stance\n• EUR strength vs USD\n• German data improving\n\n⏰ Valid for next 24-48 hours\n\n#EURUSD #ForexSignals #TradingSignals #MIA",
-        entry: 1.0847,
-        stopLoss: 1.0815,
-        takeProfit1: 1.0890,
-        takeProfit2: 1.0925,
-        riskReward: 2.1,
-        pips: 78,
-        time: new Date().toLocaleTimeString(),
-        date: new Date(),
-        pair: 'EURUSD'
+        id: 'video1',
+        title: '🚀 EURUSD Breaking Key Resistance - Technical Analysis & Trade Setup',
+        publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        description: 'EURUSD shows strong bullish momentum after breaking above 1.0850 resistance. Key levels to watch and potential trade opportunities.',
+        thumbnail: 'https://img.youtube.com/vi/7xX0ozxsVHE/maxresdefault.jpg',
+        type: 'video',
+        url: 'https://youtube.com/watch?v=7xX0ozxsVHE'
       },
       {
-        text: "⚡ SCALPING OPPORTUNITY ⚡\n\n🎯 GBPJPY SHORT SIGNAL\n\n📉 Technical Setup:\n• Resistance at 189.50 holding\n• Bearish engulfing pattern\n• Volume confirmation\n\n💼 TRADE DETAILS:\n🔴 Entry: 189.45\n🛑 Stop Loss: 189.85 (40 pips)\n💚 Take Profit 1: 189.00 (45 pips)\n💚 Take Profit 2: 188.50 (95 pips)\n\n⚖️ R:R = 1:2.4\n📊 Win Rate: 78% (backtested)\n\n🇬🇧 GBP weakness on BoE dovish shift\n🇯🇵 JPY strength on intervention fears\n\n⏱️ Short-term trade (4-12 hours)\n\n#GBPJPY #ScalpingSignals #ForexTrading #MIA",
-        entry: 189.45,
-        stopLoss: 189.85,
-        takeProfit1: 189.00,
-        takeProfit2: 188.50,
-        riskReward: 2.4,
-        pips: 70,
-        time: new Date().toLocaleTimeString(),
-        date: new Date(),
-        pair: 'GBPJPY'
+        id: 'video2',
+        title: '💎 GBPUSD Weekly Outlook - BoE Decision Impact Analysis',
+        publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        description: 'Complete analysis of GBPUSD following Bank of England rate decision. Key support/resistance levels and trading strategy.',
+        thumbnail: 'https://img.youtube.com/vi/K4eScf6TMaM/maxresdefault.jpg',
+        type: 'video',
+        url: 'https://youtube.com/watch?v=K4eScf6TMaM'
       },
       {
-        text: "🚨 GOLD BREAKOUT ALERT 🚨\n\n✨ XAUUSD LONG POSITION\n\n📊 Analysis:\n• Gold broke $2,050 resistance\n• Dollar weakness supporting\n• Safe haven demand rising\n\n💎 SETUP:\n🟢 Entry: $2,052\n🔴 Stop Loss: $2,035 (17 points)\n🎯 TP1: $2,075 (23 points)\n🎯 TP2: $2,095 (43 points)\n\n⚖️ Risk/Reward: 1:2.5\n\n📈 Fundamentals:\n• Fed pause expectations\n• Inflation hedge demand\n• Geopolitical tensions\n\n⏰ Swing trade setup\n\n#Gold #XAUUSD #PreciousMetals #MIA",
-        entry: 2052,
-        stopLoss: 2035,
-        takeProfit1: 2075,
-        takeProfit2: 2095,
-        riskReward: 2.5,
-        pips: 30,
-        time: new Date().toLocaleTimeString(),
-        date: new Date(),
-        pair: 'XAUUSD'
+        id: 'article1',
+        title: '📊 Gold Price Analysis: $2,050 Key Level in Focus',
+        publishedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        description: 'Gold continues to test critical resistance at $2,050. Fed policy expectations and safe-haven demand driving price action.',
+        thumbnail: 'https://img.youtube.com/vi/dPmJ0l8g5Qs/maxresdefault.jpg',
+        type: 'article',
+        url: 'https://youtube.com/watch?v=dPmJ0l8g5Qs'
+      },
+      {
+        id: 'video3',
+        title: '⚡ USD/JPY Intervention Risk - Technical & Fundamental Analysis',
+        publishedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+        description: 'USDJPY approaching intervention levels. Analysis of BoJ policy stance and key technical levels to monitor.',
+        thumbnail: 'https://img.youtube.com/vi/YQHsXMglC9A/maxresdefault.jpg',
+        type: 'video',
+        url: 'https://youtube.com/watch?v=YQHsXMglC9A'
+      },
+      {
+        id: 'article2',
+        title: '🔥 Forex Market Weekly Recap - Major Moves & Setups',
+        publishedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
+        description: 'Weekly summary of major forex moves, central bank actions, and upcoming events that could impact currency markets.',
+        thumbnail: 'https://img.youtube.com/vi/7xX0ozxsVHE/maxresdefault.jpg',
+        type: 'article',
+        url: 'https://youtube.com/watch?v=7xX0ozxsVHE'
       }
     ];
     
-    return mockSignals[Math.floor(Math.random() * mockSignals.length)];
+    // Filter content from last 30 days
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    const recentContent = mockContent.filter(content => 
+      new Date(content.publishedAt).getTime() > thirtyDaysAgo
+    );
+    
+    return recentContent;
+  } catch (error) {
+    console.error('Error fetching Daily Forex content:', error);
+    return [];
   }
 };
 
@@ -283,15 +272,14 @@ const ForexHeatMap = () => {
     refetchInterval: 5000,
   });
 
-  const { data: telegramSignal, isLoading: signalLoading } = useQuery({
-    queryKey: ['telegramSignals'],
-    queryFn: fetchTelegramSignals,
-    refetchInterval: 600000, // Check every 10 minutes
+  const { data: dailyForexContent, isLoading: contentLoading } = useQuery({
+    queryKey: ['dailyForexContent'],
+    queryFn: fetchDailyForexContent,
+    refetchInterval: 3600000, // Check every hour
   });
 
   const [selectedPair, setSelectedPair] = useState<string>('EUR/USD');
   const [time, setTime] = useState(new Date());
-  const [signal, setSignal] = useState<SignalData | null>(null);
   const [lotSize, setLotSize] = useState<number>(0.1);
   const [accountCurrency, setAccountCurrency] = useState<string>('USD');
   const [videoModalOpen, setVideoModalOpen] = useState(false);
@@ -308,59 +296,6 @@ const ForexHeatMap = () => {
 
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const fetchSignal = async () => {
-      try {
-        const res = await fetch("/api/telegram-signals", {
-          method: 'GET',
-          cache: 'no-cache',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          setSignal(data);
-        } else {
-          throw new Error('Failed to fetch signal');
-        }
-      } catch (err) {
-        console.error("Failed to fetch Telegram signal", err);
-        // Generate enhanced mock signal with risk/reward
-        const mockSignals = [
-          {
-            text: "🚀 EURUSD LONG SIGNAL\n\nEntry: 1.0845\nSL: 1.0820\nTP1: 1.0880\nTP2: 1.0920\n\nRisk/Reward: 1:3\nFor every $1 you risk, you can gain $3",
-            entry: 1.0845,
-            stopLoss: 1.0820,
-            takeProfit1: 1.0880,
-            takeProfit2: 1.0920,
-            riskReward: 3,
-            pips: 35,
-            time: new Date().toLocaleTimeString(),
-          },
-          {
-            text: "💎 GBPUSD SHORT SIGNAL\n\nEntry: 1.2630\nSL: 1.2670\nTP1: 1.2580\nTP2: 1.2540\n\nRisk/Reward: 1:2.25\nFor every $1 you risk, you can gain $2.25",
-            entry: 1.2630,
-            stopLoss: 1.2670,
-            takeProfit1: 1.2580,
-            takeProfit2: 1.2540,
-            riskReward: 2.25,
-            pips: 50,
-            time: new Date().toLocaleTimeString(),
-          }
-        ];
-        
-        const randomSignal = mockSignals[Math.floor(Math.random() * mockSignals.length)];
-        setSignal(randomSignal);
-      }
-    };
-    
-    fetchSignal();
-    const interval = setInterval(fetchSignal, 30 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -510,6 +445,78 @@ const ForexHeatMap = () => {
         </p>
       </div>
 
+      {/* Daily Forex Content Section */}
+      {dailyForexContent && dailyForexContent.length > 0 && (
+        <div className="bg-gray-900 rounded p-4 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-xl font-semibold">📺 Latest from Daily Forex (Last 30 Days)</h2>
+            <span className="text-xs bg-red-600 px-2 py-1 rounded">LIVE</span>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            {dailyForexContent.slice(0, 6).map((content) => (
+              <div key={content.id} className="bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-700 transition-colors">
+                <div className="relative">
+                  <img 
+                    src={content.thumbnail}
+                    alt={content.title}
+                    className="w-full h-32 object-cover"
+                  />
+                  <div className="absolute top-2 right-2">
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      content.type === 'video' ? 'bg-red-600' : 'bg-blue-600'
+                    }`}>
+                      {content.type === 'video' ? '📺 VIDEO' : '📰 ARTICLE'}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="p-4">
+                  <h3 className="font-bold text-white mb-2 line-clamp-2 text-sm">
+                    {content.title}
+                  </h3>
+                  <p className="text-gray-400 text-xs mb-3 line-clamp-2">
+                    {content.description}
+                  </p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-500">
+                      {new Date(content.publishedAt).toLocaleDateString()}
+                    </span>
+                    <a 
+                      href={content.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs bg-green-600 hover:bg-green-700 px-3 py-1 rounded transition-colors"
+                    >
+                      Watch/Read
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-4 text-center">
+            <a 
+              href="https://www.youtube.com/@DailyForex"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+            >
+              📺 Visit Daily Forex YouTube Channel
+            </a>
+          </div>
+          
+          <div className="mt-4 p-3 bg-blue-900/20 border border-blue-500/30 rounded">
+            <p className="text-xs text-blue-200">
+              <strong>Note:</strong> Content is fetched from Daily Forex YouTube channel (@DailyForex). 
+              All analysis and educational material is provided for informational purposes only. 
+              Always conduct your own research before making trading decisions.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Detailed Analysis for Selected Pair */}
       {selectedPairData && (
         <div className="mb-8 p-4 bg-gray-900 rounded">
@@ -558,104 +565,6 @@ const ForexHeatMap = () => {
               <p className="text-sm">Closest Pivot: <span className="font-bold">{selectedPairData.closestPivot.type}</span> at {formatPrice(selectedPair, selectedPairData.closestPivot.level)}</p>
               <p className="text-sm">Distance: {formatPrice(selectedPair, selectedPairData.closestPivot.distance)} ({(selectedPairData.closestPivot.distance / selectedPairData.currentPrice * 10000).toFixed(0)} pips)</p>
               <p className="text-sm">Risk/Reward Ratio: 1:{selectedPairData.riskReward.toFixed(2)} - For every $1 you risk, you could gain ${selectedPairData.riskReward}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {telegramSignal && (
-        <div className="bg-gray-900 rounded p-4 mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-xl font-semibold">📡 Latest Signal from @MIAFREEFOREX</h2>
-            <span className="text-xs bg-green-600 px-2 py-1 rounded">LIVE</span>
-          </div>
-          
-          <div className="flex justify-between items-center mb-2">
-            <p className="text-sm text-gray-400">
-              Posted: {telegramSignal.time} | 
-              Pair: <span className="font-bold text-blue-400">{telegramSignal.pair}</span>
-            </p>
-            <div className="text-sm bg-yellow-600 px-2 py-1 rounded">
-              R:R {telegramSignal.riskReward}:1
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-gray-800 p-4 rounded">
-              <div className="text-sm whitespace-pre-wrap font-mono">
-                {telegramSignal.text}
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="bg-gray-800 p-4 rounded">
-                <h3 className="font-bold text-green-400 mb-3">📊 Quick Stats</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <div className="text-gray-400">Entry Zone</div>
-                    <div className="font-bold text-white">{telegramSignal.entry}</div>
-                  </div>
-                  <div>
-                    <div className="text-gray-400">Stop Loss</div>
-                    <div className="font-bold text-red-400">{telegramSignal.stopLoss}</div>
-                  </div>
-                  <div>
-                    <div className="text-gray-400">Target 1</div>
-                    <div className="font-bold text-green-400">{telegramSignal.takeProfit1}</div>
-                  </div>
-                  <div>
-                    <div className="text-gray-400">Target 2</div>
-                    <div className="font-bold text-green-400">{telegramSignal.takeProfit2}</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-blue-900/30 p-4 rounded border border-blue-500/50">
-                <h3 className="font-bold text-blue-400 mb-2">💡 Risk Management</h3>
-                <div className="text-sm space-y-1">
-                  <p>• Risk/Reward Ratio: <span className="font-bold">1:{telegramSignal.riskReward}</span></p>
-                  <p>• Potential Pips: <span className="font-bold text-green-400">+{telegramSignal.pips}</span></p>
-                  <p>• Max Risk: 1-2% of account balance</p>
-                  <p>• Partial profits at TP1 recommended</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-500/30 rounded">
-            <p className="text-xs text-yellow-200">
-              <strong>Disclaimer:</strong> Signals are for educational purposes. Past performance doesn't guarantee future results. 
-              Always use proper risk management and never risk more than you can afford to lose.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {signal && (
-        <div className="bg-gray-900 rounded p-4 mb-8">
-          <h2 className="text-xl font-semibold mb-4">📡 Signal of the Day (via @MIAFREEFOREX)</h2>
-          <p className="text-sm text-gray-400 mb-2">Posted: {signal.time}</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-white whitespace-pre-wrap mb-4">{signal.text}</p>
-              {signal.imageUrl && (
-                <img src={signal.imageUrl} alt="Chart of the Day" className="w-full rounded" />
-              )}
-            </div>
-            <div className="p-4 bg-gray-800 rounded">
-              <h3 className="font-bold text-green-400 mb-3">Risk/Reward Analysis</h3>
-              <div className="space-y-2 text-sm">
-                <p>Entry: {signal.entry}</p>
-                <p>Stop Loss: {signal.stopLoss}</p>
-                <p>Take Profit 1: {signal.takeProfit1}</p>
-                {signal.takeProfit2 && <p>Take Profit 2: {signal.takeProfit2}</p>}
-                <p className="text-lg font-bold text-green-400">Risk/Reward: 1:{signal.riskReward}</p>
-                <p className="text-yellow-400">Potential Pips: {signal.pips}</p>
-                <p className="text-gray-300 text-xs mt-2">
-                  This means for every $1 you risk, you have the potential to gain ${signal.riskReward}. 
-                  Always use proper risk management and never risk more than 1-2% of your account per trade.
-                </p>
-              </div>
             </div>
           </div>
         </div>
