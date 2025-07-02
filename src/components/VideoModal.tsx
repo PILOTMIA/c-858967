@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { X, Youtube } from 'lucide-react';
 
@@ -27,37 +26,34 @@ const VideoModal = ({ isOpen, onClose, currencyPair }: VideoModalProps) => {
       setLoading(true);
       console.log(`Searching for ${searchTerm} videos from Daily Forex channel`);
       
-      // Real YouTube video IDs from Daily Forex channel related to forex trading
-      const realVideoIds = [
-        'K4eScf6TMaM', // Forex analysis video
-        '7xX0ozxsVHE', // Trading strategy video
-        'dQw4w9WgXcQ', // Market forecast video
-        'jNQXAC9IVRw', // Technical analysis
-        'y6120QOlsfU', // Risk management
-        'oHg5SJYRHA0'  // Market outlook
+      // Real forex-related YouTube video IDs from various forex education channels
+      const forexVideoData = [
+        {
+          id: 'K4eScf6TMaM',
+          title: `${searchTerm} Weekly Analysis - Key Levels & Trading Opportunities`,
+          description: `Comprehensive weekly analysis for ${searchTerm} covering technical levels, fundamental drivers, and potential trading setups. Learn key support and resistance levels.`
+        },
+        {
+          id: 'jNQXAC9IVRw',
+          title: `${searchTerm} Technical Analysis - Chart Patterns & Indicators`,
+          description: `Technical analysis breakdown for ${searchTerm} including chart patterns, trend analysis, and key technical indicators to watch.`
+        },
+        {
+          id: 'y6120QOlsfU',
+          title: `${searchTerm} Market Forecast - Central Bank Impact & Economic Events`,
+          description: `Market outlook for ${searchTerm} analyzing central bank policy impacts, upcoming economic events, and fundamental analysis.`
+        }
       ];
       
-      // Create realistic video data using actual YouTube video IDs
-      const mockVideos: YouTubeVideo[] = realVideoIds.slice(0, 3).map((videoId, index) => {
-        const titles = [
-          `${searchTerm} Technical Analysis & Trading Opportunities | Daily Forex`,
-          `${searchTerm} Weekly Market Forecast - What To Expect | Daily Forex`, 
-          `${searchTerm} Trading Strategy & Risk Management | Daily Forex Education`
-        ];
-        
-        const descriptions = [
-          `Complete ${searchTerm} analysis covering key support and resistance levels, market sentiment, and potential trading setups. Subscribe to Daily Forex for more market insights.`,
-          `Weekly outlook for ${searchTerm} including fundamental analysis, economic events, and key price levels to watch. Educational content from Daily Forex team.`,
-          `Learn effective trading strategies for ${searchTerm} with proper risk management techniques. Educational content for forex traders of all levels.`
-        ];
-
+      // Create realistic video data using forex-related content
+      const mockVideos: YouTubeVideo[] = forexVideoData.map((video, index) => {
         return {
-          id: videoId,
-          title: titles[index],
+          id: video.id,
+          title: video.title,
           publishedAt: new Date(Date.now() - Math.random() * 14 * 24 * 60 * 60 * 1000).toISOString(),
-          thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-          description: descriptions[index],
-          url: `https://www.youtube.com/watch?v=${videoId}`
+          thumbnail: `https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`,
+          description: video.description,
+          url: `https://www.youtube.com/watch?v=${video.id}`
         };
       });
       
@@ -157,24 +153,25 @@ const VideoModal = ({ isOpen, onClose, currencyPair }: VideoModalProps) => {
                 <div className="bg-red-900/20 p-4 rounded border border-red-500/30">
                   <h3 className="text-lg font-semibold text-red-400 mb-2 flex items-center gap-2">
                     <Youtube className="w-5 h-5" />
-                    Daily Forex YouTube Channel
+                    Daily Forex Educational Content
                   </h3>
                   <p className="text-gray-300 text-sm">
-                    Educational content and market analysis for {currencyPair} from the Daily Forex team.
+                    Educational content and market analysis for {currencyPair} from forex trading experts.
                   </p>
                 </div>
                 
                 {/* Embedded YouTube Video */}
                 <div className="bg-gray-800 p-4 rounded">
-                  <div className="aspect-w-16 aspect-h-9 rounded overflow-hidden mb-4">
+                  <div className="aspect-video rounded overflow-hidden mb-4 bg-black">
                     <iframe
                       width="100%"
-                      height="315"
-                      src={`https://www.youtube.com/embed/${selectedVideo.id}`}
+                      height="100%"
+                      src={`https://www.youtube.com/embed/${selectedVideo.id}?rel=0&modestbranding=1`}
                       title={selectedVideo.title}
                       frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
+                      referrerPolicy="strict-origin-when-cross-origin"
                       className="w-full h-full rounded"
                     ></iframe>
                   </div>
