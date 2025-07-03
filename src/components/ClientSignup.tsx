@@ -67,41 +67,41 @@ We will contact you with access details for the VIP Telegram group.`);
   };
 
   const TermsAndConditions = () => (
-    <ScrollArea className="h-96 w-full rounded-md border p-4">
-      <div className="space-y-4 text-sm">
+    <ScrollArea className="h-96 w-full rounded-md border border-gray-600 bg-black p-4">
+      <div className="space-y-4 text-sm text-white">
         <div>
-          <h3 className="font-bold text-lg mb-2">Disclaimer:</h3>
-          <p className="mb-4">
+          <h3 className="font-bold text-lg mb-2 text-white">Disclaimer:</h3>
+          <p className="mb-4 text-gray-300">
             Forex comes with risk and inevitably there are losses. No trading method or system is guaranteed to make profits, therefore always remember that trading can result in a loss. MEN IN ACTION LLC does not provide financial, investment or legal advice. Trading setups/analysis provided to you within this group are not solicited to enter into any trade, transaction or recommendation. You acknowledge that it is solely your decision as to which, if any, MEN IN ACTION LLC setups to use for trading.
           </p>
-          <p className="mb-4">
+          <p className="mb-4 text-gray-300">
             Past performance is not indicative of future results. MEN IN ACTION LLC will not provide advice as to the appropriateness of Forex Trading for you. If you choose to place any of the trades within this group, these are at your own risk and MEN IN ACTION LLC are not responsible for any profits or losses associated with any of the trading chart setups/analysis posted within this group. MEN IN ACTION LLC are not accountable for your trading in any way.
           </p>
-          <p className="mb-4 font-semibold">
+          <p className="mb-4 font-semibold text-yellow-400">
             By entering this group, you agree to the above disclaimer.
           </p>
         </div>
 
         <div>
-          <h3 className="font-bold text-base mb-2">Chart Analysis:</h3>
-          <p className="mb-4">
+          <h3 className="font-bold text-base mb-2 text-white">Chart Analysis:</h3>
+          <p className="mb-4 text-gray-300">
             It is entirely your choice whether you choose to trade using the chart set up sent, or whether you pick and choose a selection of them. Some people will place all of them, some people don't and this is personal preference. It all comes down to appropriate risk management as everybody is different, and everyone's account sizes are too. Chart analysis may give an indications of a direction. You can choose when you wish to enter, and when to exit. You don't have to enter the trade when we send it.
           </p>
         </div>
 
         <div>
-          <h3 className="font-bold text-base mb-2">When to close trades:</h3>
-          <p className="mb-4">
+          <h3 className="font-bold text-base mb-2 text-white">When to close trades:</h3>
+          <p className="mb-4 text-gray-300">
             Our chart analysis is an indication of direction in which a pair may go, but markets change second by second, and there are going to be times where the price reaches close to the Targets but doesn't quite. This is why we say, 'keep an eye on your trades and close when you're happy with the profit you've made'. A target is never a guarantee that the price will hit this figure, but is an informed indication of where we think it may reach.
           </p>
-          <p className="mb-4">
+          <p className="mb-4 text-gray-300">
             There are also going to be scenarios where your trades start to go negative and in to Red. This is completely normal and you shouldn't panic. Emotions can get the better of you in trading and can cause you losses. Just remember, 'it's not a loss until you lock it in as one'. This can be managed by using appropriate lot sizes. Please see the pinned message regarding lot sizes.
           </p>
         </div>
 
         <div>
-          <h3 className="font-bold text-base mb-2">Lot sizes:</h3>
-          <p>
+          <h3 className="font-bold text-base mb-2 text-white">Lot sizes:</h3>
+          <p className="text-gray-300">
             Lot sizes pay a crucial role in forex trading as they are your primary method of risk management. Again, it is entirely your choice as to how much you choose to trade with, but as a general rule of thumb, you should only ever risk 1-2% of your account per trade. You should never be in a position where you're having to close trades because you don't have enough margin in your account. If this is happening, you're lot sizes are too big and you're risking too much.
           </p>
         </div>
@@ -117,9 +117,9 @@ We will contact you with access details for the VIP Telegram group.`);
           Join VIP Membership
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-black border-gray-700">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center">
+          <DialogTitle className="text-2xl font-bold text-center text-white">
             <Crown className="w-6 h-6 inline mr-2 text-yellow-500" />
             Men In Action LLC's FOREX IDEAS
           </DialogTitle>
@@ -127,66 +127,66 @@ We will contact you with access details for the VIP Telegram group.`);
 
         <div className="space-y-6">
           {/* VIP Benefits */}
-          <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 rounded-lg border border-yellow-200">
+          <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
             <div className="space-y-3 text-sm">
               <div className="flex items-start gap-2">
-                <span className="text-yellow-600">💎</span>
-                <p>Buy the VIP membership and you will have instant and easy access to our Forex, Cryptocurrency, Gold ideas and technical analysis.</p>
+                <span className="text-yellow-400">💎</span>
+                <p className="text-gray-200">Buy the VIP membership and you will have instant and easy access to our Forex, Cryptocurrency, Gold ideas and technical analysis.</p>
               </div>
               <div className="flex items-start gap-2">
-                <span className="text-blue-600">💡</span>
-                <p>If you are a full-time trader, you would be able to use our experts' daily technical analysis for Forex pairs and Cryptocurrencies to find the best trading opportunities in order to save your time and increase your profit.</p>
+                <span className="text-blue-400">💡</span>
+                <p className="text-gray-200">If you are a full-time trader, you would be able to use our experts' daily technical analysis for Forex pairs and Cryptocurrencies to find the best trading opportunities in order to save your time and increase your profit.</p>
               </div>
               <div className="flex items-start gap-2">
-                <span className="text-blue-600">💡</span>
-                <p>If you are a student or you have any other jobs, or even if you don't have a lot experience in this market, by using the principles of money management and our technical analysis you would be able to make a second source of income for yourself.</p>
+                <span className="text-blue-400">💡</span>
+                <p className="text-gray-200">If you are a student or you have any other jobs, or even if you don't have a lot experience in this market, by using the principles of money management and our technical analysis you would be able to make a second source of income for yourself.</p>
               </div>
             </div>
           </div>
 
           {/* Pricing Plans */}
           <div>
-            <h3 className="text-lg font-bold mb-3 text-center">🔽Premium Service Fee 🔽</h3>
+            <h3 className="text-lg font-bold mb-3 text-center text-white">🔽Premium Service Fee 🔽</h3>
             <div className="grid grid-cols-2 gap-3">
               {membershipPlans.map((plan) => (
                 <div
                   key={plan.id}
                   className={`p-3 border rounded-lg cursor-pointer transition-all ${
                     form.watch("membershipTier") === plan.id
-                      ? "border-yellow-500 bg-yellow-50"
-                      : "border-gray-300 hover:border-gray-400"
+                      ? "border-yellow-500 bg-gray-800"
+                      : "border-gray-600 bg-gray-900 hover:border-gray-500"
                   }`}
                   onClick={() => form.setValue("membershipTier", plan.id as any)}
                 >
                   <div className="text-center">
                     <div className="flex items-center justify-center mb-1">
-                      <span className="text-yellow-600 mr-1">💎</span>
-                      <span className="font-semibold">{plan.duration}</span>
+                      <span className="text-yellow-400 mr-1">💎</span>
+                      <span className="font-semibold text-white">{plan.duration}</span>
                     </div>
-                    <div className="text-lg font-bold text-green-600">{plan.price}</div>
+                    <div className="text-lg font-bold text-green-400">{plan.price}</div>
                     {plan.savings && (
-                      <div className="text-xs text-red-600 font-medium">{plan.savings}</div>
+                      <div className="text-xs text-red-400 font-medium">{plan.savings}</div>
                     )}
-                    <div className="text-xs text-gray-600">{plan.monthlyRate}</div>
+                    <div className="text-xs text-gray-400">{plan.monthlyRate}</div>
                   </div>
                 </div>
               ))}
             </div>
             <div className="text-center mt-3 space-y-1">
-              <p className="text-sm">Payment method is through PayPal.</p>
+              <p className="text-sm text-gray-300">Payment method is through PayPal.</p>
               <a 
                 href="https://www.paypal.me/MENINACTIONLLC" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline text-sm"
+                className="text-blue-400 hover:underline text-sm"
               >
                 https://www.paypal.me/MENINACTIONLLC
               </a>
-              <div className="flex items-center justify-center gap-2 text-sm text-orange-600 font-medium">
+              <div className="flex items-center justify-center gap-2 text-sm text-orange-400 font-medium">
                 <Clock className="w-4 h-4" />
                 This offer is for a limited time
               </div>
-              <p className="text-xs text-gray-600">💠VIP members also can use the offer to extend their membership for the future as well.</p>
+              <p className="text-xs text-gray-400">💠VIP members also can use the offer to extend their membership for the future as well.</p>
             </div>
           </div>
 
@@ -198,9 +198,9 @@ We will contact you with access details for the VIP Telegram group.`);
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel className="text-white">Full Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your full name" {...field} />
+                      <Input placeholder="Your full name" {...field} className="bg-gray-800 border-gray-600 text-white placeholder-gray-400" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -212,9 +212,9 @@ We will contact you with access details for the VIP Telegram group.`);
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email Address</FormLabel>
+                    <FormLabel className="text-white">Email Address</FormLabel>
                     <FormControl>
-                      <Input placeholder="your@email.com" type="email" {...field} />
+                      <Input placeholder="your@email.com" type="email" {...field} className="bg-gray-800 border-gray-600 text-white placeholder-gray-400" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -226,9 +226,9 @@ We will contact you with access details for the VIP Telegram group.`);
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
+                    <FormLabel className="text-white">Phone Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your phone number" {...field} />
+                      <Input placeholder="Your phone number" {...field} className="bg-gray-800 border-gray-600 text-white placeholder-gray-400" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -240,11 +240,12 @@ We will contact you with access details for the VIP Telegram group.`);
                 name="experience"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Trading Experience</FormLabel>
+                    <FormLabel className="text-white">Trading Experience</FormLabel>
                     <FormControl>
                       <Textarea 
                         placeholder="Tell us about your forex trading experience..."
                         {...field}
+                        className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
                       />
                     </FormControl>
                     <FormMessage />
@@ -255,7 +256,7 @@ We will contact you with access details for the VIP Telegram group.`);
               {/* Terms and Conditions */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <FormLabel className="flex items-center gap-2">
+                  <FormLabel className="flex items-center gap-2 text-white">
                     <Shield className="w-4 h-4" />
                     Terms and Conditions
                   </FormLabel>
@@ -264,6 +265,7 @@ We will contact you with access details for the VIP Telegram group.`);
                     variant="outline"
                     size="sm"
                     onClick={() => setShowTerms(!showTerms)}
+                    className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
                   >
                     {showTerms ? "Hide" : "Read"} Terms
                   </Button>
@@ -280,10 +282,11 @@ We will contact you with access details for the VIP Telegram group.`);
                         <Checkbox
                           checked={field.value}
                           onCheckedChange={field.onChange}
+                          className="border-gray-600 data-[state=checked]:bg-yellow-500"
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
-                        <FormLabel className="text-sm">
+                        <FormLabel className="text-sm text-gray-200">
                           I have read and agree to the terms and conditions, disclaimer, and understand the risks involved in forex trading.
                         </FormLabel>
                         <FormMessage />
