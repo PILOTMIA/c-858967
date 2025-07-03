@@ -3,6 +3,7 @@ import MarketStats from "@/components/MarketStats";
 import ClientSignup from "@/components/ClientSignup";
 import BrandingSection from "@/components/BrandingSection";
 import ChatBot from "@/components/ChatBot";
+import CustomerServiceChat from "@/components/CustomerServiceChat";
 import TermsAgreementModal from "@/components/TermsAgreementModal";
 import { useNavigate } from "react-router-dom";
 
@@ -131,6 +132,7 @@ const Index = () => {
       </div>
 
       <ChatBot />
+      <CustomerServiceChat />
     </div>
   );
 };
