@@ -3,6 +3,7 @@ import MarketStats from "@/components/MarketStats";
 import ClientSignup from "@/components/ClientSignup";
 import BrandingSection from "@/components/BrandingSection";
 import ChatBot from "@/components/ChatBot";
+import TermsAgreementModal from "@/components/TermsAgreementModal";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
@@ -10,6 +11,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <TermsAgreementModal />
+      
       {/* Command Center Header */}
       <div className="bg-gray-900 border-b border-gray-700 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto p-4">
