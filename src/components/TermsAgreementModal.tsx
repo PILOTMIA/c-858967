@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -27,6 +26,10 @@ const TermsAgreementModal = () => {
       setHasAgreed(true);
       setIsOpen(false);
     }
+  };
+
+  const handleCheckboxChange = (checked: boolean | "indeterminate") => {
+    setAgreedToTerms(checked === true);
   };
 
   const TermsContent = () => (
@@ -95,7 +98,7 @@ const TermsAgreementModal = () => {
               <div className="flex flex-row items-start space-x-3 space-y-0">
                 <Checkbox
                   checked={agreedToTerms}
-                  onCheckedChange={setAgreedToTerms}
+                  onCheckedChange={handleCheckboxChange}
                   className="border-gray-600 data-[state=checked]:bg-yellow-500"
                 />
                 <div className="space-y-1 leading-none">
