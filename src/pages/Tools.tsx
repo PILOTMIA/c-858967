@@ -5,7 +5,7 @@ import TradingBot from "@/components/TradingBot";
 
 const Tools = () => {
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-black p-4">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Trading Tools</h1>
@@ -17,7 +17,7 @@ const Tools = () => {
           <SentimentWidget />
         </div>
 
-        <div className="bg-gray-900 p-4 rounded-lg">
+        <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
           <h3 className="text-lg font-bold text-white mb-2">Market Sessions</h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
