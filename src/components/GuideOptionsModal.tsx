@@ -25,11 +25,80 @@ const GuideOptionsModal = ({ isOpen, onClose, steps }: GuideOptionsModalProps) =
   const [agreedToSMS, setAgreedToSMS] = useState(false);
   const { toast } = useToast();
 
-  const generatePDF = () => {
+  // Array of your uploaded images
+  const inspirationalImages = [
+    '/lovable-uploads/e3df1023-6a28-4047-8906-e62bfb5507fb.png', // Brain quote
+    '/lovable-uploads/5bc94caa-f560-4327-bf18-b77e43cb304c.png', // Precise mastery
+    '/lovable-uploads/e620df11-aaed-4bfb-be0f-78b8a50f5d29.png', // Mechanics/Mindset
+    '/lovable-uploads/e93dbc25-59d9-43ef-abae-36f677a02d59.png', // Trading flowchart
+    '/lovable-uploads/efdd5343-f05c-42ba-94b4-07b19cbed214.png'  // Simple flowchart
+  ];
+
+  const addImageToPDF = async (doc: jsPDF, imagePath: string) => {
+    try {
+      // Create a new image element
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      
+      return new Promise((resolve) => {
+        img.onload = () => {
+          // Calculate dimensions to fit nicely on the page
+          const pageWidth = doc.internal.pageSize.width;
+          const pageHeight = doc.internal.pageSize.height;
+          const maxWidth = pageWidth - 40; // 20px margin on each side
+          const maxHeight = 80; // Maximum height for the image
+          
+          let imgWidth = maxWidth;
+          let imgHeight = (img.height * maxWidth) / img.width;
+          
+          // If height is too large, scale by height instead
+          if (imgHeight > maxHeight) {
+            imgHeight = maxHeight;
+            imgWidth = (img.width * maxHeight) / img.height;
+          }
+          
+          // Center the image horizontally
+          const xPosition = (pageWidth - imgWidth) / 2;
+          const yPosition = 30; // Position near the top
+          
+          // Create canvas to convert image
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx?.drawImage(img, 0, 0);
+          
+          const imgData = canvas.toDataURL('image/jpeg', 0.8);
+          doc.addImage(imgData, 'JPEG', xPosition, yPosition, imgWidth, imgHeight);
+          resolve(true);
+        };
+        
+        img.onerror = () => {
+          console.log('Image failed to load, continuing without image');
+          resolve(false);
+        };
+        
+        img.src = imagePath;
+      });
+    } catch (error) {
+      console.log('Error adding image to PDF:', error);
+      return false;
+    }
+  };
+
+  const generatePDF = async () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
     const margin = 20;
     let yPosition = margin;
+
+    // Randomly select an image
+    const randomIndex = Math.floor(Math.random() * inspirationalImages.length);
+    const selectedImage = inspirationalImages[randomIndex];
+    
+    // Add the random inspirational image
+    await addImageToPDF(doc, selectedImage);
+    yPosition = 120; // Start content after the image
 
     // Title
     doc.setFontSize(20);
@@ -117,8 +186,8 @@ const GuideOptionsModal = ({ isOpen, onClose, steps }: GuideOptionsModalProps) =
     return doc;
   };
 
-  const handleDownloadPDF = () => {
-    const doc = generatePDF();
+  const handleDownloadPDF = async () => {
+    const doc = await generatePDF();
     doc.save('Forex-Learning-Path-Guide.pdf');
     toast({
       title: "PDF Downloaded!",
@@ -127,8 +196,8 @@ const GuideOptionsModal = ({ isOpen, onClose, steps }: GuideOptionsModalProps) =
     onClose();
   };
 
-  const handlePrintPDF = () => {
-    const doc = generatePDF();
+  const handlePrintPDF = async () => {
+    const doc = await generatePDF();
     doc.autoPrint();
     const pdfBlob = doc.output('bloburl');
     window.open(pdfBlob);
@@ -139,7 +208,7 @@ const GuideOptionsModal = ({ isOpen, onClose, steps }: GuideOptionsModalProps) =
     onClose();
   };
 
-  const handleSendSMS = () => {
+  const handleSendSMS = async () => {
     if (!phoneNumber.trim()) {
       toast({
         title: "Phone Number Required",
@@ -159,7 +228,7 @@ const GuideOptionsModal = ({ isOpen, onClose, steps }: GuideOptionsModalProps) =
     }
 
     // Create the PDF and convert to base64 for SMS
-    const doc = generatePDF();
+    const doc = await generatePDF();
     const pdfData = doc.output('datauristring');
     
     // Create SMS message with link to guide
