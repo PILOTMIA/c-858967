@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Circle, Download, BookOpen } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 interface LearningStep {
   id: number;
@@ -45,11 +47,79 @@ const learningSteps: LearningStep[] = [
 
 const ClientLearningPath = () => {
   const [steps, setSteps] = useState(learningSteps);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const toggleStep = (id: number) => {
     setSteps(prev => prev.map(step => 
       step.id === id ? { ...step, completed: !step.completed } : step
     ));
+  };
+
+  const handleStartLearning = () => {
+    // Find the first incomplete step
+    const nextStep = steps.find(step => !step.completed);
+    
+    if (nextStep) {
+      toast({
+        title: `Starting: ${nextStep.title}`,
+        description: nextStep.description,
+      });
+      
+      // Mark the step as started/completed
+      toggleStep(nextStep.id);
+    } else {
+      toast({
+        title: "Congratulations!",
+        description: "You've completed all learning steps! Continue with advanced materials.",
+      });
+    }
+  };
+
+  const generatePDF = () => {
+    // Create PDF content
+    const pdfContent = `
+FOREX TRADING LEARNING PATH
+Men In Action LLC - Trading Education Guide
+
+Your Learning Journey Progress: ${Math.round((steps.filter(step => step.completed).length / steps.length) * 100)}%
+
+LEARNING STEPS:
+
+${steps.map(step => `
+${step.completed ? '✓' : '○'} ${step.title}
+   ${step.description}
+`).join('\n')}
+
+NEXT STEPS:
+1. Complete each learning module in order
+2. Practice with demo accounts before live trading
+3. Join our community for ongoing support
+4. Contact us for personalized guidance
+
+Contact Information:
+Phone: 559.997.6387
+Email: opmeninactionllc@gmail.com
+
+© 2024 Men In Action LLC
+Professional Trading Education & Analysis
+    `.trim();
+
+    // Create and download PDF-like text file
+    const blob = new Blob([pdfContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'Forex-Learning-Path-Guide.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    toast({
+      title: "Guide Downloaded!",
+      description: "Your learning path guide has been downloaded successfully.",
+    });
   };
 
   const completedSteps = steps.filter(step => step.completed).length;
@@ -100,11 +170,18 @@ const ClientLearningPath = () => {
       </div>
 
       <div className="flex gap-2">
-        <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm">
+        <Button 
+          onClick={handleStartLearning}
+          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm"
+        >
           <BookOpen className="w-4 h-4 mr-2" />
           Start Learning
         </Button>
-        <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-700 text-sm">
+        <Button 
+          onClick={generatePDF}
+          variant="outline" 
+          className="border-gray-600 text-gray-300 hover:bg-gray-700 text-sm"
+        >
           <Download className="w-4 h-4 mr-2" />
           PDF Guide
         </Button>
