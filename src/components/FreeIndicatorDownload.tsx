@@ -1,17 +1,18 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Download, FileText, AlertCircle, CheckCircle } from 'lucide-react';
+import { Download, FileText, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
 
 const FreeIndicatorDownload = () => {
   const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [isDownloaded, setIsDownloaded] = useState(false);
   const { toast } = useToast();
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!email || !email.includes('@')) {
       toast({
         title: "Email Required",
@@ -21,18 +22,57 @@ const FreeIndicatorDownload = () => {
       return;
     }
 
-    // Simulate download process
-    setIsDownloaded(true);
-    toast({
-      title: "Download Started!",
-      description: "Check your email for the download link and installation instructions.",
-    });
+    setIsLoading(true);
 
-    // Reset after 3 seconds
-    setTimeout(() => {
-      setIsDownloaded(false);
-      setEmail('');
-    }, 3000);
+    try {
+      // Insert email into Supabase database
+      const { error } = await supabase
+        .from('indicator_downloads')
+        .insert([
+          { 
+            email: email,
+            downloaded_at: new Date().toISOString(),
+            indicator_name: 'Premium Trading Indicator'
+          }
+        ]);
+
+      if (error) {
+        console.error('Supabase error:', error);
+        toast({
+          title: "Error",
+          description: "Failed to process your request. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Start download
+      const downloadUrl = 'https://drive.google.com/uc?export=download&id=15_5u0AovYVaPhDEWJyXuhF0ayi4BCVre';
+      window.open(downloadUrl, '_blank');
+
+      setIsDownloaded(true);
+      
+      toast({
+        title: "Download Started!",
+        description: "Your download has begun. Check your downloads folder and your email for installation instructions.",
+      });
+
+      // Reset after 5 seconds
+      setTimeout(() => {
+        setIsDownloaded(false);
+        setEmail('');
+      }, 5000);
+
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -107,19 +147,25 @@ const FreeIndicatorDownload = () => {
               placeholder="your.email@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading || isDownloaded}
               className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
             />
           </div>
           
           <Button 
             onClick={handleDownload}
-            disabled={isDownloaded}
+            disabled={isLoading || isDownloaded}
             className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3"
           >
-            {isDownloaded ? (
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : isDownloaded ? (
               <>
                 <CheckCircle className="w-4 h-4 mr-2" />
-                Check Your Email!
+                Download Complete!
               </>
             ) : (
               <>
@@ -131,7 +177,7 @@ const FreeIndicatorDownload = () => {
         </div>
 
         <p className="text-gray-400 text-xs text-center">
-          No spam, ever. We respect your privacy and will only send you the download link and occasional trading tips.
+          Your email will be stored securely and used only for sending you the download link and occasional trading tips.
         </p>
       </CardContent>
     </Card>
