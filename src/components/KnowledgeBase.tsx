@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BookOpen, TrendingUp, Shield, Brain, BarChart3 } from 'lucide-react';
+import { BookOpen, TrendingUp, Shield, Brain, BarChart3, Target } from 'lucide-react';
 
 const KnowledgeBase = () => {
   const [activeTab, setActiveTab] = useState('triple-screen');
@@ -40,6 +40,53 @@ const KnowledgeBase = () => {
               • Enter in direction of weekly trend<br/>
               • Set stop-losses and profit targets
             </p>
+          </div>
+        </div>
+      `
+    },
+    'entry-strategies': {
+      title: 'Entry Strategies',
+      icon: <Target className="w-5 h-5" />,
+      content: `
+        <div class="space-y-6">
+          <h3 class="text-lg font-bold text-green-400">Professional Entry Strategies</h3>
+          
+          <div class="bg-gray-800 p-4 rounded">
+            <h4 class="font-bold text-blue-400 mb-3">Daily Time Frame Strategy</h4>
+            <div class="flex justify-center mb-4">
+              <img src="/lovable-uploads/b9a3ec60-ee05-48d3-bb19-280d08cb69ac.png" alt="Daily Timeframe Entry Strategy" class="max-w-full h-auto rounded border border-gray-600" />
+            </div>
+            <p class="text-sm text-gray-300">
+              <strong>Elliott Wave Pattern Recognition:</strong><br/>
+              • Identify wave patterns (A-B-C corrections)<br/>
+              • Look for 161.8% Fibonacci extensions at point C<br/>
+              • Enter trades at optimal exit points for maximum profit<br/>
+              • Works for both uptrends and downtrends
+            </p>
+          </div>
+
+          <div class="bg-gray-800 p-4 rounded">
+            <h4 class="font-bold text-blue-400 mb-3">4-Hour Time Frame Strategy</h4>
+            <div class="flex justify-center mb-4">
+              <img src="/lovable-uploads/d8d10dab-cf2b-44c9-b422-abf2ba1e7815.png" alt="4H Timeframe Entry Strategy" class="max-w-full h-auto rounded border border-gray-600" />
+            </div>
+            <p class="text-sm text-gray-300">
+              <strong>Fibonacci Retracement Entries:</strong><br/>
+              • Buy Pattern: Enter at B retracement levels (23.6%, 38.2%, 61.8%, 78.6%)<br/>
+              • Sell Pattern: Enter at B retracement levels for short positions<br/>
+              • Wait for confirmation before entering trades<br/>
+              • Set stop losses beyond the pattern boundaries
+            </p>
+          </div>
+
+          <div class="bg-yellow-900/30 border border-yellow-500/50 p-4 rounded">
+            <h4 class="font-bold text-yellow-400">Key Entry Rules</h4>
+            <ul class="text-sm text-gray-300 mt-2 space-y-1">
+              <li>• Always wait for pattern completion before entering</li>
+              <li>• Use multiple time frame analysis for confirmation</li>
+              <li>• Set proper risk-reward ratios (minimum 1:2)</li>
+              <li>• Never risk more than 2% per trade</li>
+            </ul>
           </div>
         </div>
       `
@@ -148,7 +195,7 @@ const KnowledgeBase = () => {
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 bg-gray-800">
+          <TabsList className="grid w-full grid-cols-5 bg-gray-800">
             {Object.entries(knowledgeData).map(([key, data]) => (
               <TabsTrigger key={key} value={key} className="flex items-center gap-1 text-xs">
                 {data.icon}

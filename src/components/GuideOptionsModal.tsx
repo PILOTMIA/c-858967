@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -33,6 +32,25 @@ const GuideOptionsModal = ({ isOpen, onClose, steps }: GuideOptionsModalProps) =
     '/lovable-uploads/e93dbc25-59d9-43ef-abae-36f677a02d59.png', // Trading flowchart
     '/lovable-uploads/efdd5343-f05c-42ba-94b4-07b19cbed214.png'  // Simple flowchart
   ];
+
+  const addPageNumbers = (doc: jsPDF) => {
+    const pageCount = doc.getNumberOfPages();
+    
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      
+      // Add page number at bottom center
+      const pageWidth = doc.internal.pageSize.width;
+      const pageHeight = doc.internal.pageSize.height;
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+      
+      // Add footer line
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, pageHeight - 20, pageWidth - 20, pageHeight - 20);
+    }
+  };
 
   const addImageToPDF = async (doc: jsPDF, imagePath: string) => {
     try {
@@ -117,20 +135,21 @@ const GuideOptionsModal = ({ isOpen, onClose, steps }: GuideOptionsModalProps) =
     doc.text(`Your Learning Journey Progress: ${progressPercentage}%`, margin, yPosition);
     yPosition += 15;
 
-    // Learning Steps
+    // Learning Steps with numbering
     doc.setFontSize(14);
     doc.text('LEARNING STEPS:', margin, yPosition);
     yPosition += 10;
 
     doc.setFontSize(10);
-    steps.forEach((step) => {
+    steps.forEach((step, index) => {
       if (yPosition > 250) {
         doc.addPage();
         yPosition = margin;
       }
       
       const statusSymbol = step.completed ? '✓' : '○';
-      doc.text(`${statusSymbol} ${step.title}`, margin, yPosition);
+      const stepNumber = index + 1;
+      doc.text(`${stepNumber}. ${statusSymbol} ${step.title}`, margin, yPosition);
       yPosition += 8;
       
       const descriptionLines = doc.splitTextToSize(`   ${step.description}`, pageWidth - 2 * margin);
@@ -145,7 +164,7 @@ const GuideOptionsModal = ({ isOpen, onClose, steps }: GuideOptionsModalProps) =
       yPosition += 5;
     });
 
-    // Next Steps
+    // Next Steps with numbering
     if (yPosition > 200) {
       doc.addPage();
       yPosition = margin;
@@ -158,14 +177,14 @@ const GuideOptionsModal = ({ isOpen, onClose, steps }: GuideOptionsModalProps) =
 
     doc.setFontSize(10);
     const nextSteps = [
-      '1. Complete each learning module in order',
-      '2. Practice with demo accounts before live trading',
-      '3. Join our community for ongoing support',
-      '4. Contact us for personalized guidance'
+      'Complete each learning module in order',
+      'Practice with demo accounts before live trading',
+      'Join our community for ongoing support',
+      'Contact us for personalized guidance'
     ];
 
-    nextSteps.forEach(step => {
-      doc.text(step, margin, yPosition);
+    nextSteps.forEach((step, index) => {
+      doc.text(`${index + 1}. ${step}`, margin, yPosition);
       yPosition += 8;
     });
 
@@ -182,6 +201,9 @@ const GuideOptionsModal = ({ isOpen, onClose, steps }: GuideOptionsModalProps) =
 
     doc.text('© 2024 Men In Action LLC', margin, yPosition);
     doc.text('Professional Trading Education & Analysis', margin, yPosition + 8);
+
+    // Add page numbers to all pages
+    addPageNumbers(doc);
 
     return doc;
   };
