@@ -2,6 +2,7 @@
 import KnowledgeBase from "@/components/KnowledgeBase";
 import ForexList from "@/components/ForexList";
 import ClientLearningPath from "@/components/ClientLearningPath";
+import FreeIndicatorDownload from "@/components/FreeIndicatorDownload";
 
 const Education = () => {
   return (
@@ -17,6 +18,9 @@ const Education = () => {
 
         {/* Learning Path */}
         <ClientLearningPath />
+
+        {/* Free Indicator Download */}
+        <FreeIndicatorDownload />
 
         {/* Forex List with Videos */}
         <ForexList />
