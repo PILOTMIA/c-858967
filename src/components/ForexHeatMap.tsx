@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import CorrelationAnalysis from "./CorrelationAnalysis";
@@ -395,8 +396,8 @@ const ForexHeatMap = () => {
             <iframe
               width="100%"
               height="100%"
-              src="https://www.youtube.com/embed/bMBqHnUp9n4"
-              title="Advanced Forex Trading Strategies"
+              src="https://www.youtube.com/embed/K_0_15M6cAE"
+              title="Professional Forex Trading Course"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
@@ -407,8 +408,8 @@ const ForexHeatMap = () => {
             <iframe
               width="100%"
               height="100%"
-              src="https://www.youtube.com/embed/8dJTzBqEcj0"
-              title="Risk Management in Forex"
+              src="https://www.youtube.com/embed/cBoh1TpbBCU"
+              title="Forex Risk Management"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
@@ -419,8 +420,8 @@ const ForexHeatMap = () => {
             <iframe
               width="100%"
               height="100%"
-              src="https://www.youtube.com/embed/MDyON75MJvE"
-              title="Technical Analysis Masterclass"
+              src="https://www.youtube.com/embed/MA4CNciKNB4"
+              title="Technical Analysis Tutorial"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen

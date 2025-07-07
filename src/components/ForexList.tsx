@@ -1,3 +1,4 @@
+
 import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -152,8 +153,8 @@ const ForexList = () => {
             <iframe
               width="100%"
               height="100%"
-              src="https://www.youtube.com/embed/p3eVNhPJ7Ns"
-              title="Forex Trading for Beginners"
+              src="https://www.youtube.com/embed/MA4CNciKNB4"
+              title="Forex Trading Explained"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
@@ -164,8 +165,8 @@ const ForexList = () => {
             <iframe
               width="100%"
               height="100%"
-              src="https://www.youtube.com/embed/x1HeC8Ug-7w"
-              title="Support and Resistance Trading"
+              src="https://www.youtube.com/embed/y8eVlw5xhOw"
+              title="Support and Resistance"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
