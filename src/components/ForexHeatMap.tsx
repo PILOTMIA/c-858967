@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import CorrelationAnalysis from "./CorrelationAnalysis";
 import MarketClock from "./MarketClock";
-import VideoModal from "./VideoModal";
 
 interface HeatMapData {
   pair: string;
@@ -42,18 +41,6 @@ interface HeatMapData {
     distance: number;
   };
   riskReward: number;
-}
-
-interface SignalData {
-  text: string;
-  time: string;
-  imageUrl?: string;
-  entry: number;
-  stopLoss: number;
-  takeProfit1: number;
-  takeProfit2?: number;
-  riskReward: number;
-  pips: number;
 }
 
 const fetchHeatMapData = async (): Promise<HeatMapData[]> => {
@@ -190,64 +177,6 @@ const fetchHeatMapData = async (): Promise<HeatMapData[]> => {
   });
 };
 
-interface DailyForexContent {
-  id: string;
-  title: string;
-  publishedAt: string;
-  description: string;
-  thumbnail: string;
-  type: 'video' | 'article';
-  url: string;
-  currencyPair?: string;
-}
-
-const fetchDailyForexContent = async (): Promise<DailyForexContent[]> => {
-  try {
-    console.log('Fetching latest content from Daily Forex YouTube channel');
-    
-    // Since we can't directly access YouTube API without API key,
-    // we'll create relevant content for different currency pairs
-    const majorPairs = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'AUD/USD', 'USD/CAD', 'NZD/USD', 'XAUUSD'];
-    
-    const contentTypes = [
-      { type: 'video', prefix: '🎥', action: 'Technical Analysis' },
-      { type: 'video', prefix: '📊', action: 'Market Outlook' },
-      { type: 'article', prefix: '📰', action: 'Weekly Forecast' },
-      { type: 'video', prefix: '⚡', action: 'Trading Strategy' },
-      { type: 'article', prefix: '🔍', action: 'Market Update' }
-    ];
-    
-    const mockContent: DailyForexContent[] = majorPairs.flatMap(pair => {
-      return contentTypes.slice(0, 2).map((content, index) => {
-        const daysAgo = Math.floor(Math.random() * 30) + 1;
-        const publishDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
-        
-        return {
-          id: `${pair.replace('/', '')}_${content.type}_${index}`,
-          title: `${content.prefix} ${pair} ${content.action} - Daily Forex Channel`,
-          publishedAt: publishDate.toISOString(),
-          description: `Latest ${content.action.toLowerCase()} for ${pair} from Daily Forex. Educational content covering key levels, market sentiment, and trading opportunities.`,
-          thumbnail: `https://img.youtube.com/vi/${index % 2 === 0 ? 'dQw4w9WgXcQ' : 'K4eScf6TMaM'}/maxresdefault.jpg`,
-          type: content.type as 'video' | 'article',
-          url: `https://www.youtube.com/results?search_query=${encodeURIComponent(`${pair} ${content.action} Daily Forex @DailyForex`)}`,
-          currencyPair: pair
-        };
-      });
-    });
-    
-    // Sort by publish date (newest first) and take recent content
-    const sortedContent = mockContent
-      .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
-      .slice(0, 12); // Show top 12 most recent
-    
-    console.log(`Generated ${sortedContent.length} pieces of content from Daily Forex channel`);
-    return sortedContent;
-  } catch (error) {
-    console.error('Error fetching Daily Forex content:', error);
-    return [];
-  }
-};
-
 const ForexHeatMap = () => {
   const { data: heatMapData, isLoading } = useQuery({
     queryKey: ['forexHeatMap'],
@@ -255,18 +184,10 @@ const ForexHeatMap = () => {
     refetchInterval: 5000,
   });
 
-  const { data: dailyForexContent, isLoading: contentLoading } = useQuery({
-    queryKey: ['dailyForexContent'],
-    queryFn: fetchDailyForexContent,
-    refetchInterval: 3600000, // Check every hour
-  });
-
   const [selectedPair, setSelectedPair] = useState<string>('EUR/USD');
   const [time, setTime] = useState(new Date());
   const [lotSize, setLotSize] = useState<number>(0.1);
   const [accountCurrency, setAccountCurrency] = useState<string>('USD');
-  const [videoModalOpen, setVideoModalOpen] = useState(false);
-  const [selectedVideoSpair, setSelectedVideoPair] = useState<string>('');
 
   // COT Data currency pairs - same as in COTData component
   const cotCurrencyPairs = [
@@ -281,12 +202,6 @@ const ForexHeatMap = () => {
     const interval = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
-
-  const handlePairClick = (pair: string) => {
-    setSelectedPair(pair);
-    setSelectedVideoPair(pair);
-    setVideoModalOpen(true);
-  };
 
   const formatTime = (date: Date) => date.toLocaleTimeString();
   
@@ -399,10 +314,9 @@ const ForexHeatMap = () => {
           heatMapData?.map(data => (
             <div
               key={data.pair}
-              onClick={() => handlePairClick(data.pair)}
               className={`aspect-square rounded p-2 border border-gray-600 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 hover:scale-105 hover:border-blue-400 ${getTextColor(data.changePercent)}`}
               style={{ backgroundColor: getHeatColor(data.changePercent) }}
-              title={`${data.pair}: ${(data.changePercent || 0).toFixed(2)}% | Current: ${formatPrice(data.pair, data.currentPrice)} | Closest Pivot: ${data.closestPivot.type} at ${formatPrice(data.pair, data.closestPivot.level)} | Click for Daily Forex educational content`}
+              title={`${data.pair}: ${(data.changePercent || 0).toFixed(2)}% | Current: ${formatPrice(data.pair, data.currentPrice)} | Closest Pivot: ${data.closestPivot.type} at ${formatPrice(data.pair, data.closestPivot.level)}`}
             >
               <div className="text-xs font-bold mb-1">{formatPairDisplay(data.pair)}</div>
               <div className="text-xs">
@@ -413,99 +327,10 @@ const ForexHeatMap = () => {
               }}>
                 {data.signal}
               </div>
-              <div className="text-xs text-red-400 mt-1">🎥 Daily Forex</div>
             </div>
           ))
         )}
       </div>
-
-      {/* Educational note */}
-      <div className="mb-6 p-4 bg-red-900/20 border border-red-500/30 rounded-lg">
-        <h3 className="text-lg font-bold text-red-400 mb-2">📺 Daily Forex Educational Content</h3>
-        <p className="text-gray-300 text-sm">
-          Click on any currency pair above to access educational videos and analysis from the Daily Forex YouTube channel (@DailyForex). 
-          Learn trading strategies, technical analysis, and market insights for each pair.
-        </p>
-      </div>
-
-      {/* Daily Forex Content Section */}
-      {dailyForexContent && dailyForexContent.length > 0 && (
-        <div className="bg-gray-900 rounded p-4 mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-xl font-semibold">📺 Latest from Daily Forex Channel (Last 30 Days)</h2>
-            <span className="text-xs bg-red-600 px-2 py-1 rounded">LIVE</span>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-            {dailyForexContent.slice(0, 9).map((content) => (
-              <div key={content.id} className="bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-700 transition-colors">
-                <div className="relative">
-                  <img 
-                    src={content.thumbnail}
-                    alt={content.title}
-                    className="w-full h-32 object-cover"
-                  />
-                  <div className="absolute top-2 right-2">
-                    <span className={`text-xs px-2 py-1 rounded ${
-                      content.type === 'video' ? 'bg-red-600' : 'bg-blue-600'
-                    }`}>
-                      {content.type === 'video' ? '🎥 VIDEO' : '📰 ANALYSIS'}
-                    </span>
-                  </div>
-                  {content.currencyPair && (
-                    <div className="absolute top-2 left-2">
-                      <span className="text-xs px-2 py-1 rounded bg-gray-900/80 text-white">
-                        {content.currencyPair}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="p-4">
-                  <h3 className="font-bold text-white mb-2 line-clamp-2 text-sm">
-                    {content.title}
-                  </h3>
-                  <p className="text-gray-400 text-xs mb-3 line-clamp-2">
-                    {content.description}
-                  </p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-500">
-                      {new Date(content.publishedAt).toLocaleDateString()}
-                    </span>
-                    <a 
-                      href={content.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs bg-red-600 hover:bg-red-700 px-3 py-1 rounded transition-colors"
-                    >
-                      Watch/Read
-                    </a>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="mt-4 text-center">
-            <a 
-              href="https://www.youtube.com/@DailyForex"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
-            >
-              📺 Visit Daily Forex YouTube Channel
-            </a>
-          </div>
-          
-          <div className="mt-4 p-3 bg-red-900/20 border border-red-500/30 rounded">
-            <p className="text-xs text-red-200">
-              <strong>Note:</strong> Content is sourced from Daily Forex YouTube channel (@DailyForex). 
-              All analysis and educational material is provided for informational purposes only. 
-              Always conduct your own research before making trading decisions.
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Detailed Analysis for Selected Pair */}
       {selectedPairData && (
@@ -583,12 +408,6 @@ const ForexHeatMap = () => {
           Buy the Book: Technical Analysis Journal Forex Manual
         </a>
       </div>
-
-      <VideoModal 
-        isOpen={videoModalOpen}
-        onClose={() => setVideoModalOpen(false)}
-        currencyPair={selectedVideoSpair}
-      />
     </div>
   );
 };
