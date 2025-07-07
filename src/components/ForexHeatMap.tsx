@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import CorrelationAnalysis from "./CorrelationAnalysis";
@@ -387,49 +386,6 @@ const ForexHeatMap = () => {
       )}
 
       <CorrelationAnalysis heatMapData={heatMapData} />
-
-      {/* Professional Trading Education Videos */}
-      <div className="mb-8 p-4 bg-gray-900 rounded">
-        <h2 className="text-xl font-bold mb-4 text-blue-400">📚 Advanced Trading Education</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="aspect-video">
-            <iframe
-              width="100%"
-              height="100%"
-              src="https://www.youtube.com/embed/K_0_15M6cAE"
-              title="Professional Forex Trading Course"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="rounded"
-            ></iframe>
-          </div>
-          <div className="aspect-video">
-            <iframe
-              width="100%"
-              height="100%"
-              src="https://www.youtube.com/embed/cBoh1TpbBCU"
-              title="Forex Risk Management"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="rounded"
-            ></iframe>
-          </div>
-          <div className="aspect-video">
-            <iframe
-              width="100%"
-              height="100%"
-              src="https://www.youtube.com/embed/MA4CNciKNB4"
-              title="Technical Analysis Tutorial"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="rounded"
-            ></iframe>
-          </div>
-        </div>
-      </div>
 
       <form
         action="https://formsubmit.co/OPMENINACTIONLLC@GMAIL.COM"
