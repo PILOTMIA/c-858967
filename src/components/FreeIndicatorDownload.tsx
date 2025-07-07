@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Download, FileText, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 const FreeIndicatorDownload = () => {
   const [email, setEmail] = useState('');
@@ -25,25 +25,25 @@ const FreeIndicatorDownload = () => {
     setIsLoading(true);
 
     try {
-      // Insert email into Supabase database
-      const { error } = await supabase
-        .from('indicator_downloads')
-        .insert([
-          { 
-            email: email,
-            downloaded_at: new Date().toISOString(),
-            indicator_name: 'Premium Trading Indicator'
-          }
-        ]);
+      // Only try to save to database if Supabase is configured
+      if (isSupabaseConfigured && supabase) {
+        const { error } = await supabase
+          .from('indicator_downloads')
+          .insert([
+            { 
+              email: email,
+              downloaded_at: new Date().toISOString(),
+              indicator_name: 'Premium Trading Indicator'
+            }
+          ]);
 
-      if (error) {
-        console.error('Supabase error:', error);
-        toast({
-          title: "Error",
-          description: "Failed to process your request. Please try again.",
-          variant: "destructive"
-        });
-        return;
+        if (error) {
+          console.error('Supabase error:', error);
+          // Continue with download even if database save fails
+          console.log('Continuing with download despite database error');
+        }
+      } else {
+        console.log('Supabase not configured, skipping database save');
       }
 
       // Start download
