@@ -1,4 +1,3 @@
-
 import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -143,6 +142,37 @@ const ForexList = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Professional Trading Education Videos */}
+      <div className="mt-8 p-4 bg-gray-900 rounded">
+        <h3 className="text-lg font-bold mb-4 text-blue-400">📚 Trading Education</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="aspect-video">
+            <iframe
+              width="100%"
+              height="100%"
+              src="https://www.youtube.com/embed/p3eVNhPJ7Ns"
+              title="Forex Trading for Beginners"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="rounded"
+            ></iframe>
+          </div>
+          <div className="aspect-video">
+            <iframe
+              width="100%"
+              height="100%"
+              src="https://www.youtube.com/embed/x1HeC8Ug-7w"
+              title="Support and Resistance Trading"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="rounded"
+            ></iframe>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -387,6 +387,49 @@ const ForexHeatMap = () => {
 
       <CorrelationAnalysis heatMapData={heatMapData} />
 
+      {/* Professional Trading Education Videos */}
+      <div className="mb-8 p-4 bg-gray-900 rounded">
+        <h2 className="text-xl font-bold mb-4 text-blue-400">📚 Advanced Trading Education</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="aspect-video">
+            <iframe
+              width="100%"
+              height="100%"
+              src="https://www.youtube.com/embed/bMBqHnUp9n4"
+              title="Advanced Forex Trading Strategies"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="rounded"
+            ></iframe>
+          </div>
+          <div className="aspect-video">
+            <iframe
+              width="100%"
+              height="100%"
+              src="https://www.youtube.com/embed/8dJTzBqEcj0"
+              title="Risk Management in Forex"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="rounded"
+            ></iframe>
+          </div>
+          <div className="aspect-video">
+            <iframe
+              width="100%"
+              height="100%"
+              src="https://www.youtube.com/embed/MDyON75MJvE"
+              title="Technical Analysis Masterclass"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="rounded"
+            ></iframe>
+          </div>
+        </div>
+      </div>
+
       <form
         action="https://formsubmit.co/OPMENINACTIONLLC@GMAIL.COM"
         method="POST"
