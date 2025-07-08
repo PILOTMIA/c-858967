@@ -4,6 +4,7 @@ import ForexChart from "@/components/ForexChart";
 import ForexPerformance from "@/components/ForexPerformance";
 import COTData from "@/components/COTData";
 import FedWatchTool from "@/components/FedWatchTool";
+import NewsSentimentAnalysis from "@/components/NewsSentimentAnalysis";
 import { useState } from "react";
 
 const MarketAnalysis = () => {
@@ -20,6 +21,9 @@ const MarketAnalysis = () => {
           <h1 className="text-3xl font-bold text-white mb-2">Market Analysis</h1>
           <p className="text-gray-300">Real-time forex market analysis and insights</p>
         </div>
+
+        {/* News Sentiment Analysis */}
+        <NewsSentimentAnalysis />
 
         {/* Heat Map */}
         <ForexHeatMap />

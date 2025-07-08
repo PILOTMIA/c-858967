@@ -2,6 +2,7 @@
 import RealTimeData from "@/components/RealTimeData";
 import SentimentWidget from "@/components/SentimentWidget";
 import TradingBot from "@/components/TradingBot";
+import NewsSentimentAnalysis from "@/components/NewsSentimentAnalysis";
 
 const Tools = () => {
   return (
@@ -11,6 +12,9 @@ const Tools = () => {
           <h1 className="text-3xl font-bold text-white mb-2">Trading Tools</h1>
           <p className="text-gray-300">Advanced tools to enhance your trading experience</p>
         </div>
+
+        {/* News Sentiment Analysis */}
+        <NewsSentimentAnalysis />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <RealTimeData />
