@@ -17,7 +17,7 @@ const ChatBot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      text: "Hello! I'm Dr. Alexander Elder, author of 'Trading for a Living'. I've spent decades studying markets and training traders. Ask me about the Triple Screen system, risk management, or how to develop the discipline needed for successful trading.",
+      text: "Hello! I'm your Trading Assistant with decades of market experience. I've studied and trained countless traders using proven methods like the Triple Screen system. Ask me about risk management, technical analysis, or developing the discipline needed for successful trading.",
       isBot: true,
       timestamp: new Date()
     }
@@ -338,7 +338,7 @@ What specific aspect of trading would you like to discuss? Remember, successful 
           <div className="flex items-center justify-between">
             <CardTitle className="text-white flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-blue-400" />
-              Dr. Alexander Elder
+              Trading Assistant
             </CardTitle>
             <Button
               variant="ghost"
@@ -350,7 +350,7 @@ What specific aspect of trading would you like to discuss? Remember, successful 
             </Button>
           </div>
           <div className="text-xs text-gray-400">
-            Author of "Trading for a Living" • Questions: {questionCount}/5
+            Expert Trading Knowledge • Questions: {questionCount}/5
           </div>
         </CardHeader>
         <CardContent>
@@ -392,7 +392,7 @@ What specific aspect of trading would you like to discuss? Remember, successful 
                 size="sm"
                 className="w-full text-xs"
               >
-                Continue learning with Dr. Elder
+                Continue learning with Trading Assistant
               </Button>
             </div>
           ) : (
@@ -401,7 +401,7 @@ What specific aspect of trading would you like to discuss? Remember, successful 
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder="Ask Dr. Elder about trading..."
+                placeholder="Ask about trading strategies..."
                 className="bg-gray-800 border-gray-600 text-white"
               />
               <Button onClick={handleSendMessage} size="sm" disabled={showVipPrompt || !inputMessage.trim()}>
