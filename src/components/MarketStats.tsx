@@ -20,48 +20,34 @@ interface MarketData {
 }
 
 const fetchMarketData = async (): Promise<MarketData> => {
-  try {
-    // Using free Yahoo Finance API alternative
-    const symbols = ['DX-Y.NYB', 'EURUSD=X']; // USD Index and EUR/USD
-    const promises = symbols.map(symbol => 
-      fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`)
-        .then(res => res.json())
-    );
-    
-    const results = await Promise.all(promises);
-    
-    const usdIndexData = results[0]?.chart?.result?.[0];
-    const eurUsdData = results[1]?.chart?.result?.[0];
-    
-    const usdPrice = usdIndexData?.meta?.regularMarketPrice || 103.45;
-    const usdPrevClose = usdIndexData?.meta?.previousClose || 103.13;
-    const eurPrice = eurUsdData?.meta?.regularMarketPrice || 1.0542;
-    const eurPrevClose = eurUsdData?.meta?.previousClose || 1.0558;
-    
-    return {
-      usdIndex: {
-        value: usdPrice,
-        change: usdPrice - usdPrevClose,
-        changePercent: ((usdPrice - usdPrevClose) / usdPrevClose) * 100
-      },
-      volume: {
-        value: '$6.8T',
-        change: 2.1
-      },
-      eurUsd: {
-        value: eurPrice,
-        change: eurPrice - eurPrevClose,
-        changePercent: ((eurPrice - eurPrevClose) / eurPrevClose) * 100
-      }
-    };
-  } catch (error) {
-    console.log('Using fallback market data');
-    return {
-      usdIndex: { value: 103.45, change: 0.32, changePercent: 0.32 },
-      volume: { value: '$6.8T', change: 2.1 },
-      eurUsd: { value: 1.0542, change: -0.0016, changePercent: -0.15 }
-    };
-  }
+  // Simulate real-time market data with slight variations
+  const baseUsd = 103.45;
+  const baseEur = 1.0542;
+  const variation = (Math.random() - 0.5) * 0.02; // Small random variation
+  
+  const usdPrice = baseUsd + variation;
+  const eurPrice = baseEur + (variation * 0.001);
+  
+  // Calculate realistic daily changes
+  const usdChange = (Math.random() - 0.5) * 0.8; // Up to ±0.8
+  const eurChange = (Math.random() - 0.5) * 0.004; // Up to ±0.004
+  
+  return {
+    usdIndex: {
+      value: usdPrice,
+      change: usdChange,
+      changePercent: (usdChange / (usdPrice - usdChange)) * 100
+    },
+    volume: {
+      value: '$6.8T',
+      change: 2.1 + (Math.random() - 0.5) * 0.5 // Slight variation
+    },
+    eurUsd: {
+      value: eurPrice,
+      change: eurChange,
+      changePercent: (eurChange / (eurPrice - eurChange)) * 100
+    }
+  };
 };
 
 const MarketStats = () => {

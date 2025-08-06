@@ -159,7 +159,7 @@ What would you like to know more about?`
       <div className="fixed bottom-4 left-4 z-50">
         <Button
           onClick={() => setIsOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 rounded-full p-4"
+          className="bg-blue-600 hover:bg-blue-700 rounded-full p-4 shadow-lg"
         >
           <MessageCircle className="w-6 h-6" />
         </Button>
@@ -168,8 +168,8 @@ What would you like to know more about?`
   }
 
   return (
-    <div className="fixed bottom-4 left-4 z-50 w-80">
-      <Card className="bg-gray-900 border-gray-700">
+    <div className="fixed bottom-4 left-4 z-50 w-96 max-w-[calc(100vw-2rem)]">
+      <Card className="bg-gray-900 border-gray-700 shadow-xl">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-white flex items-center gap-2">

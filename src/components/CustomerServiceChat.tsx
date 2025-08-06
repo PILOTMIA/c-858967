@@ -87,7 +87,7 @@ Sent from Men In Action LLC website
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-96">
+    <div className="fixed bottom-4 right-4 z-50 w-96 max-w-[calc(100vw-2rem)]">
       <Card className="bg-gray-900 border-gray-700 shadow-xl">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
