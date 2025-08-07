@@ -40,20 +40,68 @@ const Index = () => {
       </div>
 
       <div className="max-w-7xl mx-auto p-4 space-y-6">
-        {/* Hero Section with Logo */}
-        <div className="text-center py-12 bg-gradient-to-b from-gray-900 to-gray-800 rounded-xl border border-gray-700">
-          <div className="flex justify-center mb-6">
-            <img 
-              src="/lovable-uploads/de01d78a-6a09-4e50-9bf9-dca6ec9d1924.png" 
-              alt="Men In Action LLC" 
-              className="h-80 w-auto max-w-full object-contain"
-            />
+        {/* Hero Section with Vector Logo Background */}
+        <div className="relative overflow-hidden text-center py-24 bg-gradient-to-b from-gray-900 to-gray-800 rounded-xl border border-gray-700">
+          {/* Vector Logo Background */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-10">
+            <div className="w-full h-full max-w-6xl">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" className="w-full h-full">
+                <defs>
+                  <linearGradient id="circleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style={{stopColor: '#22C55E', stopOpacity: 0.8}} />
+                    <stop offset="50%" style={{stopColor: '#16A34A', stopOpacity: 0.6}} />
+                    <stop offset="100%" style={{stopColor: '#15803D', stopOpacity: 0.4}} />
+                  </linearGradient>
+                  <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style={{stopColor: '#9CA3AF'}} />
+                    <stop offset="20%" style={{stopColor: '#22C55E'}} />
+                    <stop offset="35%" style={{stopColor: '#9CA3AF'}} />
+                    <stop offset="85%" style={{stopColor: '#22C55E'}} />
+                    <stop offset="100%" style={{stopColor: '#22C55E'}} />
+                  </linearGradient>
+                </defs>
+                
+                {/* Outer circle ring */}
+                <circle cx="200" cy="150" r="80" fill="none" stroke="#6B7280" strokeWidth="8" opacity="0.6"/>
+                
+                {/* Green accent arcs */}
+                <path d="M 140 90 A 80 80 0 0 1 260 90" fill="none" stroke="url(#circleGradient)" strokeWidth="12" strokeLinecap="round"/>
+                <path d="M 140 210 A 80 80 0 0 0 260 210" fill="none" stroke="url(#circleGradient)" strokeWidth="12" strokeLinecap="round"/>
+                
+                {/* MIA letters in circle */}
+                <g transform="translate(200, 150)">
+                  <rect x="-45" y="-25" width="12" height="50" fill="#6B7280"/>
+                  <rect x="-28" y="-25" width="12" height="50" fill="#6B7280"/>
+                  <rect x="-40" y="-20" width="25" height="8" fill="#6B7280"/>
+                  <rect x="-5" y="-25" width="12" height="50" fill="#22C55E"/>
+                  <rect x="18" y="-25" width="12" height="50" fill="#6B7280"/>
+                  <rect x="35" y="-25" width="12" height="50" fill="#6B7280"/>
+                  <rect x="23" y="-20" width="19" height="8" fill="#6B7280"/>
+                  <rect x="23" y="0" width="19" height="8" fill="#6B7280"/>
+                </g>
+                
+                {/* Company text */}
+                <text x="50" y="280" fontFamily="Arial, sans-serif" fontSize="48" fontWeight="bold" fill="url(#textGradient)">
+                  MEN IN ACTION LLC
+                </text>
+                
+                {/* Decorative elements */}
+                <circle cx="50" cy="50" r="3" fill="#22C55E" opacity="0.6"/>
+                <circle cx="750" cy="50" r="3" fill="#22C55E" opacity="0.6"/>
+                <circle cx="50" cy="350" r="3" fill="#22C55E" opacity="0.6"/>
+                <circle cx="750" cy="350" r="3" fill="#22C55E" opacity="0.6"/>
+              </svg>
+            </div>
           </div>
-          <h2 className="text-4xl font-bold text-white mb-4">Welcome to Your Trading Hub</h2>
-          <p className="text-gray-300 text-lg mb-8 max-w-2xl mx-auto">
-            Professional forex analysis, education, and community all in one place. 
-            Transform your trading journey with expert guidance and real-time market insights.
-          </p>
+          
+          {/* Content over logo */}
+          <div className="relative z-10">
+            <h2 className="text-4xl font-bold text-white mb-4">Welcome to Your Trading Hub</h2>
+            <p className="text-gray-300 text-lg mb-8 max-w-2xl mx-auto">
+              Professional forex analysis, education, and community all in one place. 
+              Transform your trading journey with expert guidance and real-time market insights.
+            </p>
+          </div>
           <div className="flex justify-center gap-4">
             <button 
               onClick={() => navigate('/education')}
