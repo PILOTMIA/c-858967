@@ -26,12 +26,41 @@ const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
   const [showVipPrompt, setShowVipPrompt] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Streaming response effect
+  const streamResponse = (responseText: string, messageId: number) => {
+    setIsTyping(true);
+    let index = 0;
+    
+    const typingInterval = setInterval(() => {
+      setMessages(prev => {
+        const updated = [...prev];
+        const messageIndex = updated.findIndex(msg => msg.id === messageId);
+        
+        if (messageIndex !== -1) {
+          const currentText = responseText.slice(0, index + 1);
+          updated[messageIndex] = { ...updated[messageIndex], text: currentText };
+        }
+        
+        return updated;
+      });
+
+      index++;
+      if (index >= responseText.length) {
+        clearInterval(typingInterval);
+        setIsTyping(false);
+      }
+    }, 30); // Typing speed - adjust for faster/slower typing
+
+    return () => clearInterval(typingInterval);
+  };
 
   const elderKnowledge = {
     'triple screen': `The Triple Screen Trading System is my signature method:
@@ -293,27 +322,26 @@ What specific aspect of trading would you like to discuss? Remember, successful 
     setMessages(prev => [...prev, userMessage]);
     setQuestionCount(prev => prev + 1);
 
+    // Show typing indicator immediately
+    const typingMessage: Message = {
+      id: Date.now() + 1,
+      text: "",
+      isBot: true,
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, typingMessage]);
+
     setTimeout(() => {
       if (questionCount >= 4) {
         // Show VIP prompt after 5 questions
-        const vipMessage: Message = {
-          id: Date.now() + 1,
-          text: "You've asked excellent questions! 🎉 As a professional trader, I believe in continuous learning. For unlimited access to my advanced strategies, detailed market analysis, and personalized guidance based on 30+ years of trading experience, join our VIP community. You'll get the same disciplined approach I teach to professional traders.",
-          isBot: true,
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, vipMessage]);
-        setShowVipPrompt(true);
+        const vipText = "You've asked excellent questions! 🎉 As a professional trader, I believe in continuous learning. For unlimited access to my advanced strategies, detailed market analysis, and personalized guidance based on 30+ years of trading experience, join our VIP community. You'll get the same disciplined approach I teach to professional traders.";
+        streamResponse(vipText, typingMessage.id);
+        setTimeout(() => setShowVipPrompt(true), vipText.length * 30 + 500);
       } else {
-        const botResponse: Message = {
-          id: Date.now() + 1,
-          text: generateElderResponse(inputMessage),
-          isBot: true,
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, botResponse]);
+        const responseText = generateElderResponse(inputMessage);
+        streamResponse(responseText, typingMessage.id);
       }
-    }, 1500); // Slightly longer delay for more thoughtful responses
+    }, 800); // Initial delay before typing starts
 
     setInputMessage('');
   };
@@ -363,9 +391,18 @@ What specific aspect of trading would you like to discuss? Remember, successful 
                       ? 'bg-blue-900/30 text-blue-100 border-l-2 border-blue-400'
                       : 'bg-gray-700 text-white ml-4'
                   }`}
-                >
-                  {message.text}
-                </div>
+                 >
+                   {message.text || (message.isBot && isTyping && (
+                     <div className="flex items-center gap-1">
+                       <span>Thinking</span>
+                       <div className="flex gap-1">
+                         <div className="w-1 h-1 bg-blue-400 rounded-full animate-bounce"></div>
+                         <div className="w-1 h-1 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                         <div className="w-1 h-1 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
                 <div className="text-xs text-right text-gray-400">
                   {message.timestamp.toLocaleTimeString()}
                 </div>
@@ -396,17 +433,36 @@ What specific aspect of trading would you like to discuss? Remember, successful 
               </Button>
             </div>
           ) : (
-            <div className="flex gap-2">
-              <Input
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder="Ask about trading strategies..."
-                className="bg-gray-800 border-gray-600 text-white"
-              />
-              <Button onClick={handleSendMessage} size="sm" disabled={showVipPrompt || !inputMessage.trim()}>
-                <Send className="w-4 h-4" />
-              </Button>
+            <div className="space-y-2">
+              {/* Quick suggestion buttons */}
+              {!inputMessage.trim() && (
+                <div className="flex flex-wrap gap-1">
+                  {["Triple Screen", "Risk Management", "Psychology", "MACD", "Force Index", "Beginner Guide"].map((topic) => (
+                    <Button 
+                      key={topic} 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => setInputMessage(topic)}
+                      className="text-xs bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+                    >
+                      {topic}
+                    </Button>
+                  ))}
+                </div>
+              )}
+              
+              <div className="flex gap-2">
+                <Input
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  placeholder="Ask about trading strategies..."
+                  className="bg-gray-800 border-gray-600 text-white"
+                />
+                <Button onClick={handleSendMessage} size="sm" disabled={showVipPrompt || !inputMessage.trim() || isTyping}>
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
