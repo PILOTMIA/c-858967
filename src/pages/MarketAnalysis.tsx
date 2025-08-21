@@ -5,6 +5,7 @@ import ForexPerformance from "@/components/ForexPerformance";
 import COTData from "@/components/COTData";
 import FedWatchTool from "@/components/FedWatchTool";
 import NewsSentimentAnalysis from "@/components/NewsSentimentAnalysis";
+import FundamentalNewsAnalysis from "@/components/FundamentalNewsAnalysis";
 import { useState } from "react";
 
 const MarketAnalysis = () => {
@@ -24,6 +25,9 @@ const MarketAnalysis = () => {
 
         {/* News Sentiment Analysis */}
         <NewsSentimentAnalysis />
+
+        {/* Fundamental News Analysis */}
+        <FundamentalNewsAnalysis />
 
         {/* Heat Map */}
         <ForexHeatMap />
