@@ -10,6 +10,7 @@ import Education from "./pages/Education";
 import Community from "./pages/Community";
 import Tools from "./pages/Tools";
 import Profile from "./pages/Profile";
+import CentralBankRates from "./pages/CentralBankRates";
 import AppNavigation from "./components/AppNavigation";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/education" element={<Education />} />
           <Route path="/community" element={<Community />} />
           <Route path="/tools" element={<Tools />} />
+          <Route path="/central-bank-rates" element={<CentralBankRates />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>
       </BrowserRouter>

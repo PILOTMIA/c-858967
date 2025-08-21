@@ -49,8 +49,8 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       currency: "USD",
       centralBank: "Federal Reserve (Fed)",
       currentRate: 5.50,
-      lastUpdate: "2024-01-31",
-      nextMeeting: "2024-03-20",
+      lastUpdate: "2025-07-31",
+      nextMeeting: "2025-09-17",
       projections: {
         month6: { rate: 5.25, probability: 75, direction: 'down' },
         month12: { rate: 4.75, probability: 80, direction: 'down' }
@@ -67,8 +67,8 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       currency: "EUR",
       centralBank: "European Central Bank (ECB)",
       currentRate: 4.50,
-      lastUpdate: "2024-01-25",
-      nextMeeting: "2024-03-07",
+      lastUpdate: "2025-07-18",
+      nextMeeting: "2025-09-12",
       projections: {
         month6: { rate: 4.25, probability: 70, direction: 'down' },
         month12: { rate: 3.75, probability: 75, direction: 'down' }
@@ -84,9 +84,9 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       country: "United Kingdom",
       currency: "GBP",
       centralBank: "Bank of England (BoE)",
-      currentRate: 5.25,
-      lastUpdate: "2024-02-01",
-      nextMeeting: "2024-03-21",
+      currentRate: 4.25,
+      lastUpdate: "2025-08-07",
+      nextMeeting: "2025-09-19",
       projections: {
         month6: { rate: 4.75, probability: 80, direction: 'down' },
         month12: { rate: 4.25, probability: 85, direction: 'down' }
@@ -102,9 +102,9 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       country: "Japan",
       currency: "JPY",
       centralBank: "Bank of Japan (BoJ)",
-      currentRate: -0.10,
-      lastUpdate: "2024-01-23",
-      nextMeeting: "2024-03-19",
+      currentRate: 0.50,
+      lastUpdate: "2025-07-31",
+      nextMeeting: "2025-09-20",
       projections: {
         month6: { rate: 0.00, probability: 60, direction: 'up' },
         month12: { rate: 0.25, probability: 70, direction: 'up' }
@@ -120,9 +120,9 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       country: "Canada",
       currency: "CAD",
       centralBank: "Bank of Canada (BoC)",
-      currentRate: 5.00,
-      lastUpdate: "2024-01-24",
-      nextMeeting: "2024-03-06",
+      currentRate: 4.25,
+      lastUpdate: "2025-07-24",
+      nextMeeting: "2025-09-04",
       projections: {
         month6: { rate: 4.50, probability: 75, direction: 'down' },
         month12: { rate: 3.75, probability: 80, direction: 'down' }
@@ -139,8 +139,8 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       currency: "AUD",
       centralBank: "Reserve Bank of Australia (RBA)",
       currentRate: 4.35,
-      lastUpdate: "2024-02-06",
-      nextMeeting: "2024-03-19",
+      lastUpdate: "2025-08-06",
+      nextMeeting: "2025-09-03",
       projections: {
         month6: { rate: 4.10, probability: 65, direction: 'down' },
         month12: { rate: 3.85, probability: 70, direction: 'down' }
@@ -156,9 +156,9 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       country: "New Zealand",
       currency: "NZD",
       centralBank: "Reserve Bank of New Zealand (RBNZ)",
-      currentRate: 5.50,
-      lastUpdate: "2024-02-28",
-      nextMeeting: "2024-04-10",
+      currentRate: 5.25,
+      lastUpdate: "2025-08-14",
+      nextMeeting: "2025-10-09",
       projections: {
         month6: { rate: 5.25, probability: 70, direction: 'down' },
         month12: { rate: 4.75, probability: 75, direction: 'down' }
@@ -174,9 +174,9 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       country: "Switzerland",
       currency: "CHF",
       centralBank: "Swiss National Bank (SNB)",
-      currentRate: 1.75,
-      lastUpdate: "2023-12-14",
-      nextMeeting: "2024-03-21",
+      currentRate: 1.25,
+      lastUpdate: "2025-06-20",
+      nextMeeting: "2025-09-26",
       projections: {
         month6: { rate: 1.50, probability: 60, direction: 'down' },
         month12: { rate: 1.25, probability: 65, direction: 'down' }
@@ -375,14 +375,14 @@ const CentralBankRates = () => {
                 <div className="border-t border-gray-700 pt-3">
                   <h4 className="text-sm font-medium text-gray-300 mb-2">Recent Changes</h4>
                   <div className="space-y-1">
-                    {bank.recentChanges.slice(0, 2).map((change, index) => (
-                      <div key={index} className="flex justify-between text-xs">
-                        <span className="text-gray-400">{new Date(change.date).toLocaleDateString()}</span>
-                        <span className={change.change > 0 ? 'text-green-400' : change.change < 0 ? 'text-red-400' : 'text-yellow-400'}>
-                          {change.change > 0 ? '+' : ''}{change.change}% ({change.rate}%)
-                        </span>
-                      </div>
-                    ))}
+        {bank.recentChanges.slice(0, 2).map((change, index) => (
+          <div key={index} className="flex justify-between text-xs">
+            <span className="text-gray-400">{new Date(change.date).toLocaleDateString()}</span>
+            <span className={change.change > 0 ? 'text-green-400' : change.change < 0 ? 'text-red-400' : 'text-yellow-400'}>
+              {change.change > 0 ? '+' : ''}{change.change}% ({change.rate}%)
+            </span>
+          </div>
+        ))}
                   </div>
                 </div>
               </CardContent>

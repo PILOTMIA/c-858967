@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Menu, X, Home, TrendingUp, BookOpen, Users, BarChart3, Settings } from 'lucide-react';
+import { Menu, X, Home, TrendingUp, BookOpen, Users, BarChart3, Calendar, Settings } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const AppNavigation = () => {
@@ -13,6 +13,7 @@ const AppNavigation = () => {
     { path: '/education', label: 'Education', icon: BookOpen },
     { path: '/community', label: 'Community', icon: Users },
     { path: '/tools', label: 'Trading Tools', icon: BarChart3 },
+    { path: '/central-bank-rates', label: 'Central Bank Rates', icon: Calendar },
     { path: '/profile', label: 'Profile', icon: Settings },
   ];
 
