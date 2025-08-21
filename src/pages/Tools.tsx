@@ -3,6 +3,7 @@ import RealTimeData from "@/components/RealTimeData";
 import SentimentWidget from "@/components/SentimentWidget";
 import TradingBot from "@/components/TradingBot";
 import NewsSentimentAnalysis from "@/components/NewsSentimentAnalysis";
+import CentralBankRates from "@/components/CentralBankRates";
 
 const Tools = () => {
   return (
@@ -15,6 +16,9 @@ const Tools = () => {
 
         {/* News Sentiment Analysis */}
         <NewsSentimentAnalysis />
+
+        {/* Central Bank Interest Rate Forecaster */}
+        <CentralBankRates />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <RealTimeData />
