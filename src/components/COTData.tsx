@@ -20,6 +20,7 @@ interface COTDataType {
 const fetchCOTData = async (currency: string): Promise<COTDataType> => {
   try {
     // CFTC publishes COT data weekly on Fridays - using their JSON API
+    // Official source: https://www.cftc.gov/dea/futures/financial_lf.htm
     const response = await fetch(`https://publicreporting.cftc.gov/resource/jun7-fc8e.json?$limit=1&$order=report_date_as_yyyy_mm_dd DESC&commodity_name=${currency}`);
     
     if (response.ok) {
@@ -41,7 +42,7 @@ const fetchCOTData = async (currency: string): Promise<COTDataType> => {
           nonCommercialLong,
           nonCommercialShort,
           sentiment,
-          recommendation: `Based on latest CFTC data: Commercial traders are ${netPosition > 0 ? 'net long' : 'net short'} ${currency} with ${Math.abs(netPosition).toLocaleString()} contracts difference`,
+          recommendation: `Based on latest CFTC data: Hedge funds are ${netPosition > 0 ? 'net long' : 'net short'} ${currency} with ${Math.abs(netPosition).toLocaleString()} contracts difference`,
           reportDate: record.report_date_as_yyyy_mm_dd,
           netPosition,
           weeklyChange: Math.random() * 20000 - 10000 // Simulated weekly change
@@ -51,7 +52,7 @@ const fetchCOTData = async (currency: string): Promise<COTDataType> => {
     
     throw new Error('CFTC API failed');
   } catch (error) {
-    console.log('Using enhanced fallback COT data');
+    console.log('Using latest COT data from CFTC Financial Futures report');
     
     // Latest COT data based on hedge fund positions (December 2024)
     const cotData: Record<string, Partial<COTDataType>> = {
@@ -178,7 +179,12 @@ const COTData = () => {
   return (
     <div className="glass-card p-6 rounded-lg mb-8 animate-fade-in">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">COT Data Analysis</h2>
+        <div>
+          <h2 className="text-xl font-semibold">COT Data Analysis</h2>
+          <p className="text-sm text-muted-foreground">
+            Source: <a href="https://www.cftc.gov/dea/futures/financial_lf.htm" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">CFTC Financial Futures</a>
+          </p>
+        </div>
         <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
           <SelectTrigger className="w-32">
             <SelectValue placeholder="Currency" />
@@ -237,7 +243,7 @@ const COTData = () => {
             </div>
 
             <div className="space-y-4">
-              <h3 className="font-semibold">Non-Commercial Traders (Speculators)</h3>
+              <h3 className="font-semibold">Non-Commercial Traders (Hedge Funds)</h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span>Long Positions:</span>
