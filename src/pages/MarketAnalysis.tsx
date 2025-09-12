@@ -6,6 +6,7 @@ import COTData from "@/components/COTData";
 import FedWatchTool from "@/components/FedWatchTool";
 import NewsSentimentAnalysis from "@/components/NewsSentimentAnalysis";
 import FundamentalNewsAnalysis from "@/components/FundamentalNewsAnalysis";
+import CentralBankNewsTracker from "@/components/CentralBankNewsTracker";
 import { useState } from "react";
 
 const MarketAnalysis = () => {
@@ -22,6 +23,9 @@ const MarketAnalysis = () => {
           <h1 className="text-3xl font-bold text-white mb-2">Market Analysis</h1>
           <p className="text-gray-300">Real-time forex market analysis and insights</p>
         </div>
+
+        {/* Central Bank News Tracker */}
+        <CentralBankNewsTracker />
 
         {/* News Sentiment Analysis */}
         <NewsSentimentAnalysis />

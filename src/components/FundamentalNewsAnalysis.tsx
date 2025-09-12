@@ -207,7 +207,8 @@ const FundamentalNewsAnalysis = () => {
   const { data: articles, isLoading, error } = useQuery({
     queryKey: ['fundamentalNews'],
     queryFn: fetchFundamentalNews,
-    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 15000, // Consider data stale after 15 seconds
   });
 
   const getDirectionIcon = (direction: string) => {

@@ -214,8 +214,8 @@ const NewsSentimentAnalysis = () => {
   const { data: sentimentData, isLoading, error } = useQuery({
     queryKey: ['newsSentiment'],
     queryFn: fetchNewsSentiment,
-    refetchInterval: 900000, // Refetch every 15 minutes
-    staleTime: 600000, // Consider data stale after 10 minutes
+    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 15000, // Consider data stale after 15 seconds
   });
 
   const getSentimentIcon = (sentiment: string) => {
@@ -362,7 +362,7 @@ const NewsSentimentAnalysis = () => {
             {/* Live Update Indicator */}
             <div className="flex items-center justify-center gap-2 text-sm text-gray-400 pt-2 border-t border-gray-700">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span>Live sentiment analysis • Updates every 15 minutes</span>
+              <span>Live sentiment analysis • Updates every 30 seconds</span>
             </div>
           </>
         )}
