@@ -48,7 +48,20 @@ const MarketAnalysis = () => {
 
         {/* COT Data & Fed Watch */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <COTData />
+          <div className="bg-card border-border rounded-lg p-6">
+            <div className="text-center mb-4">
+              <h3 className="text-xl font-bold text-card-foreground mb-2">COT Analysis</h3>
+              <p className="text-muted-foreground text-sm mb-4">
+                For detailed Commitment of Traders analysis, visit our dedicated COT section
+              </p>
+              <button 
+                onClick={() => window.location.href = '/cot-analysis'}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium transition-colors"
+              >
+                View Full COT Analysis
+              </button>
+            </div>
+          </div>
           <FedWatchTool />
         </div>
       </div>

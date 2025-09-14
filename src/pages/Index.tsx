@@ -4,7 +4,7 @@ import ClientSignup from "@/components/ClientSignup";
 import BrandingSection from "@/components/BrandingSection";
 import ChatBot from "@/components/ChatBot";
 import CustomerServiceChat from "@/components/CustomerServiceChat";
-import TermsAgreementModal from "@/components/TermsAgreementModal";
+import BrokerRecommendations from "@/components/BrokerRecommendations";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
@@ -12,8 +12,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <TermsAgreementModal />
-      
       {/* Command Center Header */}
       <div className="bg-gray-900 border-b border-gray-700 sticky top-0 z-40 relative overflow-hidden">
         {/* Vector Logo Background */}
@@ -172,7 +170,7 @@ const Index = () => {
         <BrandingSection />
 
         {/* Quick Access Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div 
             onClick={() => navigate('/market-analysis')}
             className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-lg hover:from-gray-800 hover:to-gray-700 transition-all duration-300 cursor-pointer border border-gray-700 shadow-lg"
@@ -180,6 +178,15 @@ const Index = () => {
             <div className="text-3xl mb-3">📊</div>
             <h3 className="text-xl font-bold text-white mb-2">Market Analysis</h3>
             <p className="text-gray-300 text-sm">Real-time charts, heat maps, and professional analysis from our expert team</p>
+          </div>
+          
+          <div 
+            onClick={() => navigate('/cot-analysis')}
+            className="bg-gradient-to-br from-purple-900 to-purple-800 p-6 rounded-lg hover:from-purple-800 hover:to-purple-700 transition-all duration-300 cursor-pointer border border-purple-700 shadow-lg"
+          >
+            <div className="text-3xl mb-3">🎯</div>
+            <h3 className="text-xl font-bold text-white mb-2">COT Analysis</h3>
+            <p className="text-gray-300 text-sm">Follow the smart money with Commitment of Traders data and institutional positioning</p>
           </div>
           
           <div 
@@ -200,6 +207,9 @@ const Index = () => {
             <p className="text-gray-300 text-sm">Join our exclusive trading community and get premium signals</p>
           </div>
         </div>
+
+        {/* Broker Recommendations */}
+        <BrokerRecommendations />
 
         {/* VIP Signal Access */}
         <div className="bg-gradient-to-r from-green-900 via-green-800 to-green-900 p-8 rounded-xl text-center border border-green-700 shadow-xl">

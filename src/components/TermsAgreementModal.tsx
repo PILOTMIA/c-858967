@@ -9,6 +9,7 @@ const TermsAgreementModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [hasAgreed, setHasAgreed] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [showFirstTimeQuestion, setShowFirstTimeQuestion] = useState(false);
 
   useEffect(() => {
     // Check if user has already agreed to terms
@@ -23,9 +24,19 @@ const TermsAgreementModal = () => {
   const handleAgree = () => {
     if (agreedToTerms) {
       localStorage.setItem('termsAgreed', 'true');
-      setHasAgreed(true);
       setIsOpen(false);
+      setShowFirstTimeQuestion(true);
     }
+  };
+
+  const handleFirstTimeResponse = (isFirstTime: boolean) => {
+    if (!isFirstTime) {
+      // If not first time, mark tutorial as seen
+      localStorage.setItem('hasSeenTutorial', 'true');
+    }
+    // If first time, leave hasSeenTutorial unset so tutorial will show
+    setHasAgreed(true);
+    setShowFirstTimeQuestion(false);
   };
 
   const handleCheckboxChange = (checked: boolean | "indeterminate") => {
@@ -75,50 +86,97 @@ const TermsAgreementModal = () => {
     </ScrollArea>
   );
 
-  // Don't render the main content until user has agreed
-  if (!hasAgreed) {
+  // Don't render the main content until user has agreed and answered first-time question
+  if (!hasAgreed || showFirstTimeQuestion) {
     return (
-      <Dialog open={isOpen} onOpenChange={() => {}}>
-        <DialogContent className="sm:max-w-[700px] max-h-[90vh] bg-black border-gray-700" onPointerDownOutside={(e) => e.preventDefault()}>
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-center text-white">
-              <Shield className="w-6 h-6 inline mr-2 text-yellow-500" />
-              Men In Action LLC - Terms & Disclaimer
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="text-center">
-              <p className="text-white font-semibold mb-4">Please read before continuing:</p>
-            </div>
-
-            <TermsContent />
+      <>
+        {/* Terms Agreement Modal */}
+        <Dialog open={isOpen} onOpenChange={() => {}}>
+          <DialogContent className="sm:max-w-[700px] max-h-[90vh] bg-black border-gray-700" onPointerDownOutside={(e) => e.preventDefault()}>
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-center text-white">
+                <Shield className="w-6 h-6 inline mr-2 text-yellow-500" />
+                Men In Action LLC - Terms & Disclaimer
+              </DialogTitle>
+            </DialogHeader>
 
             <div className="space-y-4">
-              <div className="flex flex-row items-start space-x-3 space-y-0">
-                <Checkbox
-                  checked={agreedToTerms}
-                  onCheckedChange={handleCheckboxChange}
-                  className="border-gray-600 data-[state=checked]:bg-yellow-500"
-                />
-                <div className="space-y-1 leading-none">
-                  <label className="text-sm text-gray-200 cursor-pointer">
-                    I have read and agree to the terms and conditions, disclaimer, and understand the risks involved in forex trading.
-                  </label>
-                </div>
+              <div className="text-center">
+                <p className="text-white font-semibold mb-4">Please read before continuing:</p>
               </div>
 
-              <Button
-                onClick={handleAgree}
-                disabled={!agreedToTerms}
-                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-bold disabled:opacity-50"
-              >
-                I Agree - Continue to Website
-              </Button>
+              <TermsContent />
+
+              <div className="space-y-4">
+                <div className="flex flex-row items-start space-x-3 space-y-0">
+                  <Checkbox
+                    checked={agreedToTerms}
+                    onCheckedChange={handleCheckboxChange}
+                    className="border-gray-600 data-[state=checked]:bg-yellow-500"
+                  />
+                  <div className="space-y-1 leading-none">
+                    <label className="text-sm text-gray-200 cursor-pointer">
+                      I have read and agree to the terms and conditions, disclaimer, and understand the risks involved in forex trading.
+                    </label>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleAgree}
+                  disabled={!agreedToTerms}
+                  className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-bold disabled:opacity-50"
+                >
+                  I Agree - Continue to Website
+                </Button>
+              </div>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+
+        {/* First Time User Question Modal */}
+        <Dialog open={showFirstTimeQuestion} onOpenChange={() => {}}>
+          <DialogContent className="sm:max-w-[500px] bg-background border-border" onPointerDownOutside={(e) => e.preventDefault()}>
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-center text-foreground">
+                Welcome to Men In Action Trading!
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-6 text-center">
+              <div>
+                <p className="text-muted-foreground mb-4">
+                  Are you new to our platform or forex trading in general?
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  We can show you around with a quick tutorial to help you get started!
+                </p>
+              </div>
+
+              <div className="flex gap-4 justify-center">
+                <Button
+                  onClick={() => handleFirstTimeResponse(true)}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2"
+                >
+                  Yes, show me around!
+                </Button>
+                <Button
+                  onClick={() => handleFirstTimeResponse(false)}
+                  variant="outline"
+                  className="px-6 py-2"
+                >
+                  No, I'm familiar
+                </Button>
+              </div>
+
+              <div className="bg-primary/5 p-3 rounded-lg">
+                <p className="text-xs text-primary">
+                  💡 You can always restart the tutorial from the menu if you change your mind
+                </p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 
