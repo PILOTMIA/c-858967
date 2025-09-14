@@ -24,7 +24,7 @@ const FirstTimeUserTutorial = () => {
 
   const tutorialSteps = [
     {
-      title: "Welcome to Men In Action Trading Platform",
+      title: "Welcome to Men In Action Market Intelligence Hub",
       content: (
         <div className="space-y-4">
           <p className="text-foreground">

@@ -42,7 +42,7 @@ const BrokerRecommendations = () => {
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                <span className="text-muted-foreground">Advanced Trading Platform</span>
+                <span className="text-muted-foreground">Professional Charts & Tools</span>
               </div>
             </div>
             
