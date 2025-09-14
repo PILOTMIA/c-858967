@@ -154,12 +154,14 @@ const Index = () => {
             >
               Start Learning Today
             </button>
-            <button 
-              onClick={() => navigate('/market-analysis')}
-              className="bg-gray-700 hover:bg-gray-600 text-white px-8 py-4 rounded-lg font-semibold transition-colors border border-gray-600"
+            <a 
+              href="https://www.youtube.com/@ForexToday/videos"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-gray-700 hover:bg-gray-600 text-white px-8 py-4 rounded-lg font-semibold transition-colors border border-gray-600 inline-block text-center"
             >
               View Live Analysis
-            </button>
+            </a>
           </div>
         </div>
 
