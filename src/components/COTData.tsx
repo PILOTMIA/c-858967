@@ -217,9 +217,9 @@ const COTData = () => {
             <SelectTrigger className="w-36 bg-background/50 border-border/50 hover:bg-background transition-colors">
               <SelectValue placeholder="Currency" />
             </SelectTrigger>
-            <SelectContent className="bg-card border-border text-foreground z-50">
+            <SelectContent className="bg-background border-border text-foreground z-50 shadow-lg">
               {currencies.map(currency => (
-                <SelectItem key={currency} value={currency} className="hover:bg-accent/50 focus:bg-accent focus:text-accent-foreground">
+                <SelectItem key={currency} value={currency} className="hover:bg-accent focus:bg-accent focus:text-accent-foreground bg-background">
                   <span className="font-medium">{currency}</span>/USD
                 </SelectItem>
               ))}
