@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Menu, X, Home, TrendingUp, BookOpen, Users, BarChart3, Calendar, Settings, PieChart } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { ThemeToggle } from './ThemeToggle';
 
 const AppNavigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,13 +23,16 @@ const AppNavigation = () => {
 
   return (
     <>
-      {/* Menu Button - Top Right */}
-      <button
-        onClick={toggleMenu}
-        className="fixed top-4 right-4 z-50 bg-gray-900 text-white p-3 rounded-lg shadow-lg hover:bg-gray-800 transition-colors"
-      >
-        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-      </button>
+      {/* Menu Button and Theme Toggle - Top Right */}
+      <div className="fixed top-4 right-4 z-50 flex gap-2">
+        <ThemeToggle />
+        <button
+          onClick={toggleMenu}
+          className="bg-card border border-border text-foreground p-3 rounded-lg shadow-lg hover:bg-accent transition-colors"
+        >
+          {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </div>
 
       {/* Overlay */}
       {isOpen && (
@@ -40,7 +44,7 @@ const AppNavigation = () => {
 
       {/* Menu Panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-gray-900 text-white transform transition-transform duration-300 ease-in-out z-50 ${
+        className={`fixed top-0 right-0 h-full w-80 bg-card border-l border-border text-foreground transform transition-transform duration-300 ease-in-out z-50 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -58,8 +62,8 @@ const AppNavigation = () => {
                   onClick={toggleMenu}
                   className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
                     isActive 
-                      ? 'bg-blue-600 text-white' 
-                      : 'hover:bg-gray-800 text-gray-300 hover:text-white'
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'hover:bg-accent text-muted-foreground hover:text-accent-foreground'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
