@@ -269,19 +269,19 @@ const CentralBankRates = () => {
           </CardTitle>
           <div className="flex gap-2">
             <Select value={selectedBank} onValueChange={setSelectedBank}>
-              <SelectTrigger className="w-32 bg-gray-800 border-gray-700">
+              <SelectTrigger className="w-32 bg-card border-border text-foreground">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-700">
-                <SelectItem value="all">All Banks</SelectItem>
-                <SelectItem value="USD">USD (Fed)</SelectItem>
-                <SelectItem value="EUR">EUR (ECB)</SelectItem>
-                <SelectItem value="GBP">GBP (BoE)</SelectItem>
-                <SelectItem value="JPY">JPY (BoJ)</SelectItem>
-                <SelectItem value="CAD">CAD (BoC)</SelectItem>
-                <SelectItem value="AUD">AUD (RBA)</SelectItem>
-                <SelectItem value="NZD">NZD (RBNZ)</SelectItem>
-                <SelectItem value="CHF">CHF (SNB)</SelectItem>
+              <SelectContent className="bg-card border-border text-foreground z-50">
+                <SelectItem value="all" className="focus:bg-accent focus:text-accent-foreground">All Banks</SelectItem>
+                <SelectItem value="USD" className="focus:bg-accent focus:text-accent-foreground">USD (Fed)</SelectItem>
+                <SelectItem value="EUR" className="focus:bg-accent focus:text-accent-foreground">EUR (ECB)</SelectItem>
+                <SelectItem value="GBP" className="focus:bg-accent focus:text-accent-foreground">GBP (BoE)</SelectItem>
+                <SelectItem value="JPY" className="focus:bg-accent focus:text-accent-foreground">JPY (BoJ)</SelectItem>
+                <SelectItem value="CAD" className="focus:bg-accent focus:text-accent-foreground">CAD (BoC)</SelectItem>
+                <SelectItem value="AUD" className="focus:bg-accent focus:text-accent-foreground">AUD (RBA)</SelectItem>
+                <SelectItem value="NZD" className="focus:bg-accent focus:text-accent-foreground">NZD (RBNZ)</SelectItem>
+                <SelectItem value="CHF" className="focus:bg-accent focus:text-accent-foreground">CHF (SNB)</SelectItem>
               </SelectContent>
             </Select>
           </div>

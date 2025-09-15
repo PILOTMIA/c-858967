@@ -49,6 +49,7 @@ export default {
           DEFAULT: "#8989DE",
           foreground: "#FAFAF8",
         },
+        "nav-green": "hsl(var(--nav-green))",
       },
       borderRadius: {
         lg: "1rem",

@@ -23,12 +23,12 @@ const AppNavigation = () => {
 
   return (
     <>
-      {/* Menu Button and Theme Toggle - Top Right */}
-      <div className="fixed top-4 right-4 z-50 flex gap-2">
+      {/* Menu Button and Theme Toggle - Below Banner */}
+      <div className="fixed top-16 right-4 z-50 flex gap-2">
         <ThemeToggle />
         <button
           onClick={toggleMenu}
-          className="bg-card border border-border text-foreground p-3 rounded-lg shadow-lg hover:bg-accent transition-colors"
+          className="bg-nav-green text-white p-3 rounded-lg shadow-lg hover:bg-nav-green/80 transition-colors border border-nav-green/50"
         >
           {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
