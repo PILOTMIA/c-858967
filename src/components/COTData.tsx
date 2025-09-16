@@ -1,8 +1,12 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import COTChart from "./COTChart";
+import COTBiasVisualization from "./COTBiasVisualization";
+import COTOverview from "./COTOverview";
+import COTDataUpload from "./COTDataUpload";
 
 interface COTDataType {
   currency: string;
@@ -165,12 +169,87 @@ const fetchCOTData = async (currency: string): Promise<COTDataType> => {
 
 const COTData = () => {
   const [selectedCurrency, setSelectedCurrency] = useState('EUR');
+  const [uploadedData, setUploadedData] = useState<any>(null);
   
   const { data: cotData, isLoading } = useQuery({
     queryKey: ['cotData', selectedCurrency],
     queryFn: () => fetchCOTData(selectedCurrency),
     refetchInterval: 3600000, // Refetch every hour
   });
+
+  // Generate sample historical data for charts
+  const generateHistoricalData = (currency: string) => {
+    const data = [];
+    const basePrice = currency === 'EUR' ? 1.0850 : currency === 'GBP' ? 1.2650 : 145.50;
+    
+    for (let i = 12; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - (i * 7)); // Weekly data
+      
+      const randomVariation = (Math.random() - 0.5) * 20000;
+      const priceVariation = (Math.random() - 0.5) * 0.1;
+      
+      data.push({
+        date: date.toISOString().split('T')[0],
+        netPosition: (cotData?.netPosition || 0) + randomVariation,
+        price: basePrice + priceVariation,
+        longPositions: (cotData?.nonCommercialLong || 0) + Math.random() * 10000,
+        shortPositions: (cotData?.nonCommercialShort || 0) + Math.random() * 10000,
+      });
+    }
+    return data;
+  };
+
+  // Generate bias data for all currencies
+  const generateBiasData = () => {
+    const currencies = ['EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'MXN'];
+    return currencies.map(curr => {
+      const mockCotData = {
+        EUR: { netPosition: 29673, bias: 'BULLISH' as const, weeklyChange: -4534, price: 1.0850 },
+        GBP: { netPosition: 21679, bias: 'BULLISH' as const, weeklyChange: -1975, price: 1.2650 },
+        JPY: { netPosition: -56443, bias: 'BEARISH' as const, weeklyChange: -15055, price: 145.50 },
+        CHF: { netPosition: 1415, bias: 'NEUTRAL' as const, weeklyChange: 1352, price: 0.8720 },
+        AUD: { netPosition: -10353, bias: 'BEARISH' as const, weeklyChange: -5870, price: 0.6580 },
+        CAD: { netPosition: -44029, bias: 'BEARISH' as const, weeklyChange: -7886, price: 1.3650 },
+        MXN: { netPosition: 34350, bias: 'BULLISH' as const, weeklyChange: 6073, price: 17.25 }
+      }[curr] || { netPosition: 0, bias: 'NEUTRAL' as const, weeklyChange: 0, price: 1.0000 };
+
+      return {
+        currency: curr,
+        netPosition: mockCotData.netPosition,
+        positioningStrength: Math.abs(mockCotData.netPosition) / 1000,
+        bias: mockCotData.bias,
+        weeklyChange: mockCotData.weeklyChange,
+        currentPrice: mockCotData.price
+      };
+    });
+  };
+
+  // Generate overview data
+  const generateOverviewData = () => {
+    const currencies = ['EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'MXN'];
+    return currencies.map(curr => {
+      const mockData = {
+        EUR: { netPosition: 29673, sentiment: 'BULLISH' as const, weeklyChange: -4534, commercialLong: 46785, commercialShort: 506665, nonCommercialLong: 107011, nonCommercialShort: 77338 },
+        GBP: { netPosition: 21679, sentiment: 'BULLISH' as const, weeklyChange: -1975, commercialLong: 78680, commercialShort: 20162, nonCommercialLong: 65228, nonCommercialShort: 43549 },
+        JPY: { netPosition: -56443, sentiment: 'BEARISH' as const, weeklyChange: -15055, commercialLong: 68189, commercialShort: 188404, nonCommercialLong: 37470, nonCommercialShort: 93913 },
+        CHF: { netPosition: 1415, sentiment: 'NEUTRAL' as const, weeklyChange: 1352, commercialLong: 51711, commercialShort: 6780, nonCommercialLong: 7112, nonCommercialShort: 5697 },
+        AUD: { netPosition: -10353, sentiment: 'BEARISH' as const, weeklyChange: -5870, commercialLong: 75618, commercialShort: 3250, nonCommercialLong: 23431, nonCommercialShort: 33784 },
+        CAD: { netPosition: -44029, sentiment: 'BEARISH' as const, weeklyChange: -7886, commercialLong: 125458, commercialShort: 16974, nonCommercialLong: 14546, nonCommercialShort: 58575 },
+        MXN: { netPosition: 34350, sentiment: 'BULLISH' as const, weeklyChange: 6073, commercialLong: 11640, commercialShort: 88693, nonCommercialLong: 72376, nonCommercialShort: 38026 }
+      }[curr] || { netPosition: 0, sentiment: 'NEUTRAL' as const, weeklyChange: 0, commercialLong: 0, commercialShort: 0, nonCommercialLong: 0, nonCommercialShort: 0 };
+
+      return {
+        currency: curr,
+        ...mockData
+      };
+    });
+  };
+
+  const handleDataUpload = (newData: any) => {
+    setUploadedData(newData);
+    // In a real app, you would update your database/state management here
+  };
 
   const currencies = ['EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'MXN'];
 
@@ -201,160 +280,201 @@ const COTData = () => {
   };
 
   return (
-    <div className="glass-card p-6 rounded-xl mb-8 animate-fade-in border border-border/50 bg-gradient-to-br from-card/80 to-card backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
-      <div className="flex items-center justify-between mb-6">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            COT Data Analysis
-          </h2>
-          <p className="text-sm text-muted-foreground flex items-center gap-2">
-            <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            Live from: <a href="https://www.cftc.gov/dea/futures/financial_lf.htm" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium transition-colors">CFTC Financial Futures</a>
-          </p>
+    <div className="space-y-6">
+      {/* Enhanced COT Analysis with Tabs */}
+      <div className="glass-card p-6 rounded-xl animate-fade-in border border-border/50 bg-gradient-to-br from-card/80 to-card backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="flex items-center justify-between mb-6">
+          <div className="space-y-1">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              COT Data Analysis Dashboard
+            </h2>
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
+              <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              Live from: <a href="https://www.cftc.gov/dea/futures/financial_lf.htm" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium transition-colors">CFTC Financial Futures</a>
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+              <SelectTrigger className="w-36 bg-background/50 border-border/50 hover:bg-background transition-colors">
+                <SelectValue placeholder="Currency" />
+              </SelectTrigger>
+              <SelectContent className="bg-background border-border text-foreground z-50 shadow-lg">
+                {currencies.map(currency => (
+                  <SelectItem key={currency} value={currency} className="hover:bg-accent focus:bg-accent focus:text-accent-foreground bg-background">
+                    <span className="font-medium">{currency}</span>/USD
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
-            <SelectTrigger className="w-36 bg-background/50 border-border/50 hover:bg-background transition-colors">
-              <SelectValue placeholder="Currency" />
-            </SelectTrigger>
-            <SelectContent className="bg-background border-border text-foreground z-50 shadow-lg">
-              {currencies.map(currency => (
-                <SelectItem key={currency} value={currency} className="hover:bg-accent focus:bg-accent focus:text-accent-foreground bg-background">
-                  <span className="font-medium">{currency}</span>/USD
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-5 mb-6">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="charts">Charts</TabsTrigger>
+            <TabsTrigger value="bias">Bias Analysis</TabsTrigger>
+            <TabsTrigger value="detailed">Detailed Data</TabsTrigger>
+            <TabsTrigger value="upload">Upload Data</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <COTOverview data={generateOverviewData()} />
+          </TabsContent>
+
+          <TabsContent value="charts" className="space-y-6">
+            <COTChart 
+              data={generateHistoricalData(selectedCurrency)} 
+              currency={selectedCurrency} 
+            />
+          </TabsContent>
+
+          <TabsContent value="bias" className="space-y-6">
+            <COTBiasVisualization data={generateBiasData()} />
+          </TabsContent>
+
+          <TabsContent value="upload" className="space-y-6">
+            <COTDataUpload onDataUploaded={handleDataUpload} />
+            {uploadedData && (
+              <div className="mt-4 p-4 bg-success/10 border border-success/20 rounded-lg">
+                <p className="text-success font-medium">
+                  ✅ Data uploaded successfully! {uploadedData.length} records processed.
+                </p>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="detailed" className="space-y-6">
+            {isLoading ? (
+              <div className="animate-pulse space-y-6">
+                <div className="h-16 bg-gradient-to-r from-muted/50 to-muted/30 rounded-lg"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="h-32 bg-gradient-to-br from-muted/40 to-muted/20 rounded-lg"></div>
+                  <div className="h-32 bg-gradient-to-br from-muted/40 to-muted/20 rounded-lg"></div>
+                </div>
+                <div className="h-24 bg-gradient-to-r from-muted/30 to-muted/50 rounded-lg"></div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-4 rounded-lg border border-blue-200/50 dark:border-blue-800/30">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-blue-900 dark:text-blue-100">📊 Report Date:</span>
+                      <span className="text-blue-800 dark:text-blue-200 font-mono">{cotData?.reportDate}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-blue-900 dark:text-blue-100">📈 Weekly Change:</span>
+                      <span className={`font-mono font-bold ${
+                        cotData?.weeklyChange && cotData.weeklyChange > 0 
+                          ? 'text-green-600 dark:text-green-400' 
+                          : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {cotData?.weeklyChange && cotData.weeklyChange > 0 ? '+' : ''}{cotData?.weeklyChange?.toLocaleString()} contracts
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-5 rounded-xl border border-green-200/50 dark:border-green-800/30 hover:shadow-md transition-all duration-300">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <h3 className="font-bold text-green-900 dark:text-green-100">Commercial Traders</h3>
+                      <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">Smart Money</span>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center p-3 bg-white/60 dark:bg-gray-800/40 rounded-lg">
+                        <span className="text-sm font-medium">Long Positions:</span>
+                        <span className="font-bold text-green-600 dark:text-green-400 font-mono">
+                          {cotData?.commercialLong.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-white/60 dark:bg-gray-800/40 rounded-lg">
+                        <span className="text-sm font-medium">Short Positions:</span>
+                        <span className="font-bold text-red-600 dark:text-red-400 font-mono">
+                          {cotData?.commercialShort.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-lg border-t-2 border-gray-300 dark:border-gray-600">
+                        <span className="font-semibold">Net Position:</span>
+                        <span className={`font-bold text-lg font-mono ${
+                          getNetPosition(cotData?.commercialLong || 0, cotData?.commercialShort || 0) > 0 
+                            ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {getNetPosition(cotData?.commercialLong || 0, cotData?.commercialShort || 0) > 0 ? '+' : ''}
+                          {getNetPosition(cotData?.commercialLong || 0, cotData?.commercialShort || 0).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-5 rounded-xl border border-blue-200/50 dark:border-blue-800/30 hover:shadow-md transition-all duration-300">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <h3 className="font-bold text-blue-900 dark:text-blue-100">Hedge Funds</h3>
+                      <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full">Leveraged Money</span>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center p-3 bg-white/60 dark:bg-gray-800/40 rounded-lg">
+                        <span className="text-sm font-medium">Long Positions:</span>
+                        <span className="font-bold text-green-600 dark:text-green-400 font-mono">
+                          {cotData?.nonCommercialLong.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-white/60 dark:bg-gray-800/40 rounded-lg">
+                        <span className="text-sm font-medium">Short Positions:</span>
+                        <span className="font-bold text-red-600 dark:text-red-400 font-mono">
+                          {cotData?.nonCommercialShort.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-lg border-t-2 border-gray-300 dark:border-gray-600">
+                        <span className="font-semibold">Net Position:</span>
+                        <span className={`font-bold text-lg font-mono ${
+                          getNetPosition(cotData?.nonCommercialLong || 0, cotData?.nonCommercialShort || 0) > 0 
+                            ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {getNetPosition(cotData?.nonCommercialLong || 0, cotData?.nonCommercialShort || 0) > 0 ? '+' : ''}
+                          {getNetPosition(cotData?.nonCommercialLong || 0, cotData?.nonCommercialShort || 0).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-purple-50 via-pink-50 to-rose-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-rose-950/20 p-6 rounded-xl border border-purple-200/50 dark:border-purple-800/30">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex items-center gap-2 bg-white/80 dark:bg-gray-800/80 px-3 py-2 rounded-full">
+                      <h3 className="font-bold text-purple-900 dark:text-purple-100">Market Sentiment:</h3>
+                      {getSentimentIcon(cotData?.sentiment || '')}
+                      <span className={`font-bold text-lg ${getSentimentColor(cotData?.sentiment || '')}`}>
+                        {cotData?.sentiment}
+                      </span>
+                    </div>
+                    {cotData?.sentiment === 'BULLISH' && (
+                      <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">
+                        <TrendingUp className="w-3 h-3" />
+                        Strong Buy Signal
+                      </div>
+                    )}
+                    {cotData?.sentiment === 'BEARISH' && (
+                      <div className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded-full">
+                        <TrendingDown className="w-3 h-3" />
+                        Strong Sell Signal
+                      </div>
+                    )}
+                  </div>
+                  <div className="bg-white/60 dark:bg-gray-800/60 p-4 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">💡 Trading Recommendation:</h4>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                      {cotData?.recommendation}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
-
-      {isLoading ? (
-        <div className="animate-pulse space-y-6">
-          <div className="h-16 bg-gradient-to-r from-muted/50 to-muted/30 rounded-lg"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="h-32 bg-gradient-to-br from-muted/40 to-muted/20 rounded-lg"></div>
-            <div className="h-32 bg-gradient-to-br from-muted/40 to-muted/20 rounded-lg"></div>
-          </div>
-          <div className="h-24 bg-gradient-to-r from-muted/30 to-muted/50 rounded-lg"></div>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-4 rounded-lg border border-blue-200/50 dark:border-blue-800/30">
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-blue-900 dark:text-blue-100">📊 Report Date:</span>
-                <span className="text-blue-800 dark:text-blue-200 font-mono">{cotData?.reportDate}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-blue-900 dark:text-blue-100">📈 Weekly Change:</span>
-                <span className={`font-mono font-bold ${
-                  cotData?.weeklyChange && cotData.weeklyChange > 0 
-                    ? 'text-green-600 dark:text-green-400' 
-                    : 'text-red-600 dark:text-red-400'
-                }`}>
-                  {cotData?.weeklyChange && cotData.weeklyChange > 0 ? '+' : ''}{cotData?.weeklyChange?.toLocaleString()} contracts
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-5 rounded-xl border border-green-200/50 dark:border-green-800/30 hover:shadow-md transition-all duration-300">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <h3 className="font-bold text-green-900 dark:text-green-100">Commercial Traders</h3>
-                <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">Smart Money</span>
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center p-3 bg-white/60 dark:bg-gray-800/40 rounded-lg">
-                  <span className="text-sm font-medium">Long Positions:</span>
-                  <span className="font-bold text-green-600 dark:text-green-400 font-mono">
-                    {cotData?.commercialLong.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-white/60 dark:bg-gray-800/40 rounded-lg">
-                  <span className="text-sm font-medium">Short Positions:</span>
-                  <span className="font-bold text-red-600 dark:text-red-400 font-mono">
-                    {cotData?.commercialShort.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-lg border-t-2 border-gray-300 dark:border-gray-600">
-                  <span className="font-semibold">Net Position:</span>
-                  <span className={`font-bold text-lg font-mono ${
-                    getNetPosition(cotData?.commercialLong || 0, cotData?.commercialShort || 0) > 0 
-                      ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                  }`}>
-                    {getNetPosition(cotData?.commercialLong || 0, cotData?.commercialShort || 0) > 0 ? '+' : ''}
-                    {getNetPosition(cotData?.commercialLong || 0, cotData?.commercialShort || 0).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-5 rounded-xl border border-blue-200/50 dark:border-blue-800/30 hover:shadow-md transition-all duration-300">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <h3 className="font-bold text-blue-900 dark:text-blue-100">Hedge Funds</h3>
-                <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full">Leveraged Money</span>
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center p-3 bg-white/60 dark:bg-gray-800/40 rounded-lg">
-                  <span className="text-sm font-medium">Long Positions:</span>
-                  <span className="font-bold text-green-600 dark:text-green-400 font-mono">
-                    {cotData?.nonCommercialLong.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-white/60 dark:bg-gray-800/40 rounded-lg">
-                  <span className="text-sm font-medium">Short Positions:</span>
-                  <span className="font-bold text-red-600 dark:text-red-400 font-mono">
-                    {cotData?.nonCommercialShort.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-lg border-t-2 border-gray-300 dark:border-gray-600">
-                  <span className="font-semibold">Net Position:</span>
-                  <span className={`font-bold text-lg font-mono ${
-                    getNetPosition(cotData?.nonCommercialLong || 0, cotData?.nonCommercialShort || 0) > 0 
-                      ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                  }`}>
-                    {getNetPosition(cotData?.nonCommercialLong || 0, cotData?.nonCommercialShort || 0) > 0 ? '+' : ''}
-                    {getNetPosition(cotData?.nonCommercialLong || 0, cotData?.nonCommercialShort || 0).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-purple-50 via-pink-50 to-rose-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-rose-950/20 p-6 rounded-xl border border-purple-200/50 dark:border-purple-800/30">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex items-center gap-2 bg-white/80 dark:bg-gray-800/80 px-3 py-2 rounded-full">
-                <h3 className="font-bold text-purple-900 dark:text-purple-100">Market Sentiment:</h3>
-                {getSentimentIcon(cotData?.sentiment || '')}
-                <span className={`font-bold text-lg ${getSentimentColor(cotData?.sentiment || '')}`}>
-                  {cotData?.sentiment}
-                </span>
-              </div>
-              {cotData?.sentiment === 'BULLISH' && (
-                <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">
-                  <TrendingUp className="w-3 h-3" />
-                  Strong Buy Signal
-                </div>
-              )}
-              {cotData?.sentiment === 'BEARISH' && (
-                <div className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded-full">
-                  <TrendingDown className="w-3 h-3" />
-                  Strong Sell Signal
-                </div>
-              )}
-            </div>
-            <div className="bg-white/60 dark:bg-gray-800/60 p-4 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
-              <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">💡 Trading Recommendation:</h4>
-              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                {cotData?.recommendation}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
