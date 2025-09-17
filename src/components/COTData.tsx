@@ -7,6 +7,8 @@ import COTChart from "./COTChart";
 import COTBiasVisualization from "./COTBiasVisualization";
 import COTOverview from "./COTOverview";
 import COTDataUpload from "./COTDataUpload";
+import COTMarketWheel from "./COTMarketWheel";
+import { COTDataProvider } from "./COTDataContext";
 
 interface COTDataType {
   currency: string;
@@ -247,8 +249,18 @@ const COTData = () => {
   };
 
   const handleDataUpload = (newData: any) => {
+    console.log('📊 COT Data uploaded - triggering full site refresh', newData);
     setUploadedData(newData);
-    // In a real app, you would update your database/state management here
+    
+    // Force re-render of all components with new data
+    // This ensures all charts, analysis, and visualizations update automatically
+    const refreshEvent = new CustomEvent('cotDataUpdated', { 
+      detail: { data: newData, timestamp: new Date() }
+    });
+    window.dispatchEvent(refreshEvent);
+    
+    // Show success message with specific details
+    console.log(`✅ Updated ${newData.length} currency pairs. All visualizations refreshed.`);
   };
 
   const currencies = ['EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'MXN'];
@@ -280,7 +292,8 @@ const COTData = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <COTDataProvider>
+      <div className="space-y-6">
       {/* Enhanced COT Analysis with Tabs */}
       <div className="glass-card p-6 rounded-xl animate-fade-in border border-border/50 bg-gradient-to-br from-card/80 to-card backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
         <div className="flex items-center justify-between mb-6">
@@ -310,8 +323,9 @@ const COTData = () => {
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-6">
+          <TabsList className="grid w-full grid-cols-6 mb-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="wheel">Market Wheel</TabsTrigger>
             <TabsTrigger value="charts">Charts</TabsTrigger>
             <TabsTrigger value="bias">Bias Analysis</TabsTrigger>
             <TabsTrigger value="detailed">Detailed Data</TabsTrigger>
@@ -320,6 +334,10 @@ const COTData = () => {
 
           <TabsContent value="overview" className="space-y-6">
             <COTOverview data={generateOverviewData()} />
+          </TabsContent>
+
+          <TabsContent value="wheel" className="space-y-6">
+            <COTMarketWheel />
           </TabsContent>
 
           <TabsContent value="charts" className="space-y-6">
@@ -475,7 +493,8 @@ const COTData = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+      </div>
+    </COTDataProvider>
   );
 };
 

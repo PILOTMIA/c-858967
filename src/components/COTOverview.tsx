@@ -2,6 +2,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
+import { useCOTData } from './COTDataContext';
 
 interface COTOverviewProps {
   data: Array<{
@@ -17,8 +18,26 @@ interface COTOverviewProps {
 }
 
 const COTOverview = ({ data }: COTOverviewProps) => {
+  const { cotData, lastUpdated, isDataLoading } = useCOTData();
+  
+  // Use uploaded data if available, otherwise use prop data
+  const workingData = cotData.length > 0 ? cotData.map(item => {
+    const netPosition = item.nonCommercialLong - item.nonCommercialShort;
+    const sentiment = netPosition > 5000 ? 'BULLISH' : netPosition < -5000 ? 'BEARISH' : 'NEUTRAL';
+    
+    return {
+      currency: item.currency,
+      netPosition,
+      sentiment,
+      weeklyChange: item.weeklyChange,
+      commercialLong: item.commercialLong,
+      commercialShort: item.commercialShort,
+      nonCommercialLong: item.nonCommercialLong,
+      nonCommercialShort: item.nonCommercialShort,
+    };
+  }) : data;
   // Calculate market-wide sentiment distribution
-  const sentimentCounts = data.reduce((acc, item) => {
+  const sentimentCounts = workingData.reduce((acc, item) => {
     acc[item.sentiment] = (acc[item.sentiment] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
@@ -30,16 +49,16 @@ const COTOverview = ({ data }: COTOverviewProps) => {
   ];
 
   // Find extreme positions
-  const mostBullish = data.reduce((max, item) => 
-    item.netPosition > max.netPosition ? item : max, data[0]);
-  const mostBearish = data.reduce((min, item) => 
-    item.netPosition < min.netPosition ? item : min, data[0]);
+  const mostBullish = workingData.reduce((max, item) => 
+    item.netPosition > max.netPosition ? item : max, workingData[0]);
+  const mostBearish = workingData.reduce((min, item) => 
+    item.netPosition < min.netPosition ? item : min, workingData[0]);
   
   // Find biggest weekly changes
-  const biggestIncrease = data.reduce((max, item) => 
-    item.weeklyChange > max.weeklyChange ? item : max, data[0]);
-  const biggestDecrease = data.reduce((min, item) => 
-    item.weeklyChange < min.weeklyChange ? item : min, data[0]);
+  const biggestIncrease = workingData.reduce((max, item) => 
+    item.weeklyChange > max.weeklyChange ? item : max, workingData[0]);
+  const biggestDecrease = workingData.reduce((min, item) => 
+    item.weeklyChange < min.weeklyChange ? item : min, workingData[0]);
 
   const formatLargeNumber = (value: number) => {
     const absValue = Math.abs(value);
@@ -51,13 +70,22 @@ const COTOverview = ({ data }: COTOverviewProps) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Market Sentiment Distribution */}
-      <Card className="bg-card border-border">
+      <Card className="bg-card border-border shadow-elegant">
         <CardHeader>
-          <CardTitle className="text-card-foreground flex items-center gap-2">
+          <CardTitle className="text-card-foreground flex items-center gap-2 font-display">
             📊 Market Sentiment Distribution
+            {isDataLoading && (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+            )}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="font-medium">
             Overall institutional positioning across all currency pairs
+            {lastUpdated && (
+              <div className="text-xs text-success mt-1 flex items-center gap-1">
+                <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+                Last updated: {lastUpdated.toLocaleString()}
+              </div>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -108,13 +136,16 @@ const COTOverview = ({ data }: COTOverviewProps) => {
       </Card>
 
       {/* Key Market Insights */}
-      <Card className="bg-card border-border">
+      <Card className="bg-card border-border shadow-elegant">
         <CardHeader>
-          <CardTitle className="text-card-foreground flex items-center gap-2">
+          <CardTitle className="text-card-foreground flex items-center gap-2 font-display">
             🎯 Key Market Insights
+            {isDataLoading && (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+            )}
           </CardTitle>
-          <CardDescription>
-            Extreme positions and significant weekly changes
+          <CardDescription className="font-medium">
+            Extreme positions and significant weekly changes - Updates automatically with new data
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -187,10 +218,15 @@ const COTOverview = ({ data }: COTOverviewProps) => {
           </div>
 
           {/* Market Summary */}
-          <div className="mt-4 p-3 bg-muted/30 rounded-lg">
-            <p className="text-xs text-muted-foreground">
-              <strong>Market Summary:</strong> Institutional money is showing {sentimentCounts.BULLISH > sentimentCounts.BEARISH ? 'net bullish' : 'net bearish'} sentiment across major currency pairs. 
-              Watch {mostBullish.currency} for potential strength and {mostBearish.currency} for potential weakness.
+          <div className="mt-4 p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-primary/20">
+            <p className="text-sm font-medium text-foreground">
+              <strong className="text-primary">Auto-Updating Market Summary:</strong> Institutional money is showing {sentimentCounts.BULLISH > sentimentCounts.BEARISH ? 'net bullish' : 'net bearish'} sentiment across major currency pairs. 
+              Watch {mostBullish?.currency || 'N/A'} for potential strength and {mostBearish?.currency || 'N/A'} for potential weakness.
+              {lastUpdated && (
+                <span className="block text-xs text-success mt-2">
+                  🔄 All analysis updates automatically when new COT data is uploaded
+                </span>
+              )}
             </p>
           </div>
         </CardContent>
