@@ -214,8 +214,8 @@ const NewsSentimentAnalysis = () => {
   const { data: sentimentData, isLoading, error } = useQuery({
     queryKey: ['newsSentiment'],
     queryFn: fetchNewsSentiment,
-    refetchInterval: 30000, // Refetch every 30 seconds
-    staleTime: 15000, // Consider data stale after 15 seconds
+    refetchInterval: 1000 * 60 * 60 * 24 * 30, // Auto-refresh every 30 days (monthly)
+    staleTime: 1000 * 60 * 60 * 24 * 30, // Consider data stale after 30 days
   });
 
   const getSentimentIcon = (sentiment: string) => {
@@ -359,10 +359,10 @@ const NewsSentimentAnalysis = () => {
               </div>
             )}
 
-            {/* Live Update Indicator */}
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-400 pt-2 border-t border-gray-700">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span>Live sentiment analysis • Updates every 30 seconds</span>
+            {/* Auto Update Indicator */}
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground pt-2 border-t border-border">
+              <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+              <span className="font-medium">Auto-updates monthly with latest market sentiment data</span>
             </div>
           </>
         )}

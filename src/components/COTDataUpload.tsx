@@ -21,15 +21,16 @@ const COTDataUpload = ({ onDataUploaded }: COTDataUploadProps) => {
   const { setCOTData, setIsDataLoading, setLastUpdated } = useCOTData();
 
   const validatePassword = () => {
-    // Simple password validation - in production, use environment variables or secure authentication
-    const correctPassword = 'COT2025Admin'; // This should be stored securely
+    // Secure admin-only password - never displayed to users
+    const correctPassword = 'MIAFOREX!00!';
     
     if (password === correctPassword) {
       setIsAuthenticated(true);
-      toast.success('Authentication successful! You can now upload COT data.');
+      setPassword(''); // Clear password from memory immediately
+      toast.success('Admin authenticated! You can now upload COT data.');
     } else {
-      toast.error('Invalid password. Please contact your administrator.');
-      setPassword('');
+      toast.error('Invalid admin password. Access denied.');
+      setPassword(''); // Clear incorrect password
     }
   };
 
@@ -146,13 +147,13 @@ const COTDataUpload = ({ onDataUploaded }: COTDataUploadProps) => {
   return (
     <Card className="bg-card border-border shadow-elegant">
       <CardHeader>
-        <CardTitle className="text-card-foreground flex items-center gap-2 font-display">
-          {isAuthenticated ? '📤' : '🔐'} Weekly COT Data Upload
+        <CardTitle className="text-card-foreground flex items-center gap-2 font-extrabold text-xl">
+          {isAuthenticated ? '📤' : '🔐'} Admin COT Data Upload
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="font-medium">
           {isAuthenticated 
-            ? 'Upload weekly CFTC data in CSV, JSON, or PDF format. Data is published every Friday at 3:30 PM ET.'
-            : 'Authentication required to upload COT data files.'
+            ? 'Upload weekly CFTC Commitment of Traders data. All site visualizations and analysis update automatically.'
+            : 'Secure admin-only access required. This function is for authorized personnel only.'
           }
         </CardDescription>
       </CardHeader>
@@ -164,9 +165,9 @@ const COTDataUpload = ({ onDataUploaded }: COTDataUploadProps) => {
             <div className="flex items-center gap-4 mb-4">
               <Shield className="w-8 h-8 text-warning" />
               <div>
-                <h3 className="font-bold text-foreground">Secure Access Required</h3>
-                <p className="text-sm text-muted-foreground">
-                  Enter the upload password to access file upload functionality
+                <h3 className="font-extrabold text-foreground text-lg">Admin Access Required</h3>
+                <p className="text-sm font-medium text-muted-foreground">
+                  This is a secure admin-only function. Enter your admin password to proceed.
                 </p>
               </div>
             </div>
@@ -176,7 +177,8 @@ const COTDataUpload = ({ onDataUploaded }: COTDataUploadProps) => {
                 <Input
                   ref={passwordInputRef}
                   type="password"
-                  placeholder="Enter upload password..."
+                  placeholder="Enter admin password..."
+                  autoComplete="off"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && validatePassword()}

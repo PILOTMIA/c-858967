@@ -219,7 +219,8 @@ const CentralBankRates = () => {
   const { data: bankData, isLoading, error } = useQuery({
     queryKey: ['centralBankRates'],
     queryFn: fetchCentralBankData,
-    refetchInterval: 300000, // Refetch every 5 minutes
+    staleTime: 1000 * 60 * 60 * 24 * 90, // 90 days (quarterly)
+    refetchInterval: 1000 * 60 * 60 * 24 * 90, // Auto-refresh every 90 days (quarterly)
   });
 
   const filteredData = selectedBank === 'all' 
@@ -263,10 +264,16 @@ const CentralBankRates = () => {
     <Card className="bg-gray-900 border-gray-800 text-white">
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-blue-400" />
-            Central Bank Interest Rate Forecaster
-          </CardTitle>
+          <div>
+            <CardTitle className="flex items-center gap-2 font-extrabold text-xl">
+              <Calendar className="h-5 w-5 text-blue-400" />
+              Central Bank Interest Rate Forecaster
+            </CardTitle>
+            <p className="text-sm text-muted-foreground font-medium mt-1 flex items-center gap-2">
+              <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+              Auto-updates quarterly with latest central bank projections and rate changes
+            </p>
+          </div>
           <div className="flex gap-2">
             <Select value={selectedBank} onValueChange={setSelectedBank}>
               <SelectTrigger className="w-32 bg-card border-border text-foreground">
