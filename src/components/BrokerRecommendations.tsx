@@ -54,12 +54,12 @@ const BrokerRecommendations = () => {
 
             <div className="space-y-2">
               <Button className="w-full bg-primary hover:bg-primary/90" asChild>
-                <a href="https://midasfx.com/" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.midasfx.com/?ib=1127736" target="_blank" rel="noopener noreferrer">
                   Open Live Account <ExternalLink className="h-4 w-4 ml-2" />
                 </a>
               </Button>
               <Button variant="outline" className="w-full" asChild>
-                <a href="https://midasfx.com/" target="_blank" rel="noopener noreferrer">
+                <a href="https://my.midasfx.com/?ib=1127736" target="_blank" rel="noopener noreferrer">
                   Try Demo Account
                 </a>
               </Button>

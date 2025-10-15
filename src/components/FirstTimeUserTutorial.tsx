@@ -139,7 +139,7 @@ const FirstTimeUserTutorial = () => {
                     <p className="text-xs text-muted-foreground">Regulated US broker with competitive spreads</p>
                   </div>
                   <Button size="sm" className="bg-primary hover:bg-primary/90" asChild>
-                    <a href="https://midasfx.com/" target="_blank" rel="noopener noreferrer">
+                    <a href="https://www.midasfx.com/?ib=1127736" target="_blank" rel="noopener noreferrer">
                       Open Account <ExternalLink className="h-3 w-3 ml-1" />
                     </a>
                   </Button>

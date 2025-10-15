@@ -8,16 +8,16 @@
   :root {
     --background: 0 0% 0%;
     --foreground: 210 40% 98%;
-    --card: 0 0% 5%;
+    --card: 0 0% 8%;
     --card-foreground: 210 40% 98%;
-    --popover: 0 0% 5%;
+    --popover: 0 0% 8%;
     --popover-foreground: 210 40% 98%;
     --primary: 241 67% 70%;
     --primary-foreground: 0 0% 0%;
     --secondary: 0 0% 15%;
     --secondary-foreground: 210 40% 98%;
     --muted: 0 0% 25%;
-    --muted-foreground: 210 40% 65%;
+    --muted-foreground: 210 40% 75%;
     --accent: 241 67% 70%;
     --accent-foreground: 0 0% 0%;
     --destructive: 0 84% 60%;
@@ -46,16 +46,16 @@
   .dark {
     --background: 0 0% 0%;
     --foreground: 210 40% 98%;
-    --card: 0 0% 5%;
-    --card-foreground: 210 40% 98%;
-    --popover: 0 0% 5%;
-    --popover-foreground: 210 40% 98%;
+    --card: 240 10% 8%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 8%;
+    --popover-foreground: 0 0% 98%;
     --primary: 241 67% 70%;
     --primary-foreground: 0 0% 0%;
     --secondary: 0 0% 15%;
     --secondary-foreground: 210 40% 98%;
     --muted: 0 0% 25%;
-    --muted-foreground: 210 40% 65%;
+    --muted-foreground: 210 40% 75%;
     --accent: 241 67% 70%;
     --accent-foreground: 0 0% 0%;
     --destructive: 0 84% 60%;
@@ -90,7 +90,11 @@
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold;
+    @apply font-extrabold;
+  }
+  
+  p, span, div {
+    @apply font-medium;
   }
   
   .font-display {

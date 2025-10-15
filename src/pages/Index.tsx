@@ -223,6 +223,17 @@ const Index = () => {
           <ClientSignup />
         </div>
 
+        {/* MidasFX Banner - Discreet Placement */}
+        <div className="flex justify-end opacity-60 hover:opacity-100 transition-opacity">
+          <a href="https://www.midasfx.com/?ib=1127736" target="_blank" rel="noopener noreferrer">
+            <img 
+              src="https://my.midasfx.com/themes/midasfx/img/b/468x60.png" 
+              alt="MidasFX Trading" 
+              className="rounded border border-gray-700"
+            />
+          </a>
+        </div>
+
         {/* Modern Professional Footer */}
         <div className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-12 rounded-xl border border-gray-700 shadow-2xl">
           {/* Vector Logo Background */}
