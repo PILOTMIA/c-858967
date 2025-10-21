@@ -56,10 +56,10 @@ const COTDataUpload = ({ onDataUploaded }: COTDataUploadProps) => {
         { currency: 'CAD', commercialLong: 118769, commercialShort: 6552, nonCommercialLong: 17289, nonCommercialShort: 66045, reportDate: '2025-09-23', weeklyChange: 511 },
         { currency: 'CHF', commercialLong: 42868, commercialShort: 2637, nonCommercialLong: 7435, nonCommercialShort: 8142, reportDate: '2025-09-23', weeklyChange: 1153 },
         { currency: 'GBP', commercialLong: 78072, commercialShort: 68281, nonCommercialLong: 61382, nonCommercialShort: 33720, reportDate: '2025-09-23', weeklyChange: 1102 },
-        { currency: 'JPY', commercialLong: 51264, commercialShort: 47482, nonCommercialLong: 88559, nonCommercialShort: 58424, reportDate: '2025-09-23', weeklyChange: 2845 },
-        { currency: 'EUR', commercialLong: 185443, commercialShort: 151238, nonCommercialLong: 128564, nonCommercialShort: 89732, reportDate: '2025-09-23', weeklyChange: 4521 },
-        { currency: 'AUD', commercialLong: 67234, commercialShort: 52891, nonCommercialLong: 43126, nonCommercialShort: 38974, reportDate: '2025-09-23', weeklyChange: 1834 },
-        { currency: 'NZD', commercialLong: 28456, commercialShort: 31243, nonCommercialLong: 19834, nonCommercialShort: 22156, reportDate: '2025-09-23', weeklyChange: -876 },
+        { currency: 'JPY', commercialLong: 6833, commercialShort: 136088, nonCommercialLong: 110298, nonCommercialShort: 32464, reportDate: '2025-09-23', weeklyChange: 8173 },
+        { currency: 'EUR', commercialLong: 71331, commercialShort: 540385, nonCommercialLong: 516898, nonCommercialShort: 122280, reportDate: '2025-09-23', weeklyChange: 4900 },
+        { currency: 'AUD', commercialLong: 48137, commercialShort: 7902, nonCommercialLong: 35376, nonCommercialShort: 40922, reportDate: '2025-09-23', weeklyChange: 528 },
+        { currency: 'NZD', commercialLong: 23283, commercialShort: 2380, nonCommercialLong: 11825, nonCommercialShort: 14675, reportDate: '2025-09-23', weeklyChange: 3510 },
       ];
 
       let data;

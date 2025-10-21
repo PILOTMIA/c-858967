@@ -32,6 +32,22 @@ const Education = () => {
 
         {/* Forex List */}
         <ForexList />
+
+        {/* MidasFX Banner */}
+        <div className="mt-8 flex justify-center">
+          <a 
+            href="https://www.midasfx.com/?ib=1127736"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block hover:opacity-80 transition-opacity duration-300 shadow-lg hover:shadow-xl rounded-lg overflow-hidden"
+          >
+            <img 
+              src="https://my.midasfx.com/themes/midasfx/img/b/468x60.png" 
+              alt="MidasFX - Professional Forex Trading"
+              className="w-full h-auto max-w-[468px]"
+            />
+          </a>
+        </div>
       </div>
     </div>
   );

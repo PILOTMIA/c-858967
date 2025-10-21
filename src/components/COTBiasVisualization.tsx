@@ -1,4 +1,4 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
@@ -44,13 +44,24 @@ const COTBiasVisualization = ({ data }: COTBiasVisualizationProps) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="bg-muted/30 p-4 rounded-lg mb-6 border border-border/50">
-          <p className="text-sm font-medium text-foreground">
-            <strong className="text-primary">How to Read This Chart:</strong> Each horizontal bar represents institutional positioning. 
-            Bars extending <span className="text-success font-bold">RIGHT (positive)</span> = institutions are <span className="text-success font-bold">BUYING</span> that currency. 
-            Bars extending <span className="text-destructive font-bold">LEFT (negative)</span> = institutions are <span className="text-destructive font-bold">SELLING</span> that currency. 
-            Longer bars = stronger conviction.
+        <div className="bg-primary/10 dark:bg-primary/20 p-6 rounded-lg mb-6 border-2 border-primary/30">
+          <p className="text-base font-bold text-foreground mb-3">
+            <strong className="text-primary text-lg">📖 How to Read This Chart:</strong>
           </p>
+          <div className="space-y-2 text-sm font-semibold">
+            <p className="flex items-center gap-2">
+              <span className="w-4 h-4 bg-success rounded"></span>
+              <span className="text-foreground">Bars extending <span className="text-success font-extrabold text-base">RIGHT (positive)</span> = Institutions are <span className="text-success font-extrabold text-base">BUYING</span> that currency</span>
+            </p>
+            <p className="flex items-center gap-2">
+              <span className="w-4 h-4 bg-destructive rounded"></span>
+              <span className="text-foreground">Bars extending <span className="text-destructive font-extrabold text-base">LEFT (negative)</span> = Institutions are <span className="text-destructive font-extrabold text-base">SELLING</span> that currency</span>
+            </p>
+            <p className="flex items-center gap-2">
+              <span className="w-4 h-4 bg-primary rounded"></span>
+              <span className="text-foreground"><span className="font-extrabold text-base">Longer bars</span> = Stronger institutional conviction & positioning</span>
+            </p>
+          </div>
         </div>
         
         <div className="h-80 w-full mb-6">
@@ -60,18 +71,18 @@ const COTBiasVisualization = ({ data }: COTBiasVisualizationProps) => {
               <XAxis 
                 type="number"
                 stroke="hsl(var(--foreground))"
-                fontSize={13}
-                fontWeight={600}
+                fontSize={14}
+                fontWeight={700}
                 tickFormatter={(value) => value.toLocaleString()}
-                label={{ value: 'Net Position (Contracts)', position: 'insideBottom', offset: -5, style: { fill: 'hsl(var(--foreground))', fontWeight: 600 } }}
+                label={{ value: 'Net Position (Contracts)', position: 'insideBottom', offset: -5, style: { fill: 'hsl(var(--foreground))', fontWeight: 700, fontSize: 14 } }}
               />
               <YAxis 
                 type="category"
                 dataKey="currency"
                 stroke="hsl(var(--foreground))"
-                fontSize={14}
-                fontWeight={700}
-                width={70}
+                fontSize={16}
+                fontWeight={900}
+                width={80}
               />
               <Tooltip 
                 formatter={(value: number) => [value.toLocaleString(), 'Net Position']}
@@ -88,8 +99,15 @@ const COTBiasVisualization = ({ data }: COTBiasVisualizationProps) => {
               <Bar 
                 dataKey="netPosition" 
                 fill="hsl(var(--primary))"
-                radius={[0, 6, 6, 0]}
-              />
+                radius={[0, 8, 8, 0]}
+              >
+                {data.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={entry.netPosition > 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} 
+                  />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -99,7 +117,7 @@ const COTBiasVisualization = ({ data }: COTBiasVisualizationProps) => {
           {data.map((item) => (
             <div 
               key={item.currency}
-              className="bg-card/80 backdrop-blur-sm rounded-lg p-5 border-2 border-border/50 shadow-lg hover:shadow-xl transition-all duration-200 hover:border-primary/50"
+              className="bg-card/90 dark:bg-card/95 backdrop-blur-sm rounded-lg p-6 border-2 border-border shadow-lg hover:shadow-xl transition-all duration-200 hover:border-primary/60"
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">

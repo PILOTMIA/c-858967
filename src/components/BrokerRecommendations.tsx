@@ -59,7 +59,7 @@ const BrokerRecommendations = () => {
                 </a>
               </Button>
               <Button variant="outline" className="w-full" asChild>
-                <a href="https://my.midasfx.com/?ib=1127736" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.midasfx.com/?ib=1127736" target="_blank" rel="noopener noreferrer">
                   Try Demo Account
                 </a>
               </Button>
