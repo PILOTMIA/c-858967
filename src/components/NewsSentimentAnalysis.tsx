@@ -83,63 +83,83 @@ const fetchNewsSentiment = async (): Promise<SentimentAnalysis> => {
 
     const mockArticles: NewsArticle[] = [
       {
-        title: "Federal Reserve Signals Potential Rate Cuts as Inflation Cools",
-        description: "The Fed's dovish stance strengthens market sentiment as economic data shows cooling inflation, boosting USD pairs outlook.",
+        title: "USD Weakens as Government Shutdown Extends into Fourth Week",
+        description: "Prolonged U.S. government shutdown pressures the dollar, with DXY falling to 99.54, down 8.88% year-to-date as fiscal concerns mount.",
         url: "#",
-        publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
         source: "Reuters",
-        sentiment: 'bullish',
-        score: 0.75,
+        sentiment: 'bearish',
+        score: 0.82,
         pairs: ['EURUSD', 'GBPUSD', 'USDJPY']
       },
       {
-        title: "ECB President Lagarde Warns of Persistent Inflation Risks",
-        description: "European Central Bank concerns over sticky inflation could pressure EUR pairs as hawkish monetary policy continues.",
+        title: "EUR/USD Surges to 1.1612 as European Economy Outperforms",
+        description: "Euro strength continues against the dollar with EUR/USD reaching multi-month highs, supported by resilient eurozone economic data.",
         url: "#",
         publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
         source: "Bloomberg",
-        sentiment: 'bearish',
-        score: 0.65,
+        sentiment: 'bullish',
+        score: 0.78,
         pairs: ['EURUSD', 'EURGBP', 'EURJPY']
       },
       {
-        title: "Oil Prices Surge on OPEC+ Production Cuts",
-        description: "Energy sector rally strengthens commodity currencies, with CAD and NOK showing positive momentum against USD.",
+        title: "Federal Reserve Signals Additional Rate Cuts Before Year-End",
+        description: "Fed Chair Powell's dovish comments and cooling inflation data strengthen expectations for 25bp cut at October 29 meeting, 99% probability priced in.",
         url: "#",
-        publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
         source: "Financial Times",
-        sentiment: 'bullish',
-        score: 0.80,
-        pairs: ['USDCAD', 'USDNOK']
+        sentiment: 'bearish',
+        score: 0.85,
+        pairs: ['EURUSD', 'GBPUSD', 'USDJPY']
       },
       {
-        title: "Bank of Japan Maintains Ultra-Loose Policy Despite Yen Weakness",
-        description: "BoJ's commitment to low rates continues to weaken JPY as inflation remains below target, creating intervention risks.",
+        title: "Bank of Japan Holds Policy Steady, Yen Remains Under Pressure",
+        description: "BoJ maintains 0.5% rate amid data-dependent approach, keeping JPY vulnerable despite verbal intervention warnings from officials.",
         url: "#",
-        publishedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
         source: "MarketWatch",
         sentiment: 'bearish',
-        score: 0.70,
+        score: 0.73,
         pairs: ['USDJPY', 'EURJPY', 'GBPJPY']
       },
       {
-        title: "UK Employment Data Shows Resilient Labor Market",
-        description: "Strong UK jobs data supports GBP strength as wage growth remains elevated, potentially influencing BoE policy decisions.",
+        title: "ECB Pauses Rate Cuts, Holds Deposit Rate at 2%",
+        description: "European Central Bank keeps rates unchanged for second consecutive meeting, cautious stance supports euro as officials monitor inflation progress.",
         url: "#",
-        publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        publishedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
         source: "BBC Business",
         sentiment: 'bullish',
-        score: 0.68,
+        score: 0.71,
+        pairs: ['EURUSD', 'EURGBP', 'EURJPY']
+      },
+      {
+        title: "Bank of England Maintains 4% Rate Amid Mixed Economic Signals",
+        description: "BoE holds steady with 7-2 vote split, resilient UK labor market data offsets inflation concerns, GBP showing relative strength.",
+        url: "#",
+        publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        source: "CNBC",
+        sentiment: 'neutral',
+        score: 0.52,
         pairs: ['GBPUSD', 'EURGBP', 'GBPJPY']
       },
       {
-        title: "Global Trade Tensions Rise as China GDP Growth Slows",
-        description: "Concerns over Chinese economic slowdown and trade relations weigh on risk sentiment, affecting commodity currencies.",
+        title: "U.S. GDP Growth at 3.8% Masks Economic Headwinds",
+        description: "Q2 GDP strong at 3.8% but consumer spending moderating, inventory swings distort picture as housing market remains challenged.",
         url: "#",
         publishedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-        source: "CNBC",
+        source: "Interactive Brokers",
+        sentiment: 'neutral',
+        score: 0.48,
+        pairs: ['EURUSD', 'USDJPY', 'AUDUSD']
+      },
+      {
+        title: "IMF Warns Global Economy in Flux, Dim Prospects Ahead",
+        description: "October 2025 World Economic Outlook highlights trade policy uncertainty and growth challenges affecting forex markets globally.",
+        url: "#",
+        publishedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        source: "IMF",
         sentiment: 'bearish',
-        score: 0.72,
+        score: 0.68,
         pairs: ['AUDUSD', 'NZDUSD', 'USDCAD']
       }
     ];

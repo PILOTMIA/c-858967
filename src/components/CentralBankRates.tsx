@@ -48,17 +48,17 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       country: "United States",
       currency: "USD",
       centralBank: "Federal Reserve (Fed)",
-      currentRate: 5.50,
-      lastUpdate: "2025-07-31",
-      nextMeeting: "2025-09-17",
+      currentRate: 4.50,
+      lastUpdate: "2025-10-20",
+      nextMeeting: "2025-10-29",
       projections: {
-        month6: { rate: 5.25, probability: 75, direction: 'down' },
-        month12: { rate: 4.75, probability: 80, direction: 'down' }
+        month6: { rate: 4.25, probability: 82, direction: 'down' },
+        month12: { rate: 3.75, probability: 85, direction: 'down' }
       },
       recentChanges: [
-        { date: "2024-01-31", change: 0, rate: 5.50 },
-        { date: "2023-12-13", change: 0, rate: 5.50 },
-        { date: "2023-11-01", change: 0, rate: 5.50 }
+        { date: "2025-09-17", change: -0.25, rate: 4.50 },
+        { date: "2025-07-31", change: 0, rate: 4.75 },
+        { date: "2025-06-12", change: 0, rate: 4.75 }
       ],
       seasonality: { q1: 'neutral', q2: 'bearish', q3: 'bearish', q4: 'neutral' }
     },
@@ -66,17 +66,17 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       country: "Eurozone",
       currency: "EUR",
       centralBank: "European Central Bank (ECB)",
-      currentRate: 4.50,
-      lastUpdate: "2025-07-18",
-      nextMeeting: "2025-09-12",
+      currentRate: 2.00,
+      lastUpdate: "2025-10-17",
+      nextMeeting: "2025-12-12",
       projections: {
-        month6: { rate: 4.25, probability: 70, direction: 'down' },
-        month12: { rate: 3.75, probability: 75, direction: 'down' }
+        month6: { rate: 1.75, probability: 75, direction: 'down' },
+        month12: { rate: 1.50, probability: 78, direction: 'down' }
       },
       recentChanges: [
-        { date: "2024-01-25", change: 0, rate: 4.50 },
-        { date: "2023-12-14", change: 0, rate: 4.50 },
-        { date: "2023-10-26", change: 0, rate: 4.50 }
+        { date: "2025-09-12", change: 0, rate: 2.00 },
+        { date: "2025-07-18", change: -0.25, rate: 2.00 },
+        { date: "2025-06-06", change: -0.25, rate: 2.25 }
       ],
       seasonality: { q1: 'neutral', q2: 'bearish', q3: 'neutral', q4: 'bullish' }
     },
@@ -84,17 +84,17 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       country: "United Kingdom",
       currency: "GBP",
       centralBank: "Bank of England (BoE)",
-      currentRate: 4.25,
-      lastUpdate: "2025-08-07",
-      nextMeeting: "2025-09-19",
+      currentRate: 4.00,
+      lastUpdate: "2025-10-16",
+      nextMeeting: "2025-11-07",
       projections: {
-        month6: { rate: 4.75, probability: 80, direction: 'down' },
-        month12: { rate: 4.25, probability: 85, direction: 'down' }
+        month6: { rate: 3.75, probability: 77, direction: 'down' },
+        month12: { rate: 3.50, probability: 80, direction: 'down' }
       },
       recentChanges: [
-        { date: "2024-02-01", change: 0, rate: 5.25 },
-        { date: "2023-12-14", change: 0, rate: 5.25 },
-        { date: "2023-11-02", change: 0, rate: 5.25 }
+        { date: "2025-09-19", change: 0, rate: 4.00 },
+        { date: "2025-08-01", change: -0.25, rate: 4.00 },
+        { date: "2025-06-20", change: 0, rate: 4.25 }
       ],
       seasonality: { q1: 'bearish', q2: 'bearish', q3: 'neutral', q4: 'bullish' }
     },
@@ -103,16 +103,16 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       currency: "JPY",
       centralBank: "Bank of Japan (BoJ)",
       currentRate: 0.50,
-      lastUpdate: "2025-07-31",
-      nextMeeting: "2025-09-20",
+      lastUpdate: "2025-10-16",
+      nextMeeting: "2025-10-31",
       projections: {
-        month6: { rate: 0.00, probability: 60, direction: 'up' },
-        month12: { rate: 0.25, probability: 70, direction: 'up' }
+        month6: { rate: 0.50, probability: 65, direction: 'hold' },
+        month12: { rate: 0.75, probability: 72, direction: 'up' }
       },
       recentChanges: [
-        { date: "2024-01-23", change: 0, rate: -0.10 },
-        { date: "2023-12-19", change: 0, rate: -0.10 },
-        { date: "2023-10-31", change: 0, rate: -0.10 }
+        { date: "2025-09-20", change: 0, rate: 0.50 },
+        { date: "2025-07-31", change: 0.25, rate: 0.50 },
+        { date: "2025-03-19", change: 0.40, rate: 0.25 }
       ],
       seasonality: { q1: 'bullish', q2: 'neutral', q3: 'bullish', q4: 'neutral' }
     },

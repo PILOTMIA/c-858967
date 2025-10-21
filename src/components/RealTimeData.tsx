@@ -36,8 +36,8 @@ const fetchRealTimeData = async () => {
       }
     } catch {
       cryptoData = {
-        bitcoin: { price: 116533, change: 2.0 },
-        ethereum: { price: 4620, change: 4.4 }
+        bitcoin: { price: 109031, change: -1.23 },
+        ethereum: { price: 3919.98, change: -2.88 }
       };
     }
 
@@ -84,16 +84,16 @@ const fetchRealTimeData = async () => {
     console.log('Using fallback real-time data');
     return {
       crypto: {
-        bitcoin: { price: 43000, change: 2.5 },
-        ethereum: { price: 2500, change: 1.8 }
+        bitcoin: { price: 109031, change: -1.23 },
+        ethereum: { price: 3919.98, change: -2.88 }
       },
       commodities: {
-        gold: { price: 2055, change: 0.8 },
-        oil: { price: 78.45, change: -1.2 }
+        gold: { price: 2685, change: 1.2 },
+        oil: { price: 71.35, change: -0.8 }
       },
       economic: {
-        vix: { value: 18.5, change: -0.5 },
-        yields: { ten_year: 4.25, change: 0.05 }
+        vix: { value: 16.8, change: -0.3 },
+        yields: { ten_year: 4.18, change: 0.08 }
       }
     };
   }
