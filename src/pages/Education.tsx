@@ -4,6 +4,7 @@ import ForexList from "@/components/ForexList";
 import ClientLearningPath from "@/components/ClientLearningPath";
 import FreeIndicatorDownload from "@/components/FreeIndicatorDownload";
 import TradingQuizGame from "@/components/TradingQuizGame";
+import TelegramChannelFeed from "@/components/TelegramChannelFeed";
 
 const Education = () => {
   return (
@@ -13,6 +14,9 @@ const Education = () => {
           <h1 className="text-3xl font-bold text-white mb-2">Education Center</h1>
           <p className="text-gray-300">Learn forex trading with our comprehensive resources</p>
         </div>
+
+        {/* Telegram Channel Feed */}
+        <TelegramChannelFeed />
 
         {/* Trading Quiz Game */}
         <div className="mb-8">
