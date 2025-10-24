@@ -26,19 +26,32 @@ const TelegramChannelFeed = () => {
       setLoading(true);
       setError(null);
       
-      // Try multiple approaches to fetch Telegram posts
       const channelUsername = "MIAFREEFOREX";
       
-      // First try: Direct Telegram preview embed (limited but works)
-      // Since RSS feeds are unreliable, we'll show a rich preview instead
+      // Use RSS2JSON API to fetch Telegram channel posts
+      const rssUrl = `https://rsshub.app/telegram/channel/${channelUsername}`;
+      const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
       
-      // For now, set error to show the channel showcase
-      // In a full backend implementation, you could use Telegram Bot API
-      setError("showcase"); // Special flag to show channel showcase
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      
+      if (data.status === 'ok' && data.items) {
+        // Filter posts from last 30 days
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        const recentPosts = data.items
+          .filter((item: TelegramPost) => new Date(item.pubDate) > thirtyDaysAgo)
+          .slice(0, 5); // Show only 5 most recent posts
+        
+        setPosts(recentPosts);
+      } else {
+        setError("Failed to load posts");
+      }
       
     } catch (err) {
       console.error("Error fetching Telegram posts:", err);
-      setError("showcase");
+      setError("Failed to load posts");
     } finally {
       setLoading(false);
     }
@@ -82,7 +95,7 @@ const TelegramChannelFeed = () => {
     );
   }
 
-  if (error === "showcase") {
+  if (error && posts.length === 0) {
     return (
       <Card className="bg-gradient-to-br from-primary/10 via-card to-card border-primary/20">
         <CardHeader>
@@ -91,18 +104,18 @@ const TelegramChannelFeed = () => {
               <MessageCircle className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-xl">MIA FREE FOREX Telegram Channel</CardTitle>
-              <CardDescription className="text-sm mt-1">
+              <CardTitle className="text-lg sm:text-xl">MIA FREE FOREX Telegram Channel</CardTitle>
+              <CardDescription className="text-xs sm:text-sm mt-1">
                 Real-time trading signals, market analysis & education
               </CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="p-4 bg-background/50 rounded-lg border border-border">
-              <h4 className="font-semibold mb-2 text-foreground">📊 What You'll Get:</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+        <CardContent className="space-y-4 sm:space-y-6">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="p-3 sm:p-4 bg-background/50 rounded-lg border border-border">
+              <h4 className="font-semibold mb-2 text-sm sm:text-base text-foreground">📊 What You'll Get:</h4>
+              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
                   <span>Daily forex market analysis and insights</span>
@@ -126,17 +139,17 @@ const TelegramChannelFeed = () => {
               </ul>
             </div>
 
-            <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
-              <p className="text-sm text-muted-foreground mb-3">
+            <div className="p-3 sm:p-4 bg-primary/5 rounded-lg border border-primary/20">
+              <p className="text-xs sm:text-sm text-muted-foreground mb-3">
                 Join thousands of traders getting daily insights and signals completely free!
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button 
                   onClick={() => window.open('https://t.me/MIAFREEFOREX', '_blank')}
                   className="flex-1"
                   size="lg"
                 >
-                  Join Channel
+                  Join Free Channel
                   <ExternalLink className="ml-2 h-4 w-4" />
                 </Button>
                 <Button 
