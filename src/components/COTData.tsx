@@ -293,27 +293,27 @@ const COTData = () => {
 
   return (
     <COTDataProvider>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
       {/* Enhanced COT Analysis with Tabs */}
-      <div className="glass-card p-6 rounded-xl animate-fade-in border border-border/50 bg-gradient-to-br from-card/80 to-card backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
-        <div className="flex items-center justify-between mb-6">
-          <div className="space-y-1">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+      <div className="glass-card p-3 sm:p-6 rounded-xl animate-fade-in border border-border/50 bg-gradient-to-br from-card/80 to-card backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3">
+          <div className="space-y-1 w-full sm:w-auto">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               COT Data Analysis Dashboard
             </h2>
-            <p className="text-sm text-muted-foreground flex items-center gap-2">
+            <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
               <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              Live from: <a href="https://www.cftc.gov/dea/futures/financial_lf.htm" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium transition-colors">CFTC Financial Futures</a>
+              <span className="text-[10px] sm:text-xs">Live from: <a href="https://www.cftc.gov/dea/futures/financial_lf.htm" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium transition-colors">CFTC Financial Futures</a></span>
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
-              <SelectTrigger className="w-36 bg-background/50 border-border/50 hover:bg-background transition-colors">
+              <SelectTrigger className="w-full sm:w-36 bg-background/50 border-border/50 hover:bg-background transition-colors text-sm">
                 <SelectValue placeholder="Currency" />
               </SelectTrigger>
               <SelectContent className="bg-background border-border text-foreground z-50 shadow-lg">
                 {currencies.map(currency => (
-                  <SelectItem key={currency} value={currency} className="hover:bg-accent focus:bg-accent focus:text-accent-foreground bg-background">
+                  <SelectItem key={currency} value={currency} className="hover:bg-accent focus:bg-accent focus:text-accent-foreground bg-background text-sm">
                     <span className="font-medium">{currency}</span>/USD
                   </SelectItem>
                 ))}
@@ -323,13 +323,13 @@ const COTData = () => {
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="wheel">Market Wheel</TabsTrigger>
-            <TabsTrigger value="charts">Charts</TabsTrigger>
-            <TabsTrigger value="bias">Bias Analysis</TabsTrigger>
-            <TabsTrigger value="detailed">Detailed Data</TabsTrigger>
-            <TabsTrigger value="upload">Upload Data</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 mb-4 sm:mb-6 text-[10px] sm:text-xs md:text-sm h-auto gap-1">
+            <TabsTrigger value="overview" className="py-2 px-2 sm:px-4">Overview</TabsTrigger>
+            <TabsTrigger value="wheel" className="py-2 px-2 sm:px-4">Market Wheel</TabsTrigger>
+            <TabsTrigger value="charts" className="py-2 px-2 sm:px-4">Charts</TabsTrigger>
+            <TabsTrigger value="bias" className="py-2 px-2 sm:px-4 hidden sm:inline-flex">Bias Analysis</TabsTrigger>
+            <TabsTrigger value="detailed" className="py-2 px-2 sm:px-4 hidden sm:inline-flex">Detailed Data</TabsTrigger>
+            <TabsTrigger value="upload" className="py-2 px-2 sm:px-4 hidden sm:inline-flex">Upload Data</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
