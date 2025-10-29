@@ -13,6 +13,7 @@ import Community from "./pages/Community";
 import Tools from "./pages/Tools";
 import Profile from "./pages/Profile";
 import CentralBankRates from "./pages/CentralBankRates";
+import EconomicRadar from "./pages/EconomicRadar";
 import AppNavigation from "./components/AppNavigation";
 import TradingViewBanner from "./components/TradingViewBanner";
 import TermsAgreementModal from "./components/TermsAgreementModal";
@@ -42,6 +43,7 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/market-analysis" element={<MarketAnalysis />} />
                 <Route path="/cot-analysis" element={<COTAnalysis />} />
+                <Route path="/economic-radar" element={<EconomicRadar />} />
                 <Route path="/education" element={<Education />} />
                 <Route path="/community" element={<Community />} />
                 <Route path="/tools" element={<Tools />} />
