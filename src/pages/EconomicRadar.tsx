@@ -1,5 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import InflationRadar from "@/components/InflationRadar";
+import BondRadar from "@/components/BondRadar";
+import SeasonalityRadar from "@/components/SeasonalityRadar";
 import { BarChart3, TrendingUp, DollarSign, Briefcase, PieChart, Calendar } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -128,32 +130,12 @@ const EconomicRadar = () => {
 
           {/* Bond Radar */}
           <TabsContent value="bond" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg sm:text-xl">Bond Radar</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">Coming Soon</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Treasury yields, yield curve, and bond market indicators.
-                </p>
-              </CardContent>
-            </Card>
+            <BondRadar />
           </TabsContent>
 
           {/* Seasonality Radar */}
           <TabsContent value="seasonality" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg sm:text-xl">Seasonality Radar</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">Coming Soon</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Historical seasonal patterns and trends in economic data and markets.
-                </p>
-              </CardContent>
-            </Card>
+            <SeasonalityRadar />
           </TabsContent>
         </Tabs>
 

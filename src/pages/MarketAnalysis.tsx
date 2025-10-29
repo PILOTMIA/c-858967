@@ -62,7 +62,20 @@ const MarketAnalysis = () => {
               </button>
             </div>
           </div>
-          <FedWatchTool />
+          <div className="bg-card border-border rounded-lg p-6">
+            <div className="text-center mb-4">
+              <h3 className="text-xl font-bold text-card-foreground mb-2">Economic Radar</h3>
+              <p className="text-muted-foreground text-sm mb-4">
+                CPI, PPI, 10Y Breakeven, Export Price Index, Bond Yields & Seasonality Analysis
+              </p>
+              <button 
+                onClick={() => window.location.href = '/economic-radar'}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium transition-colors"
+              >
+                View Economic Radar
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* MidasFX Banner */}
