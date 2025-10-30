@@ -8,6 +8,7 @@ interface COTDataItem {
   nonCommercialShort: number;
   reportDate: string;
   weeklyChange: number;
+  type?: 'forex' | 'commodity';
 }
 
 interface COTDataContextType {

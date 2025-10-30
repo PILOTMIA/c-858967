@@ -1,4 +1,5 @@
 import COTData from "@/components/COTData";
+import COTCommodityData from "@/components/COTCommodityData";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Users, Building2 } from "lucide-react";
 
@@ -64,6 +65,9 @@ const COTAnalysis = () => {
 
         {/* Main COT Data Component */}
         <COTData />
+
+        {/* Commodity COT Data */}
+        <COTCommodityData />
 
         {/* Educational Section */}
         <Card className="bg-card border-border mt-4 sm:mt-8">

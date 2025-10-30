@@ -43,19 +43,19 @@ const COTMarketWheel = () => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-background border border-border rounded-lg p-4 shadow-lg">
-          <div className="font-bold text-foreground">{data.currency}/USD</div>
+        <div className="bg-popover border border-border rounded-lg p-4 shadow-lg">
+          <div className="font-bold text-popover-foreground">{data.currency}/USD</div>
           <div className={`font-mono ${data.netPosition > 0 ? 'text-success' : 'text-destructive'}`}>
             Net Position: {data.netPosition > 0 ? '+' : ''}{data.netPosition.toLocaleString()}
           </div>
           <div className={`font-mono ${data.weeklyChange > 0 ? 'text-success' : 'text-destructive'}`}>
             Weekly Change: {data.weeklyChange > 0 ? '+' : ''}{data.weeklyChange.toLocaleString()}
           </div>
-          <div className="text-muted-foreground text-sm">
+          <div className="text-popover-foreground/70 text-sm">
             Bias: <span className={`font-bold ${
               data.bias === 'BULLISH' ? 'text-success' : 
               data.bias === 'BEARISH' ? 'text-destructive' : 
-              'text-muted-foreground'
+              'text-popover-foreground/60'
             }`}>{data.bias}</span>
           </div>
         </div>
