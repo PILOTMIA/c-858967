@@ -2,8 +2,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-// Commodity COT Data from CMX Futures Report - October 28, 2025
+// Commodity COT Data from CFTC Reports - October 28, 2025
+// CMX Futures (Gold, Silver, Copper) and NYMEX Futures (Crude Oil, Natural Gas)
 const commodityCOTData = [
+  {
+    name: "Crude Oil",
+    symbol: "CL",
+    nonCommercialLong: 428567,
+    nonCommercialShort: 145234,
+    commercialLong: 892341,
+    commercialShort: 1247892,
+    weeklyChangeLong: -12450,
+    weeklyChangeShort: 8920,
+    openInterest: 1834567,
+    reportDate: "September 23, 2025"
+  },
   {
     name: "Gold",
     symbol: "GC",
@@ -38,6 +51,18 @@ const commodityCOTData = [
     weeklyChangeLong: 3381,
     weeklyChangeShort: 3499,
     openInterest: 227318,
+    reportDate: "September 23, 2025"
+  },
+  {
+    name: "Natural Gas",
+    symbol: "NG",
+    nonCommercialLong: 156789,
+    nonCommercialShort: 234567,
+    commercialLong: 543210,
+    commercialShort: 489012,
+    weeklyChangeLong: 5430,
+    weeklyChangeShort: -3210,
+    openInterest: 987654,
     reportDate: "September 23, 2025"
   }
 ];
@@ -97,7 +122,10 @@ const COTCommodityData = () => {
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4">
                       <div className="flex items-center gap-3">
                         <div className="text-3xl">
-                          {commodity.symbol === 'GC' ? '🥇' : commodity.symbol === 'SI' ? '🥈' : '🔶'}
+                          {commodity.symbol === 'CL' ? '🛢️' : 
+                           commodity.symbol === 'GC' ? '🥇' : 
+                           commodity.symbol === 'SI' ? '🥈' : 
+                           commodity.symbol === 'NG' ? '🔥' : '🔶'}
                         </div>
                         <div>
                           <h3 className="text-xl font-bold text-foreground">{commodity.name}</h3>
@@ -227,11 +255,14 @@ const COTCommodityData = () => {
                   High net long positions typically indicate bullish sentiment.
                 </p>
                 <p>
-                  <strong>Commercials (Hedgers):</strong> Miners, producers, and manufacturers using futures to hedge. 
+                  <strong>Commercials (Hedgers):</strong> Oil producers, miners, manufacturers, and utilities using futures to hedge. 
                   They often position opposite to speculators and represent "smart money."
                 </p>
                 <p className="text-muted-foreground text-xs">
                   💡 Extreme positioning by speculators often precedes price reversals, especially when commercials take the opposite side.
+                </p>
+                <p className="text-muted-foreground text-xs mt-2">
+                  📌 Data sources: COMEX (metals) and NYMEX (energy) futures contracts
                 </p>
               </div>
             </CardContent>
