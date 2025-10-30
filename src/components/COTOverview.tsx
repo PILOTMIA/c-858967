@@ -116,6 +116,9 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                   labelStyle={{
                     color: 'hsl(var(--popover-foreground))'
                   }}
+                  itemStyle={{
+                    color: 'hsl(var(--popover-foreground))'
+                  }}
                 />
                 <Legend />
               </PieChart>
