@@ -108,9 +108,13 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                 <Tooltip 
                   formatter={(value: number) => [value, 'Currency Pairs']}
                   contentStyle={{ 
-                    backgroundColor: 'hsl(var(--background))', 
+                    backgroundColor: 'hsl(var(--popover))', 
                     border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
+                    borderRadius: '8px',
+                    color: 'hsl(var(--popover-foreground))'
+                  }}
+                  labelStyle={{
+                    color: 'hsl(var(--popover-foreground))'
                   }}
                 />
                 <Legend />
