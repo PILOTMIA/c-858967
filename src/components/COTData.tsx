@@ -312,11 +312,17 @@ const COTData = () => {
                 <SelectValue placeholder="Currency" />
               </SelectTrigger>
               <SelectContent className="bg-background border-border text-foreground z-50 shadow-lg">
-                {currencies.map(currency => (
-                  <SelectItem key={currency} value={currency} className="hover:bg-accent focus:bg-accent focus:text-accent-foreground bg-background text-sm">
-                    <span className="font-medium">{currency}</span>/USD
-                  </SelectItem>
-                ))}
+                {currencies.map(currency => {
+                  // Display in proper forex format (USD as base for JPY, CAD, MXN, CHF)
+                  const pairDisplay = ['JPY', 'CAD', 'MXN', 'CHF'].includes(currency) 
+                    ? `USD/${currency}` 
+                    : `${currency}/USD`;
+                  return (
+                    <SelectItem key={currency} value={currency} className="hover:bg-accent focus:bg-accent focus:text-accent-foreground bg-background text-sm">
+                      <span className="font-medium">{pairDisplay}</span>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>

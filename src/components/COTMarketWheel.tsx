@@ -4,6 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
 import { useCOTData } from './COTDataContext';
 
+// Helper function to format currency pairs properly
+const formatCurrencyPair = (currency: string): string => {
+  const usdBasePairs = ['JPY', 'CAD', 'MXN', 'CHF'];
+  return usdBasePairs.includes(currency) ? `USD/${currency}` : `${currency}/USD`;
+};
+
 const COTMarketWheel = () => {
   const { cotData, lastUpdated } = useCOTData();
 
@@ -44,7 +50,7 @@ const COTMarketWheel = () => {
       const data = payload[0].payload;
       return (
         <div className="bg-popover border border-border rounded-lg p-4 shadow-lg">
-          <div className="font-bold text-popover-foreground">{data.currency}/USD</div>
+          <div className="font-bold text-popover-foreground">{formatCurrencyPair(data.currency)}</div>
           <div className={`font-mono ${data.netPosition > 0 ? 'text-success' : 'text-destructive'}`}>
             Net Position: {data.netPosition > 0 ? '+' : ''}{data.netPosition.toLocaleString()}
           </div>
@@ -124,7 +130,7 @@ const COTMarketWheel = () => {
               }`}
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="font-bold text-foreground">{item.currency}</span>
+                <span className="font-bold text-foreground">{formatCurrencyPair(item.currency)}</span>
                 {item.bias === 'BULLISH' ? (
                   <TrendingUp className="w-4 h-4 text-success" />
                 ) : item.bias === 'BEARISH' ? (
@@ -172,9 +178,9 @@ const COTMarketWheel = () => {
         <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg p-4 border border-primary/20">
           <h4 className="font-bold text-primary mb-2">Market Summary</h4>
           <div className="text-sm text-foreground space-y-1">
-            <p><strong>Most Bullish:</strong> {wheelData.find(d => d.netPosition === Math.max(...wheelData.map(d => d.netPosition)))?.currency} 
+            <p><strong>Most Bullish:</strong> {formatCurrencyPair(wheelData.find(d => d.netPosition === Math.max(...wheelData.map(d => d.netPosition)))?.currency || '')} 
               (+{Math.max(...wheelData.map(d => d.netPosition)).toLocaleString()})</p>
-            <p><strong>Most Bearish:</strong> {wheelData.find(d => d.netPosition === Math.min(...wheelData.map(d => d.netPosition)))?.currency}
+            <p><strong>Most Bearish:</strong> {formatCurrencyPair(wheelData.find(d => d.netPosition === Math.min(...wheelData.map(d => d.netPosition)))?.currency || '')}
               ({Math.min(...wheelData.map(d => d.netPosition)).toLocaleString()})</p>
             <p className="text-muted-foreground text-xs mt-2">
               🔄 Wheel updates automatically when new COT data is uploaded

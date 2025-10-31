@@ -4,6 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
 import { useCOTData } from './COTDataContext';
 
+// Helper function to format currency pairs properly
+const formatCurrencyPair = (currency: string): string => {
+  const usdBasePairs = ['JPY', 'CAD', 'MXN', 'CHF'];
+  return usdBasePairs.includes(currency) ? `USD/${currency}` : `${currency}/USD`;
+};
+
 interface COTOverviewProps {
   data: Array<{
     currency: string;
@@ -169,7 +175,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                   <Badge variant="secondary" className="bg-success/20 text-success">
                     Most Bullish
                   </Badge>
-                  <span className="font-bold text-success">{mostBullish.currency}</span>
+                  <span className="font-bold text-success">{formatCurrencyPair(mostBullish.currency)}</span>
                 </div>
                 <span className="font-mono text-success font-bold">
                   +{formatLargeNumber(mostBullish.netPosition)}
@@ -181,7 +187,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                   <Badge variant="secondary" className="bg-destructive/20 text-destructive">
                     Most Bearish
                   </Badge>
-                  <span className="font-bold text-destructive">{mostBearish.currency}</span>
+                  <span className="font-bold text-destructive">{formatCurrencyPair(mostBearish.currency)}</span>
                 </div>
                 <span className="font-mono text-destructive font-bold">
                   {formatLargeNumber(mostBearish.netPosition)}
@@ -203,7 +209,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                   <Badge variant="secondary" className="bg-primary/20 text-primary">
                     Largest Increase
                   </Badge>
-                  <span className="font-bold text-primary">{biggestIncrease.currency}</span>
+                  <span className="font-bold text-primary">{formatCurrencyPair(biggestIncrease.currency)}</span>
                 </div>
                 <span className="font-mono text-primary font-bold">
                   +{formatLargeNumber(biggestIncrease.weeklyChange)}
@@ -215,7 +221,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                   <Badge variant="secondary" className="bg-warning/20 text-warning">
                     Largest Decrease
                   </Badge>
-                  <span className="font-bold text-warning">{biggestDecrease.currency}</span>
+                  <span className="font-bold text-warning">{formatCurrencyPair(biggestDecrease.currency)}</span>
                 </div>
                 <span className="font-mono text-warning font-bold">
                   {formatLargeNumber(biggestDecrease.weeklyChange)}
@@ -228,7 +234,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
           <div className="mt-4 p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-primary/20">
             <p className="text-sm font-medium text-foreground">
               <strong className="text-primary">Auto-Updating Market Summary:</strong> Institutional money is showing {sentimentCounts.BULLISH > sentimentCounts.BEARISH ? 'net bullish' : 'net bearish'} sentiment across major currency pairs. 
-              Watch {mostBullish?.currency || 'N/A'} for potential strength and {mostBearish?.currency || 'N/A'} for potential weakness.
+              Watch {mostBullish ? formatCurrencyPair(mostBullish.currency) : 'N/A'} for potential strength and {mostBearish ? formatCurrencyPair(mostBearish.currency) : 'N/A'} for potential weakness.
               {lastUpdated && (
                 <span className="block text-xs text-success mt-2">
                   🔄 All analysis updates automatically when new COT data is uploaded

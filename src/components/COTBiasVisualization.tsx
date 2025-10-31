@@ -2,6 +2,12 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
+// Helper function to format currency pairs properly
+const formatCurrencyPair = (currency: string): string => {
+  const usdBasePairs = ['JPY', 'CAD', 'MXN', 'CHF'];
+  return usdBasePairs.includes(currency) ? `USD/${currency}` : `${currency}/USD`;
+};
+
 interface COTBiasData {
   currency: string;
   netPosition: number;
@@ -83,6 +89,7 @@ const COTBiasVisualization = ({ data }: COTBiasVisualizationProps) => {
                 fontSize={16}
                 fontWeight={900}
                 width={80}
+                tickFormatter={(value) => formatCurrencyPair(value)}
               />
               <Tooltip 
                 formatter={(value: number) => [value.toLocaleString(), 'Net Position']}
@@ -121,7 +128,7 @@ const COTBiasVisualization = ({ data }: COTBiasVisualizationProps) => {
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-xl text-foreground">{item.currency}</span>
+                  <span className="font-extrabold text-xl text-foreground">{formatCurrencyPair(item.currency)}</span>
                   {getBiasIcon(item.bias)}
                 </div>
                 <span className={`text-xs font-bold px-3 py-1.5 rounded-full border ${
