@@ -11,7 +11,22 @@ const formatCurrencyPair = (currency: string): string => {
 };
 
 const COTMarketWheel = () => {
-  const { cotData, lastUpdated } = useCOTData();
+  const { cotData, lastUpdated, setSelectedCurrency, setIsDetailModalOpen } = useCOTData();
+
+  const handleCurrencyClick = (item: any) => {
+    const currencyData = cotData.find(d => d.currency === item.currency);
+    
+    setSelectedCurrency({
+      currency: item.currency,
+      commercialLong: currencyData?.commercialLong || 0,
+      commercialShort: currencyData?.commercialShort || 0,
+      nonCommercialLong: currencyData?.nonCommercialLong || (item.netPosition > 0 ? item.netPosition : 0),
+      nonCommercialShort: currencyData?.nonCommercialShort || (item.netPosition < 0 ? Math.abs(item.netPosition) : 0),
+      reportDate: new Date().toISOString(),
+      weeklyChange: item.weeklyChange
+    });
+    setIsDetailModalOpen(true);
+  };
 
   // Generate wheel data from uploaded COT data or fallback to mock data
   const generateWheelData = () => {
@@ -100,6 +115,7 @@ const COTMarketWheel = () => {
                 innerRadius={40}
                 paddingAngle={2}
                 dataKey="strength"
+                onClick={(entry) => handleCurrencyClick(entry)}
               >
                 {wheelData.map((entry, index) => (
                   <Cell 
@@ -121,6 +137,7 @@ const COTMarketWheel = () => {
           {wheelData.map((item) => (
             <div 
               key={item.currency}
+              onClick={() => handleCurrencyClick(item)}
               className={`p-3 rounded-lg border transition-all duration-200 hover:shadow-md cursor-pointer ${
                 item.bias === 'BULLISH' 
                   ? 'bg-success/10 border-success/30 hover:bg-success/20' 

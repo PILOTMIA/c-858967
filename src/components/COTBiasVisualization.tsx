@@ -1,6 +1,7 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { useCOTData } from './COTDataContext';
 
 // Helper function to format currency pairs properly
 const formatCurrencyPair = (currency: string): string => {
@@ -22,6 +23,21 @@ interface COTBiasVisualizationProps {
 }
 
 const COTBiasVisualization = ({ data }: COTBiasVisualizationProps) => {
+  const { setSelectedCurrency, setIsDetailModalOpen } = useCOTData();
+
+  const handleCurrencyClick = (item: COTBiasData) => {
+    setSelectedCurrency({
+      currency: item.currency,
+      commercialLong: 0,
+      commercialShort: 0,
+      nonCommercialLong: item.netPosition > 0 ? item.netPosition : 0,
+      nonCommercialShort: item.netPosition < 0 ? Math.abs(item.netPosition) : 0,
+      reportDate: new Date().toISOString(),
+      weeklyChange: item.weeklyChange
+    });
+    setIsDetailModalOpen(true);
+  };
+
   const getBiasColor = (bias: string) => {
     switch (bias) {
       case 'BULLISH': return 'hsl(var(--success))';
@@ -124,7 +140,8 @@ const COTBiasVisualization = ({ data }: COTBiasVisualizationProps) => {
           {data.map((item) => (
             <div 
               key={item.currency}
-              className="bg-card/90 dark:bg-card/95 backdrop-blur-sm rounded-lg p-6 border-2 border-border shadow-lg hover:shadow-xl transition-all duration-200 hover:border-primary/60"
+              onClick={() => handleCurrencyClick(item)}
+              className="bg-card/90 dark:bg-card/95 backdrop-blur-sm rounded-lg p-6 border-2 border-border shadow-lg hover:shadow-xl transition-all duration-200 hover:border-primary/60 cursor-pointer"
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">

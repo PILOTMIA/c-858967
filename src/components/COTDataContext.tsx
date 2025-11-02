@@ -18,6 +18,10 @@ interface COTDataContextType {
   setIsDataLoading: (loading: boolean) => void;
   lastUpdated: Date | null;
   setLastUpdated: (date: Date) => void;
+  selectedCurrency: COTDataItem | null;
+  setSelectedCurrency: (currency: COTDataItem | null) => void;
+  isDetailModalOpen: boolean;
+  setIsDetailModalOpen: (open: boolean) => void;
 }
 
 const COTDataContext = createContext<COTDataContextType | undefined>(undefined);
@@ -38,6 +42,8 @@ export const COTDataProvider: React.FC<COTDataProviderProps> = ({ children }) =>
   const [cotData, setCOTData] = useState<COTDataItem[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [selectedCurrency, setSelectedCurrency] = useState<COTDataItem | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const value = {
     cotData,
@@ -46,6 +52,10 @@ export const COTDataProvider: React.FC<COTDataProviderProps> = ({ children }) =>
     setIsDataLoading,
     lastUpdated,
     setLastUpdated,
+    selectedCurrency,
+    setSelectedCurrency,
+    isDetailModalOpen,
+    setIsDetailModalOpen,
   };
 
   return (

@@ -24,7 +24,30 @@ interface COTOverviewProps {
 }
 
 const COTOverview = ({ data }: COTOverviewProps) => {
-  const { cotData, lastUpdated, isDataLoading } = useCOTData();
+  const { cotData, lastUpdated, isDataLoading, setSelectedCurrency, setIsDetailModalOpen } = useCOTData();
+
+  const handlePieClick = (entry: any) => {
+    // Find currencies with the clicked sentiment
+    const matchingCurrencies = workingData.filter(item => 
+      (entry.name === 'Bullish' && item.sentiment === 'BULLISH') ||
+      (entry.name === 'Bearish' && item.sentiment === 'BEARISH') ||
+      (entry.name === 'Neutral' && item.sentiment === 'NEUTRAL')
+    );
+    
+    if (matchingCurrencies.length > 0) {
+      const item = matchingCurrencies[0];
+      setSelectedCurrency({
+        currency: item.currency,
+        commercialLong: item.commercialLong,
+        commercialShort: item.commercialShort,
+        nonCommercialLong: item.nonCommercialLong,
+        nonCommercialShort: item.nonCommercialShort,
+        reportDate: new Date().toISOString(),
+        weeklyChange: item.weeklyChange
+      });
+      setIsDetailModalOpen(true);
+    }
+  };
   
   // Use uploaded data if available, otherwise use prop data
   const workingData = cotData.length > 0 ? cotData.map(item => {
@@ -106,9 +129,14 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                   outerRadius={100}
                   paddingAngle={5}
                   dataKey="value"
+                  onClick={handlePieClick}
                 >
                   {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color}
+                      className="cursor-pointer hover:opacity-80 transition-opacity"
+                    />
                   ))}
                 </Pie>
                 <Tooltip 
