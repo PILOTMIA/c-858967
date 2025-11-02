@@ -1,20 +1,21 @@
 import COTData from "@/components/COTData";
 import COTCommodityData from "@/components/COTCommodityData";
 import COTDetailModal from "@/components/COTDetailModal";
-import { useCOTData } from "@/components/COTDataContext";
+import { COTDataProvider, useCOTData } from "@/components/COTDataContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Users, Building2 } from "lucide-react";
 
-const COTAnalysis = () => {
+const COTAnalysisContent = () => {
   const { selectedCurrency, isDetailModalOpen, setIsDetailModalOpen } = useCOTData();
 
   return (
-    <div className="min-h-screen bg-background p-2 sm:p-4">
+    <>
       <COTDetailModal 
         open={isDetailModalOpen}
         onOpenChange={setIsDetailModalOpen}
         data={selectedCurrency}
       />
+
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header Section */}
         <div className="mb-4 sm:mb-8">
@@ -136,7 +137,17 @@ const COTAnalysis = () => {
           </a>
         </div>
       </div>
-    </div>
+    </>
+  );
+};
+
+const COTAnalysis = () => {
+  return (
+    <COTDataProvider>
+      <div className="min-h-screen bg-background p-2 sm:p-4">
+        <COTAnalysisContent />
+      </div>
+    </COTDataProvider>
   );
 };
 
