@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, AlertCircle, Info } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
@@ -115,16 +116,29 @@ const COTDetailModal = ({ open, onOpenChange, data }: COTDetailModalProps) => {
               <p className="text-muted-foreground leading-relaxed">{reasoning}</p>
               
               {data.weeklyChange !== 0 && (
-                <div className="mt-3 p-3 bg-card rounded-lg border border-border">
-                  <p className="text-sm font-semibold">
-                    Weekly Change: <span className={`font-mono font-bold ${data.weeklyChange > 0 ? "text-success" : "text-destructive"}`}>
+                <div className={`mt-3 p-4 rounded-lg border-2 relative overflow-hidden ${
+                  Math.abs(data.weeklyChange) > 10000 
+                    ? "bg-warning/10 border-warning/30 animate-pulse-slow" 
+                    : "bg-card border-border"
+                }`}>
+                  {Math.abs(data.weeklyChange) > 10000 && (
+                    <Badge className="absolute top-2 right-2 bg-warning/20 text-warning border-warning/30 animate-pulse">
+                      🔥 MAJOR UPDATE
+                    </Badge>
+                  )}
+                  <p className="text-sm font-semibold flex items-center gap-2">
+                    <span className="text-foreground">Weekly Change:</span>
+                    <span className={`font-mono font-bold text-lg ${data.weeklyChange > 0 ? "text-success" : "text-destructive"}`}>
                       {data.weeklyChange > 0 ? "+" : ""}{data.weeklyChange.toLocaleString()}
-                    </span> contracts
+                    </span>
+                    <span className="text-muted-foreground text-xs">contracts</span>
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className={`text-xs mt-2 font-medium ${
+                    Math.abs(data.weeklyChange) > 10000 ? "text-warning" : "text-muted-foreground"
+                  }`}>
                     {Math.abs(data.weeklyChange) > 10000 
-                      ? "Significant position change indicates shifting sentiment" 
-                      : "Moderate position adjustment"}
+                      ? "⚠️ SIGNIFICANT POSITION CHANGE - Major sentiment shift detected!" 
+                      : "Moderate position adjustment - Normal market activity"}
                   </p>
                 </div>
               )}
