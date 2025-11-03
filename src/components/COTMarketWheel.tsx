@@ -99,6 +99,11 @@ const COTMarketWheel = () => {
               Last updated: {lastUpdated.toLocaleString()}
             </div>
           )}
+          <div className="mt-3 p-3 bg-primary/10 rounded-lg border border-primary/30">
+            <p className="text-xs text-primary font-semibold flex items-center gap-2">
+              💡 Click any currency pair to see detailed COT analysis and trading signals
+            </p>
+          </div>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -118,13 +123,14 @@ const COTMarketWheel = () => {
                 onClick={(entry) => handleCurrencyClick(entry)}
               >
                 {wheelData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.color}
-                    stroke="hsl(var(--border))"
-                    strokeWidth={2}
-                    className="hover:opacity-80 cursor-pointer transition-opacity duration-200"
-                  />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={entry.color}
+                  stroke="hsl(var(--border))"
+                  strokeWidth={2}
+                  className="hover:opacity-80 hover:scale-105 cursor-pointer transition-all duration-200"
+                  style={{ filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.3))' }}
+                />
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
@@ -138,7 +144,7 @@ const COTMarketWheel = () => {
             <div 
               key={item.currency}
               onClick={() => handleCurrencyClick(item)}
-              className={`p-3 rounded-lg border transition-all duration-200 hover:shadow-md cursor-pointer ${
+              className={`p-3 rounded-lg border transition-all duration-200 hover:shadow-lg hover:scale-105 cursor-pointer relative group ${
                 item.bias === 'BULLISH' 
                   ? 'bg-success/10 border-success/30 hover:bg-success/20' 
                   : item.bias === 'BEARISH'
@@ -146,6 +152,7 @@ const COTMarketWheel = () => {
                   : 'bg-muted/10 border-muted/30 hover:bg-muted/20'
               }`}
             >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-lg"></div>
               <div className="flex items-center justify-between mb-2">
                 <span className="font-bold text-foreground">{formatCurrencyPair(item.currency)}</span>
                 {item.bias === 'BULLISH' ? (
@@ -186,6 +193,9 @@ const COTMarketWheel = () => {
                 >
                   {item.bias}
                 </Badge>
+                <div className="text-[10px] text-center text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Click for details →
+                </div>
               </div>
             </div>
           ))}
