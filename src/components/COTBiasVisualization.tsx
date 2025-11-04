@@ -66,37 +66,46 @@ const COTBiasVisualization = ({ data }: COTBiasVisualizationProps) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="bg-primary/10 dark:bg-primary/20 p-6 rounded-lg mb-6 border-2 border-primary/30">
+        <div className="bg-primary/5 dark:bg-primary/10 p-6 rounded-lg mb-6 border-2 border-primary/40 dark:border-primary/30">
           <p className="text-base font-bold text-foreground mb-3">
-            <strong className="text-primary text-lg">📖 How to Read This Chart:</strong>
+            <strong className="text-primary dark:text-primary text-lg">📖 How to Read This Chart:</strong>
           </p>
           <div className="space-y-2 text-sm font-semibold">
             <p className="flex items-center gap-2">
-              <span className="w-4 h-4 bg-success rounded"></span>
-              <span className="text-foreground">Bars extending <span className="text-success font-extrabold text-base">RIGHT (positive)</span> = Institutions are <span className="text-success font-extrabold text-base">BUYING</span> that currency</span>
+              <span className="w-4 h-4 bg-success dark:bg-success/80 rounded"></span>
+              <span className="text-foreground dark:text-foreground">Bars extending <span className="text-success dark:text-success font-extrabold text-base">RIGHT (positive)</span> = Institutions are <span className="text-success dark:text-success font-extrabold text-base">BUYING</span> that currency</span>
             </p>
             <p className="flex items-center gap-2">
-              <span className="w-4 h-4 bg-destructive rounded"></span>
-              <span className="text-foreground">Bars extending <span className="text-destructive font-extrabold text-base">LEFT (negative)</span> = Institutions are <span className="text-destructive font-extrabold text-base">SELLING</span> that currency</span>
+              <span className="w-4 h-4 bg-destructive dark:bg-destructive/80 rounded"></span>
+              <span className="text-foreground dark:text-foreground">Bars extending <span className="text-destructive dark:text-destructive font-extrabold text-base">LEFT (negative)</span> = Institutions are <span className="text-destructive dark:text-destructive font-extrabold text-base">SELLING</span> that currency</span>
             </p>
             <p className="flex items-center gap-2">
-              <span className="w-4 h-4 bg-primary rounded"></span>
-              <span className="text-foreground"><span className="font-extrabold text-base">Longer bars</span> = Stronger institutional conviction & positioning</span>
+              <span className="w-4 h-4 bg-primary dark:bg-primary/80 rounded"></span>
+              <span className="text-foreground dark:text-foreground"><span className="font-extrabold text-base">Longer bars</span> = Stronger institutional conviction & positioning</span>
             </p>
           </div>
         </div>
         
-        <div className="h-80 w-full mb-6">
+        <div className="h-96 w-full mb-6 bg-background/50 dark:bg-card/20 p-4 rounded-lg border border-border/50">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} layout="horizontal" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} className="dark:opacity-30" />
               <XAxis 
                 type="number"
                 stroke="hsl(var(--foreground))"
                 fontSize={14}
                 fontWeight={700}
                 tickFormatter={(value) => value.toLocaleString()}
-                label={{ value: 'Net Position (Contracts)', position: 'insideBottom', offset: -5, style: { fill: 'hsl(var(--foreground))', fontWeight: 700, fontSize: 14 } }}
+                label={{ 
+                  value: 'Net Position (Contracts)', 
+                  position: 'insideBottom', 
+                  offset: -5, 
+                  style: { 
+                    fill: 'hsl(var(--foreground))', 
+                    fontWeight: 700, 
+                    fontSize: 14 
+                  } 
+                }}
               />
               <YAxis 
                 type="category"
@@ -111,13 +120,14 @@ const COTBiasVisualization = ({ data }: COTBiasVisualizationProps) => {
                 formatter={(value: number) => [value.toLocaleString(), 'Net Position']}
                 labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}
                 contentStyle={{ 
-                  backgroundColor: 'hsl(var(--card))', 
+                  backgroundColor: 'hsl(var(--popover))', 
                   border: '2px solid hsl(var(--border))',
                   borderRadius: '8px',
-                  fontWeight: 600
+                  fontWeight: 600,
+                  color: 'hsl(var(--popover-foreground))'
                 }}
               />
-              <ReferenceLine x={0} stroke="hsl(var(--foreground))" strokeWidth={2} strokeDasharray="3 3" />
+              <ReferenceLine x={0} stroke="hsl(var(--foreground))" strokeWidth={3} strokeDasharray="5 5" opacity={0.8} />
               
               <Bar 
                 dataKey="netPosition" 
@@ -128,6 +138,7 @@ const COTBiasVisualization = ({ data }: COTBiasVisualizationProps) => {
                   <Cell 
                     key={`cell-${index}`} 
                     fill={entry.netPosition > 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} 
+                    opacity={0.9}
                   />
                 ))}
               </Bar>
@@ -141,7 +152,7 @@ const COTBiasVisualization = ({ data }: COTBiasVisualizationProps) => {
             <div 
               key={item.currency}
               onClick={() => handleCurrencyClick(item)}
-              className="bg-card/90 dark:bg-card/95 backdrop-blur-sm rounded-lg p-6 border-2 border-border shadow-lg hover:shadow-xl transition-all duration-200 hover:border-primary/60 cursor-pointer"
+              className="bg-card/90 dark:bg-card/80 backdrop-blur-sm rounded-lg p-6 border-2 border-border dark:border-border/60 shadow-lg hover:shadow-xl transition-all duration-200 hover:border-primary/60 dark:hover:border-primary/40 cursor-pointer"
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
