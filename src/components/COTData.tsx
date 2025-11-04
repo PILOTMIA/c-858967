@@ -8,6 +8,7 @@ import COTBiasVisualization from "./COTBiasVisualization";
 import COTOverview from "./COTOverview";
 import COTDataUpload from "./COTDataUpload";
 import COTMarketWheel from "./COTMarketWheel";
+import { COTDataProvider } from "./COTDataContext";
 
 interface COTDataType {
   currency: string;
