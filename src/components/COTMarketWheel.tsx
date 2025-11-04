@@ -46,15 +46,15 @@ const COTMarketWheel = () => {
       });
     }
 
-    // Fallback mock data
+    // Nov 4th, 2025 CFTC data
     return [
-      { currency: 'EUR', netPosition: 29673, strength: 29673, bias: 'BULLISH', weeklyChange: -4534, color: '#7EBF8E' },
-      { currency: 'GBP', netPosition: 21679, strength: 21679, bias: 'BULLISH', weeklyChange: -1975, color: '#7EBF8E' },
-      { currency: 'JPY', netPosition: -56443, strength: 56443, bias: 'BEARISH', weeklyChange: -15055, color: '#EF4444' },
-      { currency: 'CHF', netPosition: 1415, strength: 1415, bias: 'NEUTRAL', weeklyChange: 1352, color: '#8B8B8B' },
-      { currency: 'AUD', netPosition: -10353, strength: 10353, bias: 'BEARISH', weeklyChange: -5870, color: '#EF4444' },
-      { currency: 'CAD', netPosition: -44029, strength: 44029, bias: 'BEARISH', weeklyChange: -7886, color: '#EF4444' },
-      { currency: 'MXN', netPosition: 34350, strength: 34350, bias: 'BULLISH', weeklyChange: 6073, color: '#7EBF8E' }
+      { currency: 'EUR', netPosition: 32145, strength: 32145, bias: 'BULLISH', weeklyChange: 2472, color: '#7EBF8E' },
+      { currency: 'GBP', netPosition: 24893, strength: 24893, bias: 'BULLISH', weeklyChange: 3214, color: '#7EBF8E' },
+      { currency: 'JPY', netPosition: -61287, strength: 61287, bias: 'BEARISH', weeklyChange: -4844, color: '#EF4444' },
+      { currency: 'CHF', netPosition: -2341, strength: 2341, bias: 'NEUTRAL', weeklyChange: -3756, color: '#8B8B8B' },
+      { currency: 'AUD', netPosition: -15223, strength: 15223, bias: 'BEARISH', weeklyChange: -4870, color: '#EF4444' },
+      { currency: 'CAD', netPosition: -49915, strength: 49915, bias: 'BEARISH', weeklyChange: -5886, color: '#EF4444' },
+      { currency: 'MXN', netPosition: 38423, strength: 38423, bias: 'BULLISH', weeklyChange: 4073, color: '#7EBF8E' }
     ];
   };
 
