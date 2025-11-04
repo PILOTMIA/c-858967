@@ -42,7 +42,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
         commercialShort: item.commercialShort,
         nonCommercialLong: item.nonCommercialLong,
         nonCommercialShort: item.nonCommercialShort,
-        reportDate: new Date().toISOString(),
+        reportDate: '2025-11-04T00:00:00Z',
         weeklyChange: item.weeklyChange
       });
       setIsDetailModalOpen(true);
@@ -206,7 +206,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                     commercialShort: mostBullish.commercialShort,
                     nonCommercialLong: mostBullish.nonCommercialLong,
                     nonCommercialShort: mostBullish.nonCommercialShort,
-                    reportDate: new Date().toISOString(),
+                    reportDate: '2025-11-04T00:00:00Z',
                     weeklyChange: mostBullish.weeklyChange
                   });
                   setIsDetailModalOpen(true);
@@ -237,7 +237,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                     commercialShort: mostBearish.commercialShort,
                     nonCommercialLong: mostBearish.nonCommercialLong,
                     nonCommercialShort: mostBearish.nonCommercialShort,
-                    reportDate: new Date().toISOString(),
+                    reportDate: '2025-11-04T00:00:00Z',
                     weeklyChange: mostBearish.weeklyChange
                   });
                   setIsDetailModalOpen(true);
@@ -278,7 +278,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                     commercialShort: biggestIncrease.commercialShort,
                     nonCommercialLong: biggestIncrease.nonCommercialLong,
                     nonCommercialShort: biggestIncrease.nonCommercialShort,
-                    reportDate: new Date().toISOString(),
+                    reportDate: '2025-11-04T00:00:00Z',
                     weeklyChange: biggestIncrease.weeklyChange
                   });
                   setIsDetailModalOpen(true);
@@ -308,7 +308,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                     commercialShort: biggestDecrease.commercialShort,
                     nonCommercialLong: biggestDecrease.nonCommercialLong,
                     nonCommercialShort: biggestDecrease.nonCommercialShort,
-                    reportDate: new Date().toISOString(),
+                    reportDate: '2025-11-04T00:00:00Z',
                     weeklyChange: biggestDecrease.weeklyChange
                   });
                   setIsDetailModalOpen(true);

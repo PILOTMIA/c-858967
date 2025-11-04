@@ -8,7 +8,6 @@ import COTBiasVisualization from "./COTBiasVisualization";
 import COTOverview from "./COTOverview";
 import COTDataUpload from "./COTDataUpload";
 import COTMarketWheel from "./COTMarketWheel";
-import { COTDataProvider } from "./COTDataContext";
 
 interface COTDataType {
   currency: string;
@@ -292,8 +291,7 @@ const COTData = () => {
   };
 
   return (
-    <COTDataProvider>
-      <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Enhanced COT Analysis with Tabs */}
       <div className="glass-card p-3 sm:p-6 rounded-xl animate-fade-in border border-border/50 bg-gradient-to-br from-card/80 to-card backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3">
@@ -499,8 +497,7 @@ const COTData = () => {
           </TabsContent>
         </Tabs>
       </div>
-      </div>
-    </COTDataProvider>
+    </div>
   );
 };
 
