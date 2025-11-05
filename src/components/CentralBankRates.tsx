@@ -48,37 +48,37 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       country: "United States",
       currency: "USD",
       centralBank: "Federal Reserve (Fed)",
-      currentRate: 4.50,
-      lastUpdate: "2025-10-20",
-      nextMeeting: "2025-10-29",
+      currentRate: 4.75,
+      lastUpdate: "2025-11-05",
+      nextMeeting: "2025-12-17",
       projections: {
-        month6: { rate: 4.25, probability: 82, direction: 'down' },
-        month12: { rate: 3.75, probability: 85, direction: 'down' }
+        month6: { rate: 4.50, probability: 75, direction: 'down' },
+        month12: { rate: 4.00, probability: 80, direction: 'down' }
       },
       recentChanges: [
-        { date: "2025-09-17", change: -0.25, rate: 4.50 },
-        { date: "2025-07-31", change: 0, rate: 4.75 },
-        { date: "2025-06-12", change: 0, rate: 4.75 }
+        { date: "2025-11-05", change: 0, rate: 4.75 },
+        { date: "2025-09-17", change: -0.25, rate: 4.75 },
+        { date: "2025-07-31", change: -0.25, rate: 5.00 }
       ],
-      seasonality: { q1: 'neutral', q2: 'bearish', q3: 'bearish', q4: 'neutral' }
+      seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'neutral' }
     },
     {
       country: "Eurozone",
       currency: "EUR",
       centralBank: "European Central Bank (ECB)",
-      currentRate: 2.00,
-      lastUpdate: "2025-10-17",
+      currentRate: 3.25,
+      lastUpdate: "2025-11-04",
       nextMeeting: "2025-12-12",
       projections: {
-        month6: { rate: 1.75, probability: 75, direction: 'down' },
-        month12: { rate: 1.50, probability: 78, direction: 'down' }
+        month6: { rate: 3.00, probability: 80, direction: 'down' },
+        month12: { rate: 2.50, probability: 85, direction: 'down' }
       },
       recentChanges: [
-        { date: "2025-09-12", change: 0, rate: 2.00 },
-        { date: "2025-07-18", change: -0.25, rate: 2.00 },
-        { date: "2025-06-06", change: -0.25, rate: 2.25 }
+        { date: "2025-10-17", change: -0.25, rate: 3.25 },
+        { date: "2025-09-12", change: -0.25, rate: 3.50 },
+        { date: "2025-07-18", change: -0.25, rate: 3.75 }
       ],
-      seasonality: { q1: 'neutral', q2: 'bearish', q3: 'neutral', q4: 'bullish' }
+      seasonality: { q1: 'bearish', q2: 'bearish', q3: 'neutral', q4: 'neutral' }
     },
     {
       country: "United Kingdom",

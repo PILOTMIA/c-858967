@@ -83,20 +83,20 @@ const fetchNewsSentiment = async (): Promise<SentimentAnalysis> => {
 
     const mockArticles: NewsArticle[] = [
       {
-        title: "USD Weakens as Government Shutdown Extends into Fourth Week",
-        description: "Prolonged U.S. government shutdown pressures the dollar, with DXY falling to 99.54, down 8.88% year-to-date as fiscal concerns mount.",
+        title: "U.S. Dollar Rallies on Strong NFP Report, Fed Holds Steady",
+        description: "The greenback surged across major pairs after November's nonfarm payrolls beat expectations with 250K jobs added. Markets now pricing in extended Fed pause.",
         url: "#",
-        publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
         source: "Reuters",
-        sentiment: 'bearish',
-        score: 0.82,
+        sentiment: 'bullish',
+        score: 0.78,
         pairs: ['EURUSD', 'GBPUSD', 'USDJPY']
       },
       {
-        title: "EUR/USD Surges to 1.1612 as European Economy Outperforms",
-        description: "Euro strength continues against the dollar with EUR/USD reaching multi-month highs, supported by resilient eurozone economic data.",
+        title: "ECB's Lagarde Signals Continued Rate Cuts as Eurozone Growth Stalls",
+        description: "Euro weakens as ECB President hints at further monetary easing in December, citing persistently weak economic growth across the eurozone.",
         url: "#",
-        publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        publishedAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
         source: "Bloomberg",
         sentiment: 'bullish',
         score: 0.78,
