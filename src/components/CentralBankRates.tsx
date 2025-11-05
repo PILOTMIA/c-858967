@@ -12,6 +12,7 @@ interface CentralBankData {
   currency: string;
   centralBank: string;
   currentRate: number;
+  website: string;
   lastUpdate: string;
   nextMeeting: string;
   projections: {
@@ -45,118 +46,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
   
   const fallbackData: CentralBankData[] = [
     {
-      country: "United States",
-      currency: "USD",
-      centralBank: "Federal Reserve (Fed)",
-      currentRate: 4.75,
-      lastUpdate: "2025-11-05",
-      nextMeeting: "2025-12-17",
-      projections: {
-        month6: { rate: 4.50, probability: 75, direction: 'down' },
-        month12: { rate: 4.00, probability: 80, direction: 'down' }
-      },
-      recentChanges: [
-        { date: "2025-11-05", change: 0, rate: 4.75 },
-        { date: "2025-09-17", change: -0.25, rate: 4.75 },
-        { date: "2025-07-31", change: -0.25, rate: 5.00 }
-      ],
-      seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'neutral' }
-    },
-    {
-      country: "Eurozone",
-      currency: "EUR",
-      centralBank: "European Central Bank (ECB)",
-      currentRate: 3.25,
-      lastUpdate: "2025-11-04",
-      nextMeeting: "2025-12-12",
-      projections: {
-        month6: { rate: 3.00, probability: 80, direction: 'down' },
-        month12: { rate: 2.50, probability: 85, direction: 'down' }
-      },
-      recentChanges: [
-        { date: "2025-10-17", change: -0.25, rate: 3.25 },
-        { date: "2025-09-12", change: -0.25, rate: 3.50 },
-        { date: "2025-07-18", change: -0.25, rate: 3.75 }
-      ],
-      seasonality: { q1: 'bearish', q2: 'bearish', q3: 'neutral', q4: 'neutral' }
-    },
-    {
-      country: "United Kingdom",
-      currency: "GBP",
-      centralBank: "Bank of England (BoE)",
-      currentRate: 4.00,
-      lastUpdate: "2025-10-16",
-      nextMeeting: "2025-11-07",
-      projections: {
-        month6: { rate: 3.75, probability: 77, direction: 'down' },
-        month12: { rate: 3.50, probability: 80, direction: 'down' }
-      },
-      recentChanges: [
-        { date: "2025-09-19", change: 0, rate: 4.00 },
-        { date: "2025-08-01", change: -0.25, rate: 4.00 },
-        { date: "2025-06-20", change: 0, rate: 4.25 }
-      ],
-      seasonality: { q1: 'bearish', q2: 'bearish', q3: 'neutral', q4: 'bullish' }
-    },
-    {
-      country: "Japan",
-      currency: "JPY",
-      centralBank: "Bank of Japan (BoJ)",
-      currentRate: 0.50,
-      lastUpdate: "2025-10-16",
-      nextMeeting: "2025-10-31",
-      projections: {
-        month6: { rate: 0.50, probability: 65, direction: 'hold' },
-        month12: { rate: 0.75, probability: 72, direction: 'up' }
-      },
-      recentChanges: [
-        { date: "2025-09-20", change: 0, rate: 0.50 },
-        { date: "2025-07-31", change: 0.25, rate: 0.50 },
-        { date: "2025-03-19", change: 0.40, rate: 0.25 }
-      ],
-      seasonality: { q1: 'bullish', q2: 'neutral', q3: 'bullish', q4: 'neutral' }
-    },
-    {
-      country: "Canada",
-      currency: "CAD",
-      centralBank: "Bank of Canada (BoC)",
-      currentRate: 4.25,
-      lastUpdate: "2025-07-24",
-      nextMeeting: "2025-09-04",
-      projections: {
-        month6: { rate: 4.50, probability: 75, direction: 'down' },
-        month12: { rate: 3.75, probability: 80, direction: 'down' }
-      },
-      recentChanges: [
-        { date: "2024-01-24", change: 0, rate: 5.00 },
-        { date: "2023-12-06", change: 0, rate: 5.00 },
-        { date: "2023-10-25", change: 0.25, rate: 5.00 }
-      ],
-      seasonality: { q1: 'neutral', q2: 'bearish', q3: 'bearish', q4: 'neutral' }
-    },
-    {
-      country: "Australia",
-      currency: "AUD",
-      centralBank: "Reserve Bank of Australia (RBA)",
-      currentRate: 4.35,
-      lastUpdate: "2025-08-06",
-      nextMeeting: "2025-09-03",
-      projections: {
-        month6: { rate: 4.10, probability: 65, direction: 'down' },
-        month12: { rate: 3.85, probability: 70, direction: 'down' }
-      },
-      recentChanges: [
-        { date: "2024-02-06", change: 0, rate: 4.35 },
-        { date: "2024-01-02", change: 0, rate: 4.35 },
-        { date: "2023-12-05", change: 0, rate: 4.35 }
-      ],
-      seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'bullish' }
-    },
-    {
       country: "New Zealand",
       currency: "NZD",
       centralBank: "Reserve Bank of New Zealand (RBNZ)",
       currentRate: 5.25,
+      website: "https://www.rbnz.govt.nz/monetary-policy/official-cash-rate-decisions",
       lastUpdate: "2025-08-14",
       nextMeeting: "2025-10-09",
       projections: {
@@ -171,10 +65,106 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       seasonality: { q1: 'bullish', q2: 'neutral', q3: 'bearish', q4: 'neutral' }
     },
     {
+      country: "United States",
+      currency: "USD",
+      centralBank: "Federal Reserve (Fed)",
+      currentRate: 4.75,
+      website: "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      lastUpdate: "2025-11-05",
+      nextMeeting: "2025-12-17",
+      projections: {
+        month6: { rate: 4.50, probability: 75, direction: 'down' },
+        month12: { rate: 4.00, probability: 80, direction: 'down' }
+      },
+      recentChanges: [
+        { date: "2025-11-05", change: 0, rate: 4.75 },
+        { date: "2025-09-17", change: -0.25, rate: 4.75 },
+        { date: "2025-07-31", change: -0.25, rate: 5.00 }
+      ],
+      seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'neutral' }
+    },
+    {
+      country: "Australia",
+      currency: "AUD",
+      centralBank: "Reserve Bank of Australia (RBA)",
+      currentRate: 4.35,
+      website: "https://www.rba.gov.au/monetary-policy/rba-board-minutes/",
+      lastUpdate: "2025-08-06",
+      nextMeeting: "2025-09-03",
+      projections: {
+        month6: { rate: 4.10, probability: 65, direction: 'down' },
+        month12: { rate: 3.85, probability: 70, direction: 'down' }
+      },
+      recentChanges: [
+        { date: "2024-02-06", change: 0, rate: 4.35 },
+        { date: "2024-01-02", change: 0, rate: 4.35 },
+        { date: "2023-12-05", change: 0, rate: 4.35 }
+      ],
+      seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'bullish' }
+    },
+    {
+      country: "Canada",
+      currency: "CAD",
+      centralBank: "Bank of Canada (BoC)",
+      currentRate: 4.25,
+      website: "https://www.bankofcanada.ca/core-functions/monetary-policy/key-interest-rate/",
+      lastUpdate: "2025-07-24",
+      nextMeeting: "2025-09-04",
+      projections: {
+        month6: { rate: 4.50, probability: 75, direction: 'down' },
+        month12: { rate: 3.75, probability: 80, direction: 'down' }
+      },
+      recentChanges: [
+        { date: "2024-01-24", change: 0, rate: 5.00 },
+        { date: "2023-12-06", change: 0, rate: 5.00 },
+        { date: "2023-10-25", change: 0.25, rate: 5.00 }
+      ],
+      seasonality: { q1: 'neutral', q2: 'bearish', q3: 'bearish', q4: 'neutral' }
+    },
+    {
+      country: "United Kingdom",
+      currency: "GBP",
+      centralBank: "Bank of England (BoE)",
+      currentRate: 4.00,
+      website: "https://www.bankofengland.co.uk/monetary-policy/the-interest-rate-bank-rate",
+      lastUpdate: "2025-10-16",
+      nextMeeting: "2025-11-07",
+      projections: {
+        month6: { rate: 3.75, probability: 77, direction: 'down' },
+        month12: { rate: 3.50, probability: 80, direction: 'down' }
+      },
+      recentChanges: [
+        { date: "2025-09-19", change: 0, rate: 4.00 },
+        { date: "2025-08-01", change: -0.25, rate: 4.00 },
+        { date: "2025-06-20", change: 0, rate: 4.25 }
+      ],
+      seasonality: { q1: 'bearish', q2: 'bearish', q3: 'neutral', q4: 'bullish' }
+    },
+    {
+      country: "Eurozone",
+      currency: "EUR",
+      centralBank: "European Central Bank (ECB)",
+      currentRate: 3.25,
+      website: "https://www.ecb.europa.eu/press/govcouncil/mopo/html/index.en.html",
+      lastUpdate: "2025-11-04",
+      nextMeeting: "2025-12-12",
+      projections: {
+        month6: { rate: 3.00, probability: 80, direction: 'down' },
+        month12: { rate: 2.50, probability: 85, direction: 'down' }
+      },
+      recentChanges: [
+        { date: "2025-10-17", change: -0.25, rate: 3.25 },
+        { date: "2025-09-12", change: -0.25, rate: 3.50 },
+        { date: "2025-07-18", change: -0.25, rate: 3.75 }
+      ],
+      seasonality: { q1: 'bearish', q2: 'bearish', q3: 'neutral', q4: 'neutral' }
+    },
+    {
       country: "Switzerland",
       currency: "CHF",
       centralBank: "Swiss National Bank (SNB)",
       currentRate: 1.25,
+      website: "https://www.snb.ch/en/the-snb/mandates-goals/monetary-policy/monetary-policy-strategy",
       lastUpdate: "2025-06-20",
       nextMeeting: "2025-09-26",
       projections: {
@@ -187,6 +177,25 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         { date: "2023-06-22", change: 0.25, rate: 1.50 }
       ],
       seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'bullish' }
+    },
+    {
+      country: "Japan",
+      currency: "JPY",
+      centralBank: "Bank of Japan (BoJ)",
+      currentRate: 0.50,
+      website: "https://www.boj.or.jp/en/mopo/outline/index.htm",
+      lastUpdate: "2025-10-16",
+      nextMeeting: "2025-10-31",
+      projections: {
+        month6: { rate: 0.50, probability: 65, direction: 'hold' },
+        month12: { rate: 0.75, probability: 72, direction: 'up' }
+      },
+      recentChanges: [
+        { date: "2025-09-20", change: 0, rate: 0.50 },
+        { date: "2025-07-31", change: 0.25, rate: 0.50 },
+        { date: "2025-03-19", change: 0.40, rate: 0.25 }
+      ],
+      seasonality: { q1: 'bullish', q2: 'neutral', q3: 'bullish', q4: 'neutral' }
     }
   ];
 
@@ -223,9 +232,12 @@ const CentralBankRates = () => {
     refetchInterval: 1000 * 60 * 60 * 24 * 90, // Auto-refresh every 90 days (quarterly)
   });
 
+  // Sort by current rate (highest to lowest - strongest to weakest)
+  const sortedData = bankData?.slice().sort((a, b) => b.currentRate - a.currentRate);
+  
   const filteredData = selectedBank === 'all' 
-    ? bankData 
-    : bankData?.filter(bank => bank.currency === selectedBank);
+    ? sortedData 
+    : sortedData?.filter(bank => bank.currency === selectedBank);
 
   if (isLoading) {
     return (
@@ -304,16 +316,36 @@ const CentralBankRates = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredData?.map((bank) => (
-            <Card key={bank.currency} className="bg-gray-800 border-gray-700">
+            <Card key={bank.currency} className="bg-gray-800 border-gray-700 hover:border-blue-500 transition-colors">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-bold text-lg text-white">{bank.currency}</h3>
-                    <p className="text-sm text-gray-400">{bank.centralBank}</p>
+                    <a 
+                      href={bank.website} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="font-bold text-lg text-white hover:text-blue-400 transition-colors cursor-pointer"
+                    >
+                      {bank.currency}
+                    </a>
+                    <a 
+                      href={bank.website} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-sm text-gray-400 hover:text-blue-400 transition-colors block"
+                    >
+                      {bank.centralBank}
+                    </a>
                   </div>
-                  <Badge variant="outline" className="border-blue-500 text-blue-400">
-                    {bank.currentRate}%
-                  </Badge>
+                  <a 
+                    href={bank.website} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    <Badge variant="outline" className="border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white cursor-pointer transition-colors">
+                      {bank.currentRate}%
+                    </Badge>
+                  </a>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">

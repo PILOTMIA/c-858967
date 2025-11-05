@@ -85,7 +85,7 @@ const fetchNewsSentiment = async (): Promise<SentimentAnalysis> => {
       {
         title: "U.S. Dollar Rallies on Strong NFP Report, Fed Holds Steady",
         description: "The greenback surged across major pairs after November's nonfarm payrolls beat expectations with 250K jobs added. Markets now pricing in extended Fed pause.",
-        url: "#",
+        url: "https://www.reuters.com/markets/us/",
         publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
         source: "Reuters",
         sentiment: 'bullish',
@@ -95,7 +95,7 @@ const fetchNewsSentiment = async (): Promise<SentimentAnalysis> => {
       {
         title: "ECB's Lagarde Signals Continued Rate Cuts as Eurozone Growth Stalls",
         description: "Euro weakens as ECB President hints at further monetary easing in December, citing persistently weak economic growth across the eurozone.",
-        url: "#",
+        url: "https://www.bloomberg.com/markets",
         publishedAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
         source: "Bloomberg",
         sentiment: 'bullish',
@@ -105,7 +105,7 @@ const fetchNewsSentiment = async (): Promise<SentimentAnalysis> => {
       {
         title: "Federal Reserve Signals Additional Rate Cuts Before Year-End",
         description: "Fed Chair Powell's dovish comments and cooling inflation data strengthen expectations for 25bp cut at October 29 meeting, 99% probability priced in.",
-        url: "#",
+        url: "https://www.ft.com/markets",
         publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
         source: "Financial Times",
         sentiment: 'bearish',
@@ -115,7 +115,7 @@ const fetchNewsSentiment = async (): Promise<SentimentAnalysis> => {
       {
         title: "Bank of Japan Holds Policy Steady, Yen Remains Under Pressure",
         description: "BoJ maintains 0.5% rate amid data-dependent approach, keeping JPY vulnerable despite verbal intervention warnings from officials.",
-        url: "#",
+        url: "https://www.marketwatch.com/investing/currencies",
         publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
         source: "MarketWatch",
         sentiment: 'bearish',
@@ -125,7 +125,7 @@ const fetchNewsSentiment = async (): Promise<SentimentAnalysis> => {
       {
         title: "ECB Pauses Rate Cuts, Holds Deposit Rate at 2%",
         description: "European Central Bank keeps rates unchanged for second consecutive meeting, cautious stance supports euro as officials monitor inflation progress.",
-        url: "#",
+        url: "https://www.bbc.com/news/business",
         publishedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
         source: "BBC Business",
         sentiment: 'bullish',
@@ -135,7 +135,7 @@ const fetchNewsSentiment = async (): Promise<SentimentAnalysis> => {
       {
         title: "Bank of England Maintains 4% Rate Amid Mixed Economic Signals",
         description: "BoE holds steady with 7-2 vote split, resilient UK labor market data offsets inflation concerns, GBP showing relative strength.",
-        url: "#",
+        url: "https://www.cnbc.com/forex/",
         publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
         source: "CNBC",
         sentiment: 'neutral',
@@ -145,7 +145,7 @@ const fetchNewsSentiment = async (): Promise<SentimentAnalysis> => {
       {
         title: "U.S. GDP Growth at 3.8% Masks Economic Headwinds",
         description: "Q2 GDP strong at 3.8% but consumer spending moderating, inventory swings distort picture as housing market remains challenged.",
-        url: "#",
+        url: "https://www.interactivebrokers.com/",
         publishedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
         source: "Interactive Brokers",
         sentiment: 'neutral',
@@ -155,7 +155,7 @@ const fetchNewsSentiment = async (): Promise<SentimentAnalysis> => {
       {
         title: "IMF Warns Global Economy in Flux, Dim Prospects Ahead",
         description: "October 2025 World Economic Outlook highlights trade policy uncertainty and growth challenges affecting forex markets globally.",
-        url: "#",
+        url: "https://www.imf.org/en/Publications/WEO",
         publishedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
         source: "IMF",
         sentiment: 'bearish',
@@ -345,11 +345,16 @@ const NewsSentimentAnalysis = () => {
               <div className="space-y-3">
                 <h4 className="text-lg font-semibold text-white">Recent Market News</h4>
                 {sentimentData?.articles.slice(0, 6).map((article, index) => (
-                  <div key={index} className="bg-gray-800 p-4 rounded border border-gray-700">
+                  <div key={index} className="bg-gray-800 p-4 rounded border border-gray-700 hover:border-blue-500 transition-colors">
                     <div className="flex items-start justify-between mb-2">
-                      <h5 className="font-semibold text-white text-sm leading-tight flex-1">
+                      <a 
+                        href={article.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="font-semibold text-white text-sm leading-tight flex-1 hover:text-blue-400 transition-colors"
+                      >
                         {article.title}
-                      </h5>
+                      </a>
                       <div className="flex items-center gap-2 ml-3">
                         {getSentimentIcon(article.sentiment)}
                         <span className="text-xs text-gray-400">
@@ -359,11 +364,16 @@ const NewsSentimentAnalysis = () => {
                     </div>
                     <p className="text-gray-300 text-xs mb-2">{article.description}</p>
                     <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2 text-gray-400">
+                      <a 
+                        href={article.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors"
+                      >
                         <Globe className="w-3 h-3" />
                         <span>{article.source}</span>
                         <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
-                      </div>
+                      </a>
                       {article.pairs && (
                         <div className="flex gap-1">
                           {article.pairs.map(pair => (
