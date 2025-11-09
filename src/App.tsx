@@ -18,6 +18,8 @@ import AppNavigation from "./components/AppNavigation";
 import TradingViewBanner from "./components/TradingViewBanner";
 import TermsAgreementModal from "./components/TermsAgreementModal";
 import FirstTimeUserTutorial from "./components/FirstTimeUserTutorial";
+import PageTransition from "./components/PageTransition";
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -39,16 +41,17 @@ const App = () => (
               <TermsAgreementModal />
               <FirstTimeUserTutorial />
               <AppNavigation />
+              <ScrollToTop />
               <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/market-analysis" element={<MarketAnalysis />} />
-                <Route path="/cot-analysis" element={<COTAnalysis />} />
-                <Route path="/economic-radar" element={<EconomicRadar />} />
-                <Route path="/education" element={<Education />} />
-                <Route path="/community" element={<Community />} />
-                <Route path="/tools" element={<Tools />} />
-                <Route path="/central-bank-rates" element={<CentralBankRates />} />
-                <Route path="/profile" element={<Profile />} />
+                <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+                <Route path="/market-analysis" element={<PageTransition><MarketAnalysis /></PageTransition>} />
+                <Route path="/cot-analysis" element={<PageTransition><COTAnalysis /></PageTransition>} />
+                <Route path="/economic-radar" element={<PageTransition><EconomicRadar /></PageTransition>} />
+                <Route path="/education" element={<PageTransition><Education /></PageTransition>} />
+                <Route path="/community" element={<PageTransition><Community /></PageTransition>} />
+                <Route path="/tools" element={<PageTransition><Tools /></PageTransition>} />
+                <Route path="/central-bank-rates" element={<PageTransition><CentralBankRates /></PageTransition>} />
+                <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
               </Routes>
             </div>
           </div>

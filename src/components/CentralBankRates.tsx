@@ -38,6 +38,10 @@ interface CentralBankData {
     q3: 'bullish' | 'bearish' | 'neutral';
     q4: 'bullish' | 'bearish' | 'neutral';
   };
+  tradingInsights: {
+    bullishFactors: string[];
+    bearishFactors: string[];
+  };
 }
 
 const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
@@ -62,7 +66,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         { date: "2023-11-29", change: 0, rate: 5.50 },
         { date: "2023-10-04", change: 0, rate: 5.50 }
       ],
-      seasonality: { q1: 'bullish', q2: 'neutral', q3: 'bearish', q4: 'neutral' }
+      seasonality: { q1: 'bullish', q2: 'neutral', q3: 'bearish', q4: 'neutral' },
+      tradingInsights: {
+        bullishFactors: ["Higher dairy prices boost exports", "Carry trade appeal from high rates", "China economic recovery increases demand"],
+        bearishFactors: ["Small economy vulnerable to shocks", "Commodity price weakness", "RBNZ dovish rate cut cycle beginning"]
+      }
     },
     {
       country: "United States",
@@ -81,7 +89,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         { date: "2025-09-17", change: -0.25, rate: 4.75 },
         { date: "2025-07-31", change: -0.25, rate: 5.00 }
       ],
-      seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'neutral' }
+      seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'neutral' },
+      tradingInsights: {
+        bullishFactors: ["Safe-haven demand in risk-off periods", "Strong labor market supports rates", "Reserve currency status drives demand"],
+        bearishFactors: ["Fed pivoting to rate cuts", "Increasing fiscal deficits", "Trade balance deficits weigh on dollar"]
+      }
     },
     {
       country: "Australia",
@@ -100,7 +112,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         { date: "2024-01-02", change: 0, rate: 4.35 },
         { date: "2023-12-05", change: 0, rate: 4.35 }
       ],
-      seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'bullish' }
+      seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'bullish' },
+      tradingInsights: {
+        bullishFactors: ["China growth benefits commodity exports", "Iron ore & coal demand strengthens AUD", "High rates attract carry traders"],
+        bearishFactors: ["China economic slowdown impacts exports", "RBA dovish rate outlook", "Property market weakness weighs on economy"]
+      }
     },
     {
       country: "Canada",
@@ -119,7 +135,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         { date: "2023-12-06", change: 0, rate: 5.00 },
         { date: "2023-10-25", change: 0.25, rate: 5.00 }
       ],
-      seasonality: { q1: 'neutral', q2: 'bearish', q3: 'bearish', q4: 'neutral' }
+      seasonality: { q1: 'neutral', q2: 'bearish', q3: 'bearish', q4: 'neutral' },
+      tradingInsights: {
+        bullishFactors: ["Rising oil prices boost CAD", "US economic strength benefits trade", "Strong employment data supports rates"],
+        bearishFactors: ["BoC cutting rates faster than Fed", "Weak housing market impacts economy", "Oil price declines pressure CAD"]
+      }
     },
     {
       country: "United Kingdom",
@@ -138,7 +158,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         { date: "2025-08-01", change: -0.25, rate: 4.00 },
         { date: "2025-06-20", change: 0, rate: 4.25 }
       ],
-      seasonality: { q1: 'bearish', q2: 'bearish', q3: 'neutral', q4: 'bullish' }
+      seasonality: { q1: 'bearish', q2: 'bearish', q3: 'neutral', q4: 'bullish' },
+      tradingInsights: {
+        bullishFactors: ["Strong services sector supports GBP", "Higher rates than Eurozone attract capital", "London financial center drives demand"],
+        bearishFactors: ["BoE cutting rates amid weak growth", "Brexit impacts on trade continue", "Sticky inflation concerns slow cuts"]
+      }
     },
     {
       country: "Eurozone",
@@ -157,7 +181,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         { date: "2025-09-12", change: -0.25, rate: 3.50 },
         { date: "2025-07-18", change: -0.25, rate: 3.75 }
       ],
-      seasonality: { q1: 'bearish', q2: 'bearish', q3: 'neutral', q4: 'neutral' }
+      seasonality: { q1: 'bearish', q2: 'bearish', q3: 'neutral', q4: 'neutral' },
+      tradingInsights: {
+        bullishFactors: ["Large economy with stable exports", "ECB balance sheet provides support", "Manufacturing recovery boosts EUR"],
+        bearishFactors: ["Aggressive ECB rate cuts weaken EUR", "Weak growth across member states", "Energy dependence creates vulnerability"]
+      }
     },
     {
       country: "Switzerland",
@@ -176,7 +204,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         { date: "2023-09-21", change: 0.25, rate: 1.75 },
         { date: "2023-06-22", change: 0.25, rate: 1.50 }
       ],
-      seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'bullish' }
+      seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'bullish' },
+      tradingInsights: {
+        bullishFactors: ["Safe-haven status in crisis periods", "Strong banking sector reputation", "Low inflation maintains currency value"],
+        bearishFactors: ["SNB willing to intervene to weaken CHF", "Low rates reduce carry appeal", "Small open economy vulnerable to EU weakness"]
+      }
     },
     {
       country: "Japan",
@@ -195,7 +227,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         { date: "2025-07-31", change: 0.25, rate: 0.50 },
         { date: "2025-03-19", change: 0.40, rate: 0.25 }
       ],
-      seasonality: { q1: 'bullish', q2: 'neutral', q3: 'bullish', q4: 'neutral' }
+      seasonality: { q1: 'bullish', q2: 'neutral', q3: 'bullish', q4: 'neutral' },
+      tradingInsights: {
+        bullishFactors: ["BoJ normalizing policy strengthens JPY", "Repatriation flows support yen", "Risk-off sentiment boosts safe-haven demand"],
+        bearishFactors: ["Still lowest rates among majors", "Intervention threats limit upside", "Massive debt levels constrain rate hikes"]
+      }
     }
   ];
 
@@ -424,22 +460,52 @@ const CentralBankRates = () => {
         ))}
                   </div>
                 </div>
+
+                {/* Currency-Specific Trading Insights */}
+                <div className="border-t border-gray-700 pt-3">
+                  <h4 className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    Trading Insights: {bank.currency}
+                  </h4>
+                  <div className="space-y-2 text-xs">
+                    <div>
+                      <p className="text-green-400 font-medium mb-1">Bullish Factors:</p>
+                      <ul className="space-y-0.5 text-gray-300">
+                        {bank.tradingInsights.bullishFactors.map((factor, idx) => (
+                          <li key={idx}>• {factor}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="text-red-400 font-medium mb-1">Bearish Factors:</p>
+                      <ul className="space-y-0.5 text-gray-300">
+                        {bank.tradingInsights.bearishFactors.map((factor, idx) => (
+                          <li key={idx}>• {factor}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {/* Trading Insights */}
-        <div className="mt-8 p-4 bg-blue-900/20 border border-blue-800 rounded-lg">
-          <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-blue-400" />
-            Trading Insights
+        {/* General Trading Strategy Insights */}
+        <div className="mt-8 p-6 bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-700/50 rounded-xl">
+          <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <AlertCircle className="h-6 w-6 text-blue-400" />
+            Master Trading Strategy Guide
           </h3>
-          <div className="text-sm text-gray-300 space-y-2">
-            <p>• <strong>Rate Differentials:</strong> Look for widening or narrowing spreads between central banks for carry trade opportunities.</p>
-            <p>• <strong>Forward Guidance:</strong> Pay attention to central bank communication for early signals of policy shifts.</p>
-            <p>• <strong>Seasonal Patterns:</strong> Use quarterly bias data to inform longer-term positioning strategies.</p>
-            <p>• <strong>Meeting Dates:</strong> Volatility typically increases around central bank meeting dates - plan risk management accordingly.</p>
+          <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-300">
+            <div className="space-y-2">
+              <p><strong className="text-blue-400">Rate Differentials:</strong> Widening spreads = stronger carry trades. Track rate differential changes between currency pairs.</p>
+              <p><strong className="text-blue-400">Forward Guidance:</strong> Central bank communication often signals policy shifts weeks ahead. Read meeting minutes carefully.</p>
+            </div>
+            <div className="space-y-2">
+              <p><strong className="text-purple-400">Seasonal Patterns:</strong> Quarterly bias data reveals historical trends. Align positions with seasonal strength periods.</p>
+              <p><strong className="text-purple-400">Meeting Volatility:</strong> Major swings occur around rate decisions. Manage position sizing and stops accordingly.</p>
+            </div>
           </div>
         </div>
       </CardContent>

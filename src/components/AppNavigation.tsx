@@ -38,15 +38,15 @@ const AppNavigation = () => {
       {/* Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 animate-fade-in"
           onClick={toggleMenu}
         />
       )}
 
       {/* Menu Panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-card border-l border-border text-foreground transform transition-transform duration-300 ease-in-out z-50 ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed top-0 right-0 h-full w-80 bg-card border-l border-border text-foreground shadow-2xl transform transition-all duration-300 ease-in-out z-50 ${
+          isOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
         }`}
       >
         <div className="p-6 pt-20">
@@ -61,9 +61,9 @@ const AppNavigation = () => {
                   key={item.path}
                   to={item.path}
                   onClick={toggleMenu}
-                  className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-200 transform hover:scale-105 ${
                     isActive 
-                      ? 'bg-primary text-primary-foreground' 
+                      ? 'bg-primary text-primary-foreground shadow-lg' 
                       : 'hover:bg-accent text-muted-foreground hover:text-accent-foreground'
                   }`}
                 >
