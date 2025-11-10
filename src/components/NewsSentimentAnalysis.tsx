@@ -83,84 +83,84 @@ const fetchNewsSentiment = async (): Promise<SentimentAnalysis> => {
 
     const mockArticles: NewsArticle[] = [
       {
-        title: "U.S. Dollar Rallies on Strong NFP Report, Fed Holds Steady",
-        description: "The greenback surged across major pairs after November's nonfarm payrolls beat expectations with 250K jobs added. Markets now pricing in extended Fed pause.",
-        url: "https://www.reuters.com/markets/us/",
+        title: "Fed Signals End to Rate Cuts, USD Surges Across All Majors",
+        description: "Federal Reserve holds rates at 4.25% and signals pause in easing cycle as inflation remains sticky above 3%. Dollar index rallies to 6-month highs.",
+        url: "https://www.reuters.com/markets/us/federal-reserve-monetary-policy",
         publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
         source: "Reuters",
         sentiment: 'bullish',
-        score: 0.78,
-        pairs: ['EURUSD', 'GBPUSD', 'USDJPY']
-      },
-      {
-        title: "ECB's Lagarde Signals Continued Rate Cuts as Eurozone Growth Stalls",
-        description: "Euro weakens as ECB President hints at further monetary easing in December, citing persistently weak economic growth across the eurozone.",
-        url: "https://www.bloomberg.com/markets",
-        publishedAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-        source: "Bloomberg",
-        sentiment: 'bullish',
-        score: 0.78,
-        pairs: ['EURUSD', 'EURGBP', 'EURJPY']
-      },
-      {
-        title: "Federal Reserve Signals Additional Rate Cuts Before Year-End",
-        description: "Fed Chair Powell's dovish comments and cooling inflation data strengthen expectations for 25bp cut at October 29 meeting, 99% probability priced in.",
-        url: "https://www.ft.com/markets",
-        publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        source: "Financial Times",
-        sentiment: 'bearish',
         score: 0.85,
         pairs: ['EURUSD', 'GBPUSD', 'USDJPY']
       },
       {
-        title: "Bank of Japan Holds Policy Steady, Yen Remains Under Pressure",
-        description: "BoJ maintains 0.5% rate amid data-dependent approach, keeping JPY vulnerable despite verbal intervention warnings from officials.",
-        url: "https://www.marketwatch.com/investing/currencies",
-        publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        source: "MarketWatch",
+        title: "ECB Cuts Rates 25bp to 2.75%, Lagarde Warns of Economic Headwinds",
+        description: "European Central Bank delivers third consecutive rate cut citing weak Eurozone growth. Manufacturing PMI contracts for 8th straight month.",
+        url: "https://www.bloomberg.com/markets/rates-bonds",
+        publishedAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+        source: "Bloomberg",
         sentiment: 'bearish',
-        score: 0.73,
-        pairs: ['USDJPY', 'EURJPY', 'GBPJPY']
-      },
-      {
-        title: "ECB Pauses Rate Cuts, Holds Deposit Rate at 2%",
-        description: "European Central Bank keeps rates unchanged for second consecutive meeting, cautious stance supports euro as officials monitor inflation progress.",
-        url: "https://www.bbc.com/news/business",
-        publishedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-        source: "BBC Business",
-        sentiment: 'bullish',
-        score: 0.71,
+        score: 0.82,
         pairs: ['EURUSD', 'EURGBP', 'EURJPY']
       },
       {
-        title: "Bank of England Maintains 4% Rate Amid Mixed Economic Signals",
-        description: "BoE holds steady with 7-2 vote split, resilient UK labor market data offsets inflation concerns, GBP showing relative strength.",
-        url: "https://www.cnbc.com/forex/",
-        publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        source: "CNBC",
-        sentiment: 'neutral',
-        score: 0.52,
+        title: "UK Inflation Accelerates to 2.8%, BoE Rate Cut Expectations Collapse",
+        description: "Surprise jump in UK CPI forces traders to unwind Bank of England rate cut bets. GBP strongest G10 performer this week.",
+        url: "https://www.ft.com/uk-economy",
+        publishedAt: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+        source: "Financial Times",
+        sentiment: 'bullish',
+        score: 0.88,
         pairs: ['GBPUSD', 'EURGBP', 'GBPJPY']
       },
       {
-        title: "U.S. GDP Growth at 3.8% Masks Economic Headwinds",
-        description: "Q2 GDP strong at 3.8% but consumer spending moderating, inventory swings distort picture as housing market remains challenged.",
-        url: "https://www.interactivebrokers.com/",
-        publishedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-        source: "Interactive Brokers",
-        sentiment: 'neutral',
-        score: 0.48,
-        pairs: ['EURUSD', 'USDJPY', 'AUDUSD']
+        title: "Bank of Japan Raises Rates to 0.75%, Yen Rallies 2% Against Dollar",
+        description: "BoJ delivers surprise 25bp hike citing wage growth momentum and rising inflation expectations. Governor Ueda signals more tightening ahead.",
+        url: "https://www.marketwatch.com/currencies",
+        publishedAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+        source: "MarketWatch",
+        sentiment: 'bullish',
+        score: 0.91,
+        pairs: ['USDJPY', 'EURJPY', 'GBPJPY']
       },
       {
-        title: "IMF Warns Global Economy in Flux, Dim Prospects Ahead",
-        description: "October 2025 World Economic Outlook highlights trade policy uncertainty and growth challenges affecting forex markets globally.",
+        title: "Australian Dollar Plunges as China PMI Hits 18-Month Low",
+        description: "AUD weakest in G10 following dismal Chinese manufacturing data. RBA minutes reveal board discussed rate cuts for December meeting.",
+        url: "https://www.bbc.com/news/business",
+        publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        source: "BBC Business",
+        sentiment: 'bearish',
+        score: 0.79,
+        pairs: ['AUDUSD', 'AUDNZD', 'EURAUD']
+      },
+      {
+        title: "Canadian Dollar Strengthens on Oil Price Surge Above $85",
+        description: "WTI crude rallies 4% on OPEC+ output cut extension. Bank of Canada maintains hawkish bias with core inflation at 3.5%.",
+        url: "https://www.cnbc.com/forex/",
+        publishedAt: new Date(Date.now() - 1.5 * 24 * 60 * 60 * 1000).toISOString(),
+        source: "CNBC",
+        sentiment: 'bullish',
+        score: 0.76,
+        pairs: ['USDCAD', 'EURCAD', 'AUDCAD']
+      },
+      {
+        title: "Swiss Franc Hits Record High as Global Risk-Off Accelerates",
+        description: "Safe-haven flows push CHF to strongest level against EUR since 2015. SNB intervention chatter resurfaces as EURCHF tests parity.",
+        url: "https://www.interactivebrokers.com/en/trading/currencies.php",
+        publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        source: "Interactive Brokers",
+        sentiment: 'bullish',
+        score: 0.84,
+        pairs: ['USDCHF', 'EURCHF', 'GBPCHF']
+      },
+      {
+        title: "New Zealand Dollar Tumbles on RBNZ Dovish Pivot, Rates Cut 50bp",
+        description: "Kiwi suffers largest one-day drop in 2 years after RBNZ delivers jumbo rate cut and warns of further easing ahead.",
         url: "https://www.imf.org/en/Publications/WEO",
-        publishedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
         source: "IMF",
         sentiment: 'bearish',
-        score: 0.68,
-        pairs: ['AUDUSD', 'NZDUSD', 'USDCAD']
+        score: 0.87,
+        pairs: ['NZDUSD', 'AUDNZD', 'EURNZD']
       }
     ];
 

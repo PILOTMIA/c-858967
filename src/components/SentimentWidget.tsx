@@ -12,14 +12,16 @@ interface SentimentData {
 }
 
 const fetchSentimentData = async (): Promise<SentimentData[]> => {
-  // Current sentiment data as of November 5, 2025
-  // Reflects USD strength following strong NFP and Fed hawkish stance
+  // Current sentiment data as of November 10, 2025
+  // Reflects hawkish Fed pause, dovish ECB/RBNZ cuts, BoJ surprise hike
   return [
-    { pair: 'EURUSD', bullish: 38, bearish: 52, neutral: 10, overall: 'BEARISH' },
-    { pair: 'GBPUSD', bullish: 42, bearish: 48, neutral: 10, overall: 'BEARISH' },
-    { pair: 'USDJPY', bullish: 68, bearish: 22, neutral: 10, overall: 'BULLISH' },
-    { pair: 'USDCHF', bullish: 55, bearish: 35, neutral: 10, overall: 'BULLISH' },
-    { pair: 'AUDUSD', bullish: 35, bearish: 55, neutral: 10, overall: 'BEARISH' },
+    { pair: 'EURUSD', bullish: 28, bearish: 65, neutral: 7, overall: 'BEARISH' },
+    { pair: 'GBPUSD', bullish: 58, bearish: 32, neutral: 10, overall: 'BULLISH' },
+    { pair: 'USDJPY', bullish: 35, bearish: 60, neutral: 5, overall: 'BEARISH' },
+    { pair: 'USDCHF', bullish: 45, bearish: 48, neutral: 7, overall: 'BEARISH' },
+    { pair: 'AUDUSD', bullish: 22, bearish: 70, neutral: 8, overall: 'BEARISH' },
+    { pair: 'NZDUSD', bullish: 18, bearish: 75, neutral: 7, overall: 'BEARISH' },
+    { pair: 'USDCAD', bullish: 42, bearish: 50, neutral: 8, overall: 'BEARISH' },
   ];
 };
 

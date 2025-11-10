@@ -21,16 +21,17 @@ interface MarketData {
 
 const fetchMarketData = async (): Promise<MarketData> => {
   // Simulate real-time market data with slight variations
-  const baseUsd = 103.45;
-  const baseEur = 1.0542;
+  // November 10, 2025 - Reflecting hawkish Fed, dovish ECB/RBNZ
+  const baseUsd = 106.85;
+  const baseEur = 1.0485;
   const variation = (Math.random() - 0.5) * 0.02; // Small random variation
   
   const usdPrice = baseUsd + variation;
   const eurPrice = baseEur + (variation * 0.001);
   
-  // Calculate realistic daily changes
-  const usdChange = (Math.random() - 0.5) * 0.8; // Up to ±0.8
-  const eurChange = (Math.random() - 0.5) * 0.004; // Up to ±0.004
+  // Calculate realistic daily changes - USD bullish trend
+  const usdChange = 0.55 + (Math.random() - 0.5) * 0.3; // Mostly positive
+  const eurChange = -0.0025 + (Math.random() - 0.5) * 0.002; // Mostly negative
   
   return {
     usdIndex: {
@@ -39,8 +40,8 @@ const fetchMarketData = async (): Promise<MarketData> => {
       changePercent: (usdChange / (usdPrice - usdChange)) * 100
     },
     volume: {
-      value: '$6.8T',
-      change: 2.1 + (Math.random() - 0.5) * 0.5 // Slight variation
+      value: '$7.2T',
+      change: 3.4 + (Math.random() - 0.5) * 0.5 // Higher volume on volatility
     },
     eurUsd: {
       value: eurPrice,
