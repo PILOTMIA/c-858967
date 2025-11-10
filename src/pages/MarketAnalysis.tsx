@@ -4,9 +4,6 @@ import ForexChart from "@/components/ForexChart";
 import ForexPerformance from "@/components/ForexPerformance";
 import COTData from "@/components/COTData";
 import FedWatchTool from "@/components/FedWatchTool";
-import NewsSentimentAnalysis from "@/components/NewsSentimentAnalysis";
-import FundamentalNewsAnalysis from "@/components/FundamentalNewsAnalysis";
-import CentralBankNewsTracker from "@/components/CentralBankNewsTracker";
 import { useState } from "react";
 
 const MarketAnalysis = () => {
@@ -24,15 +21,6 @@ const MarketAnalysis = () => {
           <p className="text-gray-300">Real-time forex market analysis and insights</p>
         </div>
 
-        {/* Central Bank News Tracker */}
-        <CentralBankNewsTracker />
-
-        {/* News Sentiment Analysis */}
-        <NewsSentimentAnalysis />
-
-        {/* Fundamental News Analysis */}
-        <FundamentalNewsAnalysis />
-
         {/* Heat Map */}
         <ForexHeatMap />
 
@@ -46,8 +34,8 @@ const MarketAnalysis = () => {
           </div>
         </div>
 
-        {/* COT Data & Fed Watch */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {/* COT Data, Economic Radar & News */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="bg-card border-border rounded-lg p-6">
             <div className="text-center mb-4">
               <h3 className="text-xl font-bold text-card-foreground mb-2">COT Analysis</h3>
@@ -73,6 +61,20 @@ const MarketAnalysis = () => {
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium transition-colors"
               >
                 View Economic Radar
+              </button>
+            </div>
+          </div>
+          <div className="bg-card border-border rounded-lg p-6">
+            <div className="text-center mb-4">
+              <h3 className="text-xl font-bold text-card-foreground mb-2">Market News</h3>
+              <p className="text-muted-foreground text-sm mb-4">
+                Live news, sentiment analysis, and central bank updates all in one place
+              </p>
+              <button 
+                onClick={() => window.location.href = '/news'}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium transition-colors"
+              >
+                View Market News
               </button>
             </div>
           </div>

@@ -14,6 +14,7 @@ import Tools from "./pages/Tools";
 import Profile from "./pages/Profile";
 import CentralBankRates from "./pages/CentralBankRates";
 import EconomicRadar from "./pages/EconomicRadar";
+import News from "./pages/News";
 import AppNavigation from "./components/AppNavigation";
 import TradingViewBanner from "./components/TradingViewBanner";
 import TermsAgreementModal from "./components/TermsAgreementModal";
@@ -47,6 +48,7 @@ const App = () => (
                 <Route path="/market-analysis" element={<PageTransition><MarketAnalysis /></PageTransition>} />
                 <Route path="/cot-analysis" element={<PageTransition><COTAnalysis /></PageTransition>} />
                 <Route path="/economic-radar" element={<PageTransition><EconomicRadar /></PageTransition>} />
+                <Route path="/news" element={<PageTransition><News /></PageTransition>} />
                 <Route path="/education" element={<PageTransition><Education /></PageTransition>} />
                 <Route path="/community" element={<PageTransition><Community /></PageTransition>} />
                 <Route path="/tools" element={<PageTransition><Tools /></PageTransition>} />
