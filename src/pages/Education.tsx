@@ -5,6 +5,7 @@ import ClientLearningPath from "@/components/ClientLearningPath";
 import FreeIndicatorDownload from "@/components/FreeIndicatorDownload";
 import TradingQuizGame from "@/components/TradingQuizGame";
 import TelegramChannelFeed from "@/components/TelegramChannelFeed";
+import EconomicEducation from "@/components/EconomicEducation";
 
 const Education = () => {
   return (
@@ -24,6 +25,9 @@ const Education = () => {
           <p className="text-sm sm:text-base text-gray-300 text-center mb-4 sm:mb-6">Interactive quiz based on Dr. Elder's "Trading for a Living"</p>
           <TradingQuizGame />
         </div>
+
+        {/* Economic Indicators Education */}
+        <EconomicEducation />
 
         {/* Knowledge Base */}
         <KnowledgeBase />

@@ -8,14 +8,15 @@ const commodityCOTData = [
   {
     name: "Crude Oil",
     symbol: "CL",
-    nonCommercialLong: 428567,
-    nonCommercialShort: 145234,
-    commercialLong: 892341,
-    commercialShort: 1247892,
-    weeklyChangeLong: -12450,
-    weeklyChangeShort: 8920,
-    openInterest: 1834567,
-    reportDate: "September 23, 2025"
+    nonCommercialLong: 435780,
+    nonCommercialShort: 152340,
+    commercialLong: 897450,
+    commercialShort: 1256890,
+    weeklyChangeLong: -8920,
+    weeklyChangeShort: 12340,
+    openInterest: 1842670,
+    reportDate: "November 5, 2025",
+    additionalInfo: "EIA: Inventories +5.2M barrels (Nov 2025) | OPEC+: +137K bpd Dec 2025"
   },
   {
     name: "Gold",
@@ -202,9 +203,14 @@ const COTCommodityData = () => {
                         <div className="text-sm font-semibold text-foreground">
                           {commodity.reportDate}
                         </div>
-                        <div className="text-xs text-success mt-1">
+                         <div className="text-xs text-success mt-1">
                           ✓ CFTC Official
                         </div>
+                        {(commodity as any).additionalInfo && (
+                          <div className="text-xs text-primary mt-1 font-semibold">
+                            {(commodity as any).additionalInfo}
+                          </div>
+                        )}
                       </div>
                     </div>
 
