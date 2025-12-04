@@ -46,9 +46,9 @@ const FreeIndicatorDownload = () => {
         console.log('Supabase not configured, skipping database save');
       }
 
-      // Start download
-      const downloadUrl = 'https://drive.google.com/uc?export=download&id=15_5u0AovYVaPhDEWJyXuhF0ayi4BCVre';
-      window.open(downloadUrl, '_blank');
+      // Open Google Drive share link for download
+      const shareUrl = 'https://drive.google.com/file/d/15_5u0AovYVaPhDEWJyXuhF0ayi4BCVre/view?usp=sharing';
+      window.open(shareUrl, '_blank');
 
       setIsDownloaded(true);
       
