@@ -196,7 +196,7 @@ const ForexPerformance = ({ selectedPair = 'EURUSD' }: ForexPerformanceProps) =>
               }}
               labelStyle={{ color: '#E6E4DD' }}
               itemStyle={{ color: '#8989DE' }}
-              formatter={(value) => [formatPrice(value), 'Price']}
+              formatter={(value: number | string) => [formatPrice(value), 'Price']}
             />
             <Line 
               type="monotone" 
