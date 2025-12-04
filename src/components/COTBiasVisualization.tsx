@@ -5,6 +5,20 @@ import { useCOTData } from './COTDataContext';
 
 // Helper function to format currency pairs properly
 const formatCurrencyPair = (currency: string): string => {
+  // Cross pairs
+  if (currency.includes('/')) return currency;
+  if (currency === 'EURJPY') return 'EUR/JPY';
+  if (currency === 'GBPJPY') return 'GBP/JPY';
+  if (currency === 'EURGBP') return 'EUR/GBP';
+  if (currency === 'GBPCAD') return 'GBP/CAD';
+  if (currency === 'AUDJPY') return 'AUD/JPY';
+  if (currency === 'EURAUD') return 'EUR/AUD';
+  if (currency === 'GBPAUD') return 'GBP/AUD';
+  if (currency === 'EURCAD') return 'EUR/CAD';
+  if (currency === 'NZDJPY') return 'NZD/JPY';
+  if (currency === 'CADJPY') return 'CAD/JPY';
+  
+  // USD pairs
   const usdBasePairs = ['JPY', 'CAD', 'MXN', 'CHF'];
   return usdBasePairs.includes(currency) ? `USD/${currency}` : `${currency}/USD`;
 };
