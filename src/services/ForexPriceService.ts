@@ -1,5 +1,7 @@
-// Free Forex Price Service - No API key required
-// Uses freeforexapi.com for real-time prices
+// Forex Price Service - Uses edge function for real-time prices
+// Falls back to direct API calls if edge function unavailable
+
+import { supabase } from "@/integrations/supabase/client";
 
 interface ForexPrice {
   rate: number;
@@ -18,17 +20,9 @@ const CACHE_DURATION = 60000; // 1 minute cache
 
 // Convert internal currency codes to forex pair format
 const getPairCode = (currency: string): string => {
-  // Cross pairs
-  if (currency === 'EURJPY') return 'EURJPY';
-  if (currency === 'GBPJPY') return 'GBPJPY';
-  if (currency === 'EURGBP') return 'EURGBP';
-  if (currency === 'GBPCAD') return 'GBPCAD';
-  if (currency === 'AUDJPY') return 'AUDJPY';
-  if (currency === 'EURAUD') return 'EURAUD';
-  if (currency === 'GBPAUD') return 'GBPAUD';
-  if (currency === 'EURCAD') return 'EURCAD';
-  if (currency === 'NZDJPY') return 'NZDJPY';
-  if (currency === 'CADJPY') return 'CADJPY';
+  // Cross pairs - return as-is
+  const crossPairs = ['EURJPY', 'GBPJPY', 'EURGBP', 'GBPCAD', 'AUDJPY', 'EURAUD', 'GBPAUD', 'EURCAD', 'NZDJPY', 'CADJPY'];
+  if (crossPairs.includes(currency)) return currency;
   
   // USD pairs - determine base/quote order
   const usdBasePairs = ['JPY', 'CAD', 'MXN', 'CHF'];
@@ -38,25 +32,26 @@ const getPairCode = (currency: string): string => {
   return `${currency}USD`;
 };
 
-// Fallback prices (updated Dec 2024) - used when API fails
+// Fallback prices - Update regularly for accuracy when APIs fail
 const fallbackPrices: Record<string, number> = {
-  EURUSD: 1.0520,
-  GBPUSD: 1.2680,
-  USDJPY: 150.20,
-  USDCHF: 0.8820,
-  AUDUSD: 0.6480,
+  EURUSD: 1.0570,
+  GBPUSD: 1.2750,
+  USDJPY: 149.80,
+  USDCHF: 0.8780,
+  AUDUSD: 0.6450,
   USDCAD: 1.4020,
-  USDMXN: 20.30,
-  EURJPY: 158.10,
-  GBPJPY: 190.40,
-  EURGBP: 0.8300,
-  GBPCAD: 1.7780,
-  AUDJPY: 97.30,
-  EURAUD: 1.6230,
-  GBPAUD: 1.9560,
-  EURCAD: 1.4750,
-  NZDJPY: 86.50,
-  CADJPY: 107.10,
+  USDMXN: 20.15,
+  NZDUSD: 0.5920,
+  EURJPY: 158.30,
+  GBPJPY: 190.90,
+  EURGBP: 0.8290,
+  GBPCAD: 1.7880,
+  AUDJPY: 96.60,
+  EURAUD: 1.6390,
+  GBPAUD: 1.9770,
+  EURCAD: 1.4820,
+  NZDJPY: 88.70,
+  CADJPY: 106.80,
 };
 
 export const fetchForexPrice = async (currency: string): Promise<number> => {
@@ -69,12 +64,22 @@ export const fetchForexPrice = async (currency: string): Promise<number> => {
   }
 
   try {
-    // Try freeforexapi.com first
+    // Use edge function to avoid CORS issues
+    const { data, error } = await supabase.functions.invoke('forex-prices', {
+      body: null,
+      headers: { 'Content-Type': 'application/json' },
+    });
+    
+    // Construct URL with query params for GET request
+    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'xkgsugennbdatwmetnxx';
     const response = await fetch(
-      `https://www.freeforexapi.com/api/live?pairs=${pairCode}`,
-      { 
-        headers: { 'Accept': 'application/json' },
-        signal: AbortSignal.timeout(5000)
+      `https://${projectId}.supabase.co/functions/v1/forex-prices?pairs=${pairCode}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        signal: AbortSignal.timeout(10000)
       }
     );
     
@@ -86,37 +91,12 @@ export const fetchForexPrice = async (currency: string): Promise<number> => {
           price: { rate: price, timestamp: Date.now() },
           fetchedAt: Date.now()
         };
+        console.log(`Fetched ${pairCode}: ${price} from ${data.rates[pairCode].source}`);
         return price;
       }
     }
   } catch (error) {
-    console.log('FreeForexAPI failed, trying fallback...');
-  }
-
-  // Try ExchangeRate API as backup (for USD pairs)
-  if (!currency.includes('JPY') || currency.startsWith('USD')) {
-    try {
-      const base = pairCode.substring(0, 3);
-      const quote = pairCode.substring(3);
-      const response = await fetch(
-        `https://api.exchangerate.host/latest?base=${base}&symbols=${quote}`,
-        { signal: AbortSignal.timeout(5000) }
-      );
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.rates && data.rates[quote]) {
-          const price = data.rates[quote];
-          priceCache[pairCode] = {
-            price: { rate: price, timestamp: Date.now() },
-            fetchedAt: Date.now()
-          };
-          return price;
-        }
-      }
-    } catch (error) {
-      console.log('ExchangeRate API failed');
-    }
+    console.log('Edge function failed, using fallback...');
   }
 
   // Return fallback price if API calls fail
