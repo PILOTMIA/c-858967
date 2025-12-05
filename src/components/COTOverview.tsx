@@ -1,7 +1,7 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
+import { Progress } from "@/components/ui/progress";
 import { useCOTData } from './COTDataContext';
 
 // Helper function to format currency pairs properly
@@ -39,29 +39,6 @@ interface COTOverviewProps {
 
 const COTOverview = ({ data }: COTOverviewProps) => {
   const { cotData, lastUpdated, isDataLoading, setSelectedCurrency, setIsDetailModalOpen } = useCOTData();
-
-  const handlePieClick = (entry: any) => {
-    // Find currencies with the clicked sentiment
-    const matchingCurrencies = workingData.filter(item => 
-      (entry.name === 'Bullish' && item.sentiment === 'BULLISH') ||
-      (entry.name === 'Bearish' && item.sentiment === 'BEARISH') ||
-      (entry.name === 'Neutral' && item.sentiment === 'NEUTRAL')
-    );
-    
-    if (matchingCurrencies.length > 0) {
-      const item = matchingCurrencies[0];
-      setSelectedCurrency({
-        currency: item.currency,
-        commercialLong: item.commercialLong,
-        commercialShort: item.commercialShort,
-        nonCommercialLong: item.nonCommercialLong,
-        nonCommercialShort: item.nonCommercialShort,
-                    reportDate: '2025-10-14T00:00:00Z',
-        weeklyChange: item.weeklyChange
-      });
-      setIsDetailModalOpen(true);
-    }
-  };
   
   // Use uploaded data if available, otherwise use prop data
   const workingData = cotData.length > 0 ? cotData.map(item => {
@@ -84,12 +61,6 @@ const COTOverview = ({ data }: COTOverviewProps) => {
     acc[item.sentiment] = (acc[item.sentiment] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
-
-  const pieData = [
-    { name: 'Bullish', value: sentimentCounts.BULLISH || 0, color: 'hsl(var(--success))' },
-    { name: 'Bearish', value: sentimentCounts.BEARISH || 0, color: 'hsl(var(--destructive))' },
-    { name: 'Neutral', value: sentimentCounts.NEUTRAL || 0, color: 'hsl(var(--muted))' }
-  ];
 
   // Find extreme positions
   const mostBullish = workingData.reduce((max, item) => 
@@ -131,61 +102,56 @@ const COTOverview = ({ data }: COTOverviewProps) => {
             )}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                  onClick={handlePieClick}
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.color}
-                      className="cursor-pointer hover:opacity-80 transition-opacity"
-                    />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value: number) => [value, 'Currency Pairs']}
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--popover))', 
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                    color: 'hsl(var(--popover-foreground))'
-                  }}
-                  labelStyle={{
-                    color: 'hsl(var(--popover-foreground))'
-                  }}
-                  itemStyle={{
-                    color: 'hsl(var(--popover-foreground))'
-                  }}
-                />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
+        <CardContent className="space-y-6">
+          {/* Sentiment Bars */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-success"></div>
+                  <span className="text-sm font-medium text-foreground">Bullish</span>
+                </div>
+                <span className="text-2xl font-bold text-success">{sentimentCounts.BULLISH || 0}</span>
+              </div>
+              <Progress 
+                value={workingData.length > 0 ? ((sentimentCounts.BULLISH || 0) / workingData.length) * 100 : 0} 
+                className="h-3 bg-muted [&>div]:bg-success"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-destructive"></div>
+                  <span className="text-sm font-medium text-foreground">Bearish</span>
+                </div>
+                <span className="text-2xl font-bold text-destructive">{sentimentCounts.BEARISH || 0}</span>
+              </div>
+              <Progress 
+                value={workingData.length > 0 ? ((sentimentCounts.BEARISH || 0) / workingData.length) * 100 : 0} 
+                className="h-3 bg-muted [&>div]:bg-destructive"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-muted-foreground"></div>
+                  <span className="text-sm font-medium text-foreground">Neutral</span>
+                </div>
+                <span className="text-2xl font-bold text-muted-foreground">{sentimentCounts.NEUTRAL || 0}</span>
+              </div>
+              <Progress 
+                value={workingData.length > 0 ? ((sentimentCounts.NEUTRAL || 0) / workingData.length) * 100 : 0} 
+                className="h-3 bg-muted [&>div]:bg-muted-foreground"
+              />
+            </div>
           </div>
-          
-          <div className="grid grid-cols-3 gap-2 mt-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-success">{sentimentCounts.BULLISH || 0}</div>
-              <div className="text-xs text-muted-foreground">Bullish</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-destructive">{sentimentCounts.BEARISH || 0}</div>
-              <div className="text-xs text-muted-foreground">Bearish</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-muted-foreground">{sentimentCounts.NEUTRAL || 0}</div>
-              <div className="text-xs text-muted-foreground">Neutral</div>
-            </div>
+
+          {/* Total Pairs */}
+          <div className="text-center p-4 bg-muted/50 rounded-lg">
+            <div className="text-3xl font-bold text-foreground">{workingData.length}</div>
+            <div className="text-sm text-muted-foreground">Total Currency Pairs Tracked</div>
           </div>
         </CardContent>
       </Card>
