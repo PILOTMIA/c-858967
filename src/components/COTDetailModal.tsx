@@ -1,8 +1,10 @@
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, AlertCircle, Info, Clock, Target } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertCircle, Info, Clock, Target, RefreshCw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { fetchForexPrice, formatPrice } from "@/services/ForexPriceService";
 
 interface COTDetailData {
   currency: string;
@@ -39,204 +41,210 @@ const formatCurrencyPair = (currency: string): string => {
   return usdBasePairs.includes(currency) ? `USD/${currency}` : `${currency}/USD`;
 };
 
-// Currency-specific analysis based on CFTC data
-const getCurrencyAnalysis = (currency: string, netNonCommercial: number, netCommercial: number, weeklyChange: number) => {
-  const analysisData: Record<string, {
-    signal: 'BUY' | 'SELL' | 'NEUTRAL';
-    recommendation: string;
-    reasoning: string;
-    timeframe: string;
-    entryZone: string;
-    targetZone: string;
-    stopZone: string;
-    keyLevels: string;
-  }> = {
+// Helper to calculate pip-based price levels
+const calculateZones = (price: number, currency: string, signal: 'BUY' | 'SELL' | 'NEUTRAL') => {
+  const isJPYPair = currency.includes('JPY') || currency === 'JPY';
+  const isMXN = currency === 'MXN';
+  const decimals = isJPYPair ? 2 : (isMXN ? 2 : 4);
+  
+  // Calculate pip values
+  const pipValue = isJPYPair ? 0.01 : (isMXN ? 0.01 : 0.0001);
+  
+  // Define pip distances based on pair type
+  const entryPips = isJPYPair ? 30 : (isMXN ? 20 : 30);
+  const targetPips = isJPYPair ? 150 : (isMXN ? 100 : 150);
+  const stopPips = isJPYPair ? 80 : (isMXN ? 50 : 80);
+  
+  const fmt = (val: number) => val.toFixed(decimals);
+  
+  if (signal === 'BUY') {
+    const entryLow = price - (entryPips * pipValue);
+    const entryHigh = price;
+    const targetLow = price + (targetPips * 0.8 * pipValue);
+    const targetHigh = price + (targetPips * pipValue);
+    const stopPrice = price - (stopPips * pipValue);
+    const support1 = price - (entryPips * pipValue);
+    const support2 = price - (stopPips * pipValue);
+    const resistance1 = price + (targetPips * 0.5 * pipValue);
+    const resistance2 = price + (targetPips * pipValue);
+    
+    return {
+      entryZone: `${fmt(entryLow)} - ${fmt(entryHigh)} (on pullbacks)`,
+      targetZone: `${fmt(targetLow)} - ${fmt(targetHigh)}`,
+      stopZone: `Below ${fmt(stopPrice)}`,
+      keyLevels: `Support: ${fmt(support1)}, ${fmt(support2)} | Resistance: ${fmt(resistance1)}, ${fmt(resistance2)}`
+    };
+  } else if (signal === 'SELL') {
+    const entryLow = price;
+    const entryHigh = price + (entryPips * pipValue);
+    const targetLow = price - (targetPips * pipValue);
+    const targetHigh = price - (targetPips * 0.8 * pipValue);
+    const stopPrice = price + (stopPips * pipValue);
+    const support1 = price - (targetPips * 0.5 * pipValue);
+    const support2 = price - (targetPips * pipValue);
+    const resistance1 = price + (entryPips * pipValue);
+    const resistance2 = price + (stopPips * pipValue);
+    
+    return {
+      entryZone: `${fmt(entryLow)} - ${fmt(entryHigh)} (on bounces)`,
+      targetZone: `${fmt(targetLow)} - ${fmt(targetHigh)}`,
+      stopZone: `Above ${fmt(stopPrice)}`,
+      keyLevels: `Support: ${fmt(support1)}, ${fmt(support2)} | Resistance: ${fmt(resistance1)}, ${fmt(resistance2)}`
+    };
+  }
+  
+  return {
+    entryZone: 'N/A - Wait for signal',
+    targetZone: `Range bound around ${fmt(price)}`,
+    stopZone: 'N/A',
+    keyLevels: `Current price: ${fmt(price)}`
+  };
+};
+
+// Currency-specific analysis based on CFTC data with dynamic prices
+const getCurrencyAnalysis = (currency: string, netNonCommercial: number, netCommercial: number, weeklyChange: number, currentPrice: number) => {
+  // Determine signal based on net positioning
+  const getSignalFromPositioning = (): 'BUY' | 'SELL' | 'NEUTRAL' => {
+    // Check for specific currency biases
+    const bullishCurrencies = ['EUR', 'GBP', 'AUD', 'MXN'];
+    const bearishCurrencies = ['JPY', 'CAD', 'CHF'];
+    
+    // Cross pairs logic
+    if (currency === 'EURJPY' || currency === 'GBPJPY') return 'BUY'; // Bullish + Bearish = BUY cross
+    if (currency === 'EURGBP') return netNonCommercial > 5000 ? 'SELL' : 'NEUTRAL'; // GBP stronger
+    if (currency === 'GBPCAD' || currency === 'EURCAD') return 'BUY'; // Bullish + Bearish CAD
+    if (currency === 'AUDJPY' || currency === 'NZDJPY' || currency === 'CADJPY') return 'SELL';
+    if (currency === 'EURAUD' || currency === 'GBPAUD') return 'BUY';
+    
+    // USD pairs
+    if (bullishCurrencies.includes(currency)) return netNonCommercial > 5000 ? 'BUY' : 'NEUTRAL';
+    if (bearishCurrencies.includes(currency)) return netNonCommercial < -5000 ? 'SELL' : 'NEUTRAL';
+    
+    return Math.abs(netNonCommercial) < 5000 ? 'NEUTRAL' : (netNonCommercial > 0 ? 'BUY' : 'SELL');
+  };
+  
+  const signal = getSignalFromPositioning();
+  const zones = calculateZones(currentPrice, currency, signal);
+  
+  // Dynamic recommendations based on currency
+  const recommendations: Record<string, { rec: string; reasoning: string; timeframe: string }> = {
     EUR: {
-      signal: 'BUY',
-      recommendation: 'BUY EUR/USD on pullbacks',
-      reasoning: `Hedge funds are NET LONG EUR with +${netNonCommercial.toLocaleString()} contracts. Asset Managers hold massive long positions, showing strong institutional bullish conviction.`,
-      timeframe: 'DAILY/4H charts - Swing trade (1-3 weeks)',
-      entryZone: '1.0850 - 1.0880 (on pullbacks to 20 EMA)',
-      targetZone: '1.1050 - 1.1100 (previous swing high)',
-      stopZone: 'Below 1.0780 (recent support)',
-      keyLevels: 'Support: 1.0850, 1.0780 | Resistance: 1.0950, 1.1050'
+      rec: signal === 'BUY' ? 'BUY EUR/USD on pullbacks' : 'Monitor EUR/USD',
+      reasoning: `Hedge funds are ${netNonCommercial > 0 ? 'NET LONG' : 'NET SHORT'} EUR with ${netNonCommercial > 0 ? '+' : ''}${netNonCommercial.toLocaleString()} contracts. Institutional positioning suggests ${signal === 'BUY' ? 'bullish' : 'cautious'} outlook.`,
+      timeframe: 'DAILY/4H charts - Swing trade (1-3 weeks)'
     },
     GBP: {
-      signal: 'BUY',
-      recommendation: 'STRONG BUY GBP/USD - Aggressive accumulation',
-      reasoning: `Hedge funds are HEAVILY NET LONG GBP with +${netNonCommercial.toLocaleString()} contracts. This is aggressive institutional accumulation signaling strong upside momentum.`,
-      timeframe: 'DAILY/4H charts - Momentum trade (1-2 weeks)',
-      entryZone: '1.3000 - 1.3050 (current levels or minor pullbacks)',
-      targetZone: '1.3200 - 1.3280 (2023 highs)',
-      stopZone: 'Below 1.2920 (swing low)',
-      keyLevels: 'Support: 1.3000, 1.2920 | Resistance: 1.3150, 1.3280'
+      rec: signal === 'BUY' ? 'STRONG BUY GBP/USD - Institutional accumulation' : 'Monitor GBP/USD',
+      reasoning: `Hedge funds are ${netNonCommercial > 0 ? 'HEAVILY NET LONG' : 'NET SHORT'} GBP with ${netNonCommercial > 0 ? '+' : ''}${netNonCommercial.toLocaleString()} contracts. Strong institutional conviction.`,
+      timeframe: 'DAILY/4H charts - Momentum trade (1-2 weeks)'
     },
     JPY: {
-      signal: 'SELL',
-      recommendation: 'BUY USD/JPY - Funds heavily short JPY',
+      rec: 'BUY USD/JPY - Funds heavily short JPY',
       reasoning: `Hedge funds are EXTREMELY NET SHORT JPY with ${netNonCommercial.toLocaleString()} contracts - the most bearish currency! JPY weakness expected to continue.`,
-      timeframe: 'DAILY/4H charts - Trend following (2-4 weeks)',
-      entryZone: '151.50 - 152.50 (on dips)',
-      targetZone: '155.00 - 156.00 (2024 highs)',
-      stopZone: 'Below 149.50 (key support)',
-      keyLevels: 'Support: 151.00, 149.50 | Resistance: 154.00, 156.00'
+      timeframe: 'DAILY/4H charts - Trend following (2-4 weeks)'
     },
     CHF: {
-      signal: 'NEUTRAL',
-      recommendation: 'NEUTRAL USD/CHF - Wait for clearer signal',
-      reasoning: `Hedge funds are slightly NET SHORT CHF with ${netNonCommercial.toLocaleString()} contracts. Positioning is relatively balanced.`,
-      timeframe: 'Watch for catalyst - No immediate trade',
-      entryZone: 'N/A - Wait for risk-off event',
-      targetZone: 'Range: 0.8600 - 0.8800',
-      stopZone: 'N/A',
-      keyLevels: 'Support: 0.8600, 0.8500 | Resistance: 0.8750, 0.8850'
+      rec: 'NEUTRAL USD/CHF - Wait for clearer signal',
+      reasoning: `Positioning is relatively balanced with ${netNonCommercial.toLocaleString()} contracts. Watch for risk-off catalysts.`,
+      timeframe: 'Watch for catalyst - No immediate trade'
     },
     AUD: {
-      signal: 'BUY',
-      recommendation: 'BUY AUD/USD - Fresh institutional buying',
-      reasoning: `Hedge funds are repositioning on AUD. Risk-on sentiment supports AUD strength.`,
-      timeframe: 'DAILY/4H charts - Swing trade (1-3 weeks)',
-      entryZone: '0.6600 - 0.6650 (on pullbacks)',
-      targetZone: '0.6800 - 0.6850 (previous resistance)',
-      stopZone: 'Below 0.6550 (recent lows)',
-      keyLevels: 'Support: 0.6600, 0.6550 | Resistance: 0.6750, 0.6850'
+      rec: signal === 'BUY' ? 'BUY AUD/USD - Fresh institutional buying' : 'Monitor AUD/USD',
+      reasoning: `Hedge funds repositioning on AUD. Risk-on sentiment ${signal === 'BUY' ? 'supports' : 'may support'} AUD strength.`,
+      timeframe: 'DAILY/4H charts - Swing trade (1-3 weeks)'
     },
     CAD: {
-      signal: 'BUY',
-      recommendation: 'BUY USD/CAD - Extreme bearish CAD positioning',
+      rec: 'BUY USD/CAD - Extreme bearish CAD positioning',
       reasoning: `Hedge funds are EXTREMELY NET SHORT CAD with ${netNonCommercial.toLocaleString()} contracts - one of the most extreme bearish positions!`,
-      timeframe: 'DAILY/4H charts - Trend following (2-4 weeks)',
-      entryZone: '1.3800 - 1.3850 (on dips)',
-      targetZone: '1.4000 - 1.4100 (2024 highs)',
-      stopZone: 'Below 1.3700 (key support)',
-      keyLevels: 'Support: 1.3750, 1.3650 | Resistance: 1.3950, 1.4100'
+      timeframe: 'DAILY/4H charts - Trend following (2-4 weeks)'
     },
     MXN: {
-      signal: 'SELL',
-      recommendation: 'SELL USD/MXN - Hedge funds bullish on peso',
+      rec: 'SELL USD/MXN - Hedge funds bullish on peso',
       reasoning: `Hedge funds are STRONGLY NET LONG MXN with +${netNonCommercial.toLocaleString()} contracts. High Mexican rates make carry trade attractive.`,
-      timeframe: 'DAILY charts - Carry trade (3-6 weeks)',
-      entryZone: '17.60 - 17.80 (on bounces)',
-      targetZone: '17.00 - 17.20 (recent lows)',
-      stopZone: 'Above 18.00 (breakout level)',
-      keyLevels: 'Support: 17.20, 17.00 | Resistance: 17.80, 18.00'
+      timeframe: 'DAILY charts - Carry trade (3-6 weeks)'
     },
-    // Cross pairs
     EURJPY: {
-      signal: 'BUY',
-      recommendation: 'BUY EUR/JPY - Strong bullish bias',
-      reasoning: `EUR bullish + JPY bearish = Double bullish confluence. Institutions heavily long EUR and short JPY creates strong upside momentum for this cross.`,
-      timeframe: 'DAILY/4H charts - Momentum trade (1-3 weeks)',
-      entryZone: '162.50 - 163.00 (on pullbacks)',
-      targetZone: '166.00 - 167.00',
-      stopZone: 'Below 161.00',
-      keyLevels: 'Support: 162.00, 161.00 | Resistance: 165.00, 167.00'
+      rec: 'BUY EUR/JPY - Strong bullish bias',
+      reasoning: 'EUR bullish + JPY bearish = Double bullish confluence. Institutions heavily long EUR and short JPY creates strong upside momentum.',
+      timeframe: 'DAILY/4H charts - Momentum trade (1-3 weeks)'
     },
     GBPJPY: {
-      signal: 'BUY',
-      recommendation: 'BUY GBP/JPY - Very strong bullish setup',
-      reasoning: `GBP bullish + JPY bearish = Strong bullish confluence. This is one of the highest momentum cross pairs based on COT positioning.`,
-      timeframe: 'DAILY/4H charts - Momentum trade (1-2 weeks)',
-      entryZone: '188.00 - 189.00 (on pullbacks)',
-      targetZone: '193.00 - 195.00',
-      stopZone: 'Below 186.50',
-      keyLevels: 'Support: 188.00, 186.50 | Resistance: 191.00, 195.00'
+      rec: 'BUY GBP/JPY - Very strong bullish setup',
+      reasoning: 'GBP bullish + JPY bearish = Strong bullish confluence. One of the highest momentum cross pairs based on COT positioning.',
+      timeframe: 'DAILY/4H charts - Momentum trade (1-2 weeks)'
     },
     EURGBP: {
-      signal: 'SELL',
-      recommendation: 'SELL EUR/GBP - GBP stronger than EUR',
-      reasoning: `While both EUR and GBP are bullish vs USD, GBP shows stronger institutional buying. This creates bearish bias for EUR/GBP.`,
-      timeframe: 'DAILY charts - Range trade (2-4 weeks)',
-      entryZone: '0.8580 - 0.8600 (on bounces)',
-      targetZone: '0.8480 - 0.8500',
-      stopZone: 'Above 0.8650',
-      keyLevels: 'Support: 0.8500, 0.8450 | Resistance: 0.8600, 0.8650'
+      rec: 'SELL EUR/GBP - GBP stronger than EUR',
+      reasoning: 'While both EUR and GBP are bullish vs USD, GBP shows stronger institutional buying. Bearish bias for EUR/GBP.',
+      timeframe: 'DAILY charts - Range trade (2-4 weeks)'
     },
     GBPCAD: {
-      signal: 'BUY',
-      recommendation: 'BUY GBP/CAD - Strong bullish setup',
-      reasoning: `GBP bullish + CAD bearish = Double bullish confluence. Institutions long GBP and short CAD creates strong momentum.`,
-      timeframe: 'DAILY/4H charts - Swing trade (1-3 weeks)',
-      entryZone: '1.7450 - 1.7500 (on pullbacks)',
-      targetZone: '1.7750 - 1.7850',
-      stopZone: 'Below 1.7350',
-      keyLevels: 'Support: 1.7400, 1.7300 | Resistance: 1.7650, 1.7850'
+      rec: 'BUY GBP/CAD - Strong bullish setup',
+      reasoning: 'GBP bullish + CAD bearish = Double bullish confluence. Institutions long GBP and short CAD creates strong momentum.',
+      timeframe: 'DAILY/4H charts - Swing trade (1-3 weeks)'
     },
     AUDJPY: {
-      signal: 'SELL',
-      recommendation: 'SELL AUD/JPY - Bearish bias',
-      reasoning: `AUD showing weakness while JPY remains bearish. Net effect is slightly bearish for AUD/JPY. Watch for risk-off moves.`,
-      timeframe: 'DAILY charts - Cautious trade (1-2 weeks)',
-      entryZone: '98.50 - 99.00 (on bounces)',
-      targetZone: '96.50 - 97.00',
-      stopZone: 'Above 100.00',
-      keyLevels: 'Support: 97.00, 96.00 | Resistance: 99.50, 100.50'
+      rec: 'SELL AUD/JPY - Bearish bias',
+      reasoning: 'AUD showing weakness while JPY remains bearish. Net effect is slightly bearish for AUD/JPY. Watch for risk-off moves.',
+      timeframe: 'DAILY charts - Cautious trade (1-2 weeks)'
     },
     EURAUD: {
-      signal: 'BUY',
-      recommendation: 'BUY EUR/AUD - EUR stronger than AUD',
-      reasoning: `EUR bullish positioning is stronger than AUD. This creates bullish bias for EUR/AUD cross.`,
-      timeframe: 'DAILY charts - Swing trade (2-3 weeks)',
-      entryZone: '1.6550 - 1.6600 (on pullbacks)',
-      targetZone: '1.6850 - 1.6950',
-      stopZone: 'Below 1.6450',
-      keyLevels: 'Support: 1.6500, 1.6400 | Resistance: 1.6750, 1.6950'
+      rec: 'BUY EUR/AUD - EUR stronger than AUD',
+      reasoning: 'EUR bullish positioning is stronger than AUD. Bullish bias for EUR/AUD cross.',
+      timeframe: 'DAILY charts - Swing trade (2-3 weeks)'
     },
     GBPAUD: {
-      signal: 'BUY',
-      recommendation: 'BUY GBP/AUD - GBP outperforming AUD',
-      reasoning: `GBP shows stronger bullish positioning than AUD. This creates bullish momentum for GBP/AUD.`,
-      timeframe: 'DAILY/4H charts - Swing trade (1-3 weeks)',
-      entryZone: '1.9200 - 1.9280 (on pullbacks)',
-      targetZone: '1.9550 - 1.9650',
-      stopZone: 'Below 1.9100',
-      keyLevels: 'Support: 1.9150, 1.9050 | Resistance: 1.9450, 1.9650'
+      rec: 'BUY GBP/AUD - GBP outperforming AUD',
+      reasoning: 'GBP shows stronger bullish positioning than AUD. Bullish momentum for GBP/AUD.',
+      timeframe: 'DAILY/4H charts - Swing trade (1-3 weeks)'
     },
     EURCAD: {
-      signal: 'BUY',
-      recommendation: 'BUY EUR/CAD - Bullish setup',
-      reasoning: `EUR bullish + CAD bearish = Bullish confluence for EUR/CAD. Institutions positioned for this move.`,
-      timeframe: 'DAILY charts - Swing trade (2-4 weeks)',
-      entryZone: '1.5000 - 1.5050 (on pullbacks)',
-      targetZone: '1.5250 - 1.5350',
-      stopZone: 'Below 1.4900',
-      keyLevels: 'Support: 1.4950, 1.4850 | Resistance: 1.5150, 1.5350'
+      rec: 'BUY EUR/CAD - Bullish setup',
+      reasoning: 'EUR bullish + CAD bearish = Bullish confluence for EUR/CAD. Institutions positioned for this move.',
+      timeframe: 'DAILY charts - Swing trade (2-4 weeks)'
     },
     NZDJPY: {
-      signal: 'SELL',
-      recommendation: 'SELL NZD/JPY - Bearish bias',
-      reasoning: `NZD showing neutral-to-bearish positioning while JPY remains weak. Net effect is slightly bearish.`,
-      timeframe: 'DAILY charts - Cautious (1-2 weeks)',
-      entryZone: '91.00 - 91.50 (on bounces)',
-      targetZone: '89.00 - 89.50',
-      stopZone: 'Above 92.50',
-      keyLevels: 'Support: 89.50, 88.50 | Resistance: 91.50, 93.00'
+      rec: 'SELL NZD/JPY - Bearish bias',
+      reasoning: 'NZD showing neutral-to-bearish positioning while JPY remains weak. Net effect is slightly bearish.',
+      timeframe: 'DAILY charts - Cautious (1-2 weeks)'
     },
     CADJPY: {
-      signal: 'SELL',
-      recommendation: 'SELL CAD/JPY - Double bearish',
-      reasoning: `CAD bearish positioning reinforced. Despite JPY weakness, CAD is weaker. Bearish bias for CAD/JPY.`,
-      timeframe: 'DAILY charts - Swing trade (2-3 weeks)',
-      entryZone: '109.50 - 110.00 (on bounces)',
-      targetZone: '107.00 - 107.50',
-      stopZone: 'Above 111.00',
-      keyLevels: 'Support: 108.00, 106.50 | Resistance: 110.50, 112.00'
+      rec: 'SELL CAD/JPY - Double bearish',
+      reasoning: 'CAD bearish positioning reinforced. Despite JPY weakness, CAD is weaker. Bearish bias for CAD/JPY.',
+      timeframe: 'DAILY charts - Swing trade (2-3 weeks)'
     }
   };
-
-  return analysisData[currency] || {
-    signal: 'NEUTRAL' as const,
-    recommendation: `Monitor ${formatCurrencyPair(currency)}`,
+  
+  const currencyRec = recommendations[currency] || {
+    rec: `Monitor ${formatCurrencyPair(currency)}`,
     reasoning: `Net non-commercial position: ${netNonCommercial.toLocaleString()} contracts. Analysis based on institutional positioning data.`,
-    timeframe: 'Wait for clearer signal',
-    entryZone: 'N/A',
-    targetZone: 'N/A',
-    stopZone: 'N/A',
-    keyLevels: 'Check technical levels'
+    timeframe: 'Wait for clearer signal'
+  };
+  
+  return {
+    signal,
+    recommendation: currencyRec.rec,
+    reasoning: currencyRec.reasoning,
+    timeframe: currencyRec.timeframe,
+    ...zones
   };
 };
 
 const COTDetailModal = ({ open, onOpenChange, data }: COTDetailModalProps) => {
+  const [currentPrice, setCurrentPrice] = useState<number>(0);
+  const [isLoadingPrice, setIsLoadingPrice] = useState(false);
+  
+  useEffect(() => {
+    if (open && data) {
+      setIsLoadingPrice(true);
+      fetchForexPrice(data.currency)
+        .then(price => {
+          setCurrentPrice(price);
+        })
+        .finally(() => setIsLoadingPrice(false));
+    }
+  }, [open, data?.currency]);
+  
   if (!data) return null;
 
   const netCommercial = data.commercialLong - data.commercialShort;
@@ -245,7 +253,7 @@ const COTDetailModal = ({ open, onOpenChange, data }: COTDetailModalProps) => {
   const commercialBullishPercent = (data.commercialLong / (data.commercialLong + data.commercialShort)) * 100;
   const nonCommercialBullishPercent = (data.nonCommercialLong / (data.nonCommercialLong + data.nonCommercialShort)) * 100;
 
-  const analysis = getCurrencyAnalysis(data.currency, netNonCommercial, netCommercial, data.weeklyChange);
+  const analysis = getCurrencyAnalysis(data.currency, netNonCommercial, netCommercial, data.weeklyChange, currentPrice || 1);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -254,8 +262,25 @@ const COTDetailModal = ({ open, onOpenChange, data }: COTDetailModalProps) => {
           <DialogTitle className="text-3xl font-extrabold flex items-center gap-2">
             {formatCurrencyPair(data.currency)} - Deep Dive Analysis
           </DialogTitle>
-          <DialogDescription className="text-base">
-            CFTC Commitment of Traders Report • Oct 14, 2025
+          <DialogDescription className="text-base flex flex-col gap-2">
+            <span>CFTC Commitment of Traders Report</span>
+            <div className="flex items-center gap-3 mt-1">
+              <Badge variant="outline" className="text-sm font-mono">
+                {isLoadingPrice ? (
+                  <span className="flex items-center gap-1">
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    Loading price...
+                  </span>
+                ) : (
+                  <span>Current Price: <span className="text-primary font-bold">{formatPrice(currentPrice, data.currency)}</span></span>
+                )}
+              </Badge>
+              {!isLoadingPrice && (
+                <Badge variant="secondary" className="text-xs">
+                  Live Market Data
+                </Badge>
+              )}
+            </div>
           </DialogDescription>
         </DialogHeader>
 
