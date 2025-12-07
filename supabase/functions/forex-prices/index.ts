@@ -5,26 +5,26 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Fallback prices if all APIs fail
+// Fallback prices if all APIs fail - Updated Dec 2024
 const fallbackPrices: Record<string, number> = {
-  EURUSD: 1.0570,
+  EURUSD: 1.0560,
   GBPUSD: 1.2750,
-  USDJPY: 149.80,
-  USDCHF: 0.8780,
-  AUDUSD: 0.6450,
-  USDCAD: 1.4020,
-  USDMXN: 20.15,
-  NZDUSD: 0.5920,
-  EURJPY: 158.30,
-  GBPJPY: 190.90,
-  EURGBP: 0.8290,
-  GBPCAD: 1.7880,
-  AUDJPY: 96.60,
-  EURAUD: 1.6390,
-  GBPAUD: 1.9770,
-  EURCAD: 1.4820,
-  NZDJPY: 88.70,
-  CADJPY: 106.80,
+  USDJPY: 150.20,
+  USDCHF: 0.8790,
+  AUDUSD: 0.6420,
+  USDCAD: 1.4050,
+  USDMXN: 20.30,
+  NZDUSD: 0.5890,
+  EURJPY: 158.70,
+  GBPJPY: 191.50,
+  EURGBP: 0.8280,
+  GBPCAD: 1.7920,
+  AUDJPY: 96.40,
+  EURAUD: 1.6450,
+  GBPAUD: 1.9850,
+  EURCAD: 1.4840,
+  NZDJPY: 88.50,
+  CADJPY: 107.00,
 };
 
 serve(async (req) => {
