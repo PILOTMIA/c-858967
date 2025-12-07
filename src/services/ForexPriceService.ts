@@ -1,7 +1,6 @@
 // Forex Price Service - Uses edge function for real-time prices
-// Falls back to direct API calls if edge function unavailable
+// Falls back to fallback prices if edge function unavailable
 
-import { supabase } from "@/integrations/supabase/client";
 
 interface ForexPrice {
   rate: number;
@@ -32,26 +31,26 @@ const getPairCode = (currency: string): string => {
   return `${currency}USD`;
 };
 
-// Fallback prices - Update regularly for accuracy when APIs fail
+// Fallback prices - Updated Dec 2024 for accuracy when APIs fail
 const fallbackPrices: Record<string, number> = {
-  EURUSD: 1.0570,
+  EURUSD: 1.0560,
   GBPUSD: 1.2750,
-  USDJPY: 149.80,
-  USDCHF: 0.8780,
-  AUDUSD: 0.6450,
-  USDCAD: 1.4020,
-  USDMXN: 20.15,
-  NZDUSD: 0.5920,
-  EURJPY: 158.30,
-  GBPJPY: 190.90,
-  EURGBP: 0.8290,
-  GBPCAD: 1.7880,
-  AUDJPY: 96.60,
-  EURAUD: 1.6390,
-  GBPAUD: 1.9770,
-  EURCAD: 1.4820,
-  NZDJPY: 88.70,
-  CADJPY: 106.80,
+  USDJPY: 150.20,
+  USDCHF: 0.8790,
+  AUDUSD: 0.6420,
+  USDCAD: 1.4050,
+  USDMXN: 20.30,
+  NZDUSD: 0.5890,
+  EURJPY: 158.70,
+  GBPJPY: 191.50,
+  EURGBP: 0.8280,
+  GBPCAD: 1.7920,
+  AUDJPY: 96.40,
+  EURAUD: 1.6450,
+  GBPAUD: 1.9850,
+  EURCAD: 1.4840,
+  NZDJPY: 88.50,
+  CADJPY: 107.00,
 };
 
 export const fetchForexPrice = async (currency: string): Promise<number> => {
@@ -60,31 +59,34 @@ export const fetchForexPrice = async (currency: string): Promise<number> => {
   // Check cache first
   const cached = priceCache[pairCode];
   if (cached && Date.now() - cached.fetchedAt < CACHE_DURATION) {
+    console.log(`Using cached price for ${pairCode}: ${cached.price.rate}`);
     return cached.price.rate;
   }
 
   try {
     // Use edge function to avoid CORS issues
-    const { data, error } = await supabase.functions.invoke('forex-prices', {
-      body: null,
-      headers: { 'Content-Type': 'application/json' },
-    });
-    
-    // Construct URL with query params for GET request
     const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'xkgsugennbdatwmetnxx';
+    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhrZ3N1Z2VubmJkYXR3bWV0bnh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3OTMyODIsImV4cCI6MjA4MDM2OTI4Mn0.Gm1gJ3CkqIn7eWidlFK-ohEVec-heE3Ts6m1dCY5ZOw';
+    
+    console.log(`Fetching price for ${pairCode} from edge function...`);
+    
     const response = await fetch(
       `https://${projectId}.supabase.co/functions/v1/forex-prices?pairs=${pairCode}`,
       {
+        method: 'GET',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          'Authorization': `Bearer ${anonKey}`,
+          'apikey': anonKey,
           'Content-Type': 'application/json'
         },
-        signal: AbortSignal.timeout(10000)
+        signal: AbortSignal.timeout(15000)
       }
     );
     
     if (response.ok) {
       const data = await response.json();
+      console.log(`Edge function response for ${pairCode}:`, data);
+      
       if (data.rates && data.rates[pairCode]) {
         const price = data.rates[pairCode].rate;
         priceCache[pairCode] = {
@@ -94,9 +96,11 @@ export const fetchForexPrice = async (currency: string): Promise<number> => {
         console.log(`Fetched ${pairCode}: ${price} from ${data.rates[pairCode].source}`);
         return price;
       }
+    } else {
+      console.error(`Edge function error: ${response.status} ${response.statusText}`);
     }
   } catch (error) {
-    console.log('Edge function failed, using fallback...');
+    console.error('Edge function failed:', error);
   }
 
   // Return fallback price if API calls fail
