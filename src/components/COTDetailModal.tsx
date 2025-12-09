@@ -233,15 +233,25 @@ const getCurrencyAnalysis = (currency: string, netNonCommercial: number, netComm
 const COTDetailModal = ({ open, onOpenChange, data }: COTDetailModalProps) => {
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [isLoadingPrice, setIsLoadingPrice] = useState(false);
+  const [priceSource, setPriceSource] = useState<string>('');
+  
+  const refreshPrice = async () => {
+    if (!data) return;
+    setIsLoadingPrice(true);
+    try {
+      const price = await fetchForexPrice(data.currency);
+      setCurrentPrice(price);
+      setPriceSource('Live');
+    } catch (error) {
+      console.error('Failed to refresh price:', error);
+    } finally {
+      setIsLoadingPrice(false);
+    }
+  };
   
   useEffect(() => {
     if (open && data) {
-      setIsLoadingPrice(true);
-      fetchForexPrice(data.currency)
-        .then(price => {
-          setCurrentPrice(price);
-        })
-        .finally(() => setIsLoadingPrice(false));
+      refreshPrice();
     }
   }, [open, data?.currency]);
   
@@ -264,7 +274,7 @@ const COTDetailModal = ({ open, onOpenChange, data }: COTDetailModalProps) => {
           </DialogTitle>
           <DialogDescription className="text-base flex flex-col gap-2">
             <span>CFTC Commitment of Traders Report</span>
-            <div className="flex items-center gap-3 mt-1">
+            <div className="flex items-center gap-3 mt-1 flex-wrap">
               <Badge variant="outline" className="text-sm font-mono">
                 {isLoadingPrice ? (
                   <span className="flex items-center gap-1">
@@ -276,9 +286,18 @@ const COTDetailModal = ({ open, onOpenChange, data }: COTDetailModalProps) => {
                 )}
               </Badge>
               {!isLoadingPrice && (
-                <Badge variant="secondary" className="text-xs">
-                  Live Market Data
-                </Badge>
+                <>
+                  <Badge variant="secondary" className="text-xs">
+                    {priceSource} Market Data
+                  </Badge>
+                  <button
+                    onClick={refreshPrice}
+                    className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    Refresh
+                  </button>
+                </>
               )}
             </div>
           </DialogDescription>
