@@ -17,6 +17,7 @@ import EconomicRadar from "./pages/EconomicRadar";
 import News from "./pages/News";
 import Auth from "./pages/Auth";
 import Charts from "./pages/Charts";
+import RiskDisclaimer from "./pages/RiskDisclaimer";
 import AppNavigation from "./components/AppNavigation";
 import TradingViewBanner from "./components/TradingViewBanner";
 import TermsAgreementModal from "./components/TermsAgreementModal";
@@ -58,6 +59,7 @@ const App = () => (
                 <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
                 <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
                 <Route path="/charts" element={<PageTransition><Charts /></PageTransition>} />
+                <Route path="/risk-disclaimer" element={<PageTransition><RiskDisclaimer /></PageTransition>} />
               </Routes>
             </div>
           </div>

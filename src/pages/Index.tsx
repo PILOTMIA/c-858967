@@ -302,11 +302,24 @@ const Index = () => {
               Men In Action LLC
             </h3>
             <p className="text-gray-300 text-lg mb-4">Professional Trading Education & Analysis</p>
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-400 mb-6">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span>© 2024 • Empowering Traders Worldwide</span>
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             </div>
+            
+            {/* Risk Disclaimer Button */}
+            <button
+              onClick={() => navigate('/risk-disclaimer')}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 hover:border-red-500 rounded-lg text-red-400 hover:text-red-300 font-medium transition-all duration-300 shadow-lg hover:shadow-red-500/20"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                <path d="M12 9v4"/>
+                <path d="M12 17h.01"/>
+              </svg>
+              Risk Disclosure & Disclaimer
+            </button>
           </div>
         </div>
       </div>
