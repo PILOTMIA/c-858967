@@ -1,17 +1,9 @@
 
 import ForexHeatMap from "@/components/ForexHeatMap";
-import ForexChart from "@/components/ForexChart";
-import ForexPerformance from "@/components/ForexPerformance";
-import COTData from "@/components/COTData";
-import FedWatchTool from "@/components/FedWatchTool";
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const MarketAnalysis = () => {
-  const [selectedCurrencyPair, setSelectedCurrencyPair] = useState('EURUSD');
-
-  const handlePairChange = (pair: string) => {
-    setSelectedCurrencyPair(pair);
-  };
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-black p-4">
@@ -21,59 +13,67 @@ const MarketAnalysis = () => {
           <p className="text-gray-300">Real-time forex market analysis and insights</p>
         </div>
 
-        {/* Heat Map */}
+        {/* Heat Map - Full Focus */}
         <ForexHeatMap />
 
-        {/* Chart & Performance */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <ForexChart onPairChange={handlePairChange} />
+        {/* Quick Navigation Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          <div 
+            onClick={() => navigate('/charts')}
+            className="bg-card border-border rounded-lg p-6 cursor-pointer hover:border-primary/50 transition-all"
+          >
+            <div className="text-center">
+              <div className="text-3xl mb-3">📈</div>
+              <h3 className="text-xl font-bold text-card-foreground mb-2">Live Charts</h3>
+              <p className="text-muted-foreground text-sm mb-4">
+                View live TradingView charts with performance metrics
+              </p>
+              <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium transition-colors">
+                View Charts
+              </button>
+            </div>
           </div>
-          <div>
-            <ForexPerformance selectedPair={selectedCurrencyPair} />
-          </div>
-        </div>
-
-        {/* COT Data, Economic Radar & News */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <div className="bg-card border-border rounded-lg p-6">
-            <div className="text-center mb-4">
+          
+          <div 
+            onClick={() => navigate('/cot-analysis')}
+            className="bg-card border-border rounded-lg p-6 cursor-pointer hover:border-primary/50 transition-all"
+          >
+            <div className="text-center">
               <h3 className="text-xl font-bold text-card-foreground mb-2">COT Analysis</h3>
               <p className="text-muted-foreground text-sm mb-4">
-                For detailed Commitment of Traders analysis, visit our dedicated COT section
+                Commitment of Traders data and institutional positioning
               </p>
-              <button 
-                onClick={() => window.location.href = '/cot-analysis'}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium transition-colors"
-              >
+              <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium transition-colors">
                 View Full COT Analysis
               </button>
             </div>
           </div>
-          <div className="bg-card border-border rounded-lg p-6">
-            <div className="text-center mb-4">
+          
+          <div 
+            onClick={() => navigate('/economic-radar')}
+            className="bg-card border-border rounded-lg p-6 cursor-pointer hover:border-primary/50 transition-all"
+          >
+            <div className="text-center">
               <h3 className="text-xl font-bold text-card-foreground mb-2">Economic Radar</h3>
               <p className="text-muted-foreground text-sm mb-4">
-                CPI, PPI, 10Y Breakeven, Export Price Index, Bond Yields & Seasonality Analysis
+                CPI, PPI, 10Y Breakeven, Bonds & Seasonality Analysis
               </p>
-              <button 
-                onClick={() => window.location.href = '/economic-radar'}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium transition-colors"
-              >
+              <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium transition-colors">
                 View Economic Radar
               </button>
             </div>
           </div>
-          <div className="bg-card border-border rounded-lg p-6">
-            <div className="text-center mb-4">
+          
+          <div 
+            onClick={() => navigate('/news')}
+            className="bg-card border-border rounded-lg p-6 cursor-pointer hover:border-primary/50 transition-all"
+          >
+            <div className="text-center">
               <h3 className="text-xl font-bold text-card-foreground mb-2">Market News</h3>
               <p className="text-muted-foreground text-sm mb-4">
-                Live news, sentiment analysis, and central bank updates all in one place
+                Live news, sentiment analysis, and central bank updates
               </p>
-              <button 
-                onClick={() => window.location.href = '/news'}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium transition-colors"
-              >
+              <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-medium transition-colors">
                 View Market News
               </button>
             </div>

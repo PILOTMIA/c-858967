@@ -14,7 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          dashboard_widgets: Json | null
+          email: string | null
+          favorite_pairs: string[] | null
+          full_name: string | null
+          id: string
+          notifications_enabled: boolean | null
+          phone_number: string | null
+          preferred_timeframe: string | null
+          social_media_handles: Json | null
+          trading_style: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dashboard_widgets?: Json | null
+          email?: string | null
+          favorite_pairs?: string[] | null
+          full_name?: string | null
+          id?: string
+          notifications_enabled?: boolean | null
+          phone_number?: string | null
+          preferred_timeframe?: string | null
+          social_media_handles?: Json | null
+          trading_style?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dashboard_widgets?: Json | null
+          email?: string | null
+          favorite_pairs?: string[] | null
+          full_name?: string | null
+          id?: string
+          notifications_enabled?: boolean | null
+          phone_number?: string | null
+          preferred_timeframe?: string | null
+          social_media_handles?: Json | null
+          trading_style?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
