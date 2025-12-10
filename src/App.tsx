@@ -15,6 +15,8 @@ import Profile from "./pages/Profile";
 import CentralBankRates from "./pages/CentralBankRates";
 import EconomicRadar from "./pages/EconomicRadar";
 import News from "./pages/News";
+import Auth from "./pages/Auth";
+import Charts from "./pages/Charts";
 import AppNavigation from "./components/AppNavigation";
 import TradingViewBanner from "./components/TradingViewBanner";
 import TermsAgreementModal from "./components/TermsAgreementModal";
@@ -54,6 +56,8 @@ const App = () => (
                 <Route path="/tools" element={<PageTransition><Tools /></PageTransition>} />
                 <Route path="/central-bank-rates" element={<PageTransition><CentralBankRates /></PageTransition>} />
                 <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
+                <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+                <Route path="/charts" element={<PageTransition><Charts /></PageTransition>} />
               </Routes>
             </div>
           </div>
