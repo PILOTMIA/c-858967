@@ -305,31 +305,62 @@ const ForexHeatMap = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-8 gap-1 mb-8 p-4 bg-gray-900 rounded-lg">
+      <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 mb-8 p-4 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-xl border border-gray-700 shadow-2xl">
         {isLoading ? (
           [...Array(26)].map((_, i) => (
-            <div key={i} className="aspect-square bg-gray-700 animate-pulse rounded"></div>
+            <div key={i} className="aspect-square bg-gray-700 animate-pulse rounded-lg"></div>
           ))
         ) : (
-          heatMapData?.map(data => (
+          heatMapData?.map((data, index) => (
             <div
               key={data.pair}
-              className={`aspect-square rounded p-2 border border-gray-600 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 hover:scale-105 hover:border-blue-400 ${getTextColor(data.changePercent)}`}
-              style={{ backgroundColor: getHeatColor(data.changePercent) }}
+              onClick={() => setSelectedPair(data.pair)}
+              className={`relative aspect-square rounded-lg p-2 border-2 flex flex-col items-center justify-center text-center cursor-pointer 
+                transition-all duration-300 ease-out transform hover:scale-110 hover:z-10 hover:shadow-xl
+                ${selectedPair === data.pair ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-gray-900 scale-105' : ''}
+                ${data.signal === 'BUY' ? 'border-green-500/50 hover:border-green-400' : 
+                  data.signal === 'SELL' ? 'border-red-500/50 hover:border-red-400' : 'border-gray-600 hover:border-blue-400'}
+                ${getTextColor(data.changePercent)}`}
+              style={{ 
+                backgroundColor: getHeatColor(data.changePercent),
+                animationDelay: `${index * 50}ms`
+              }}
               title={`${data.pair}: ${(data.changePercent || 0).toFixed(2)}% | Current: ${formatPrice(data.pair, data.currentPrice)} | Closest Pivot: ${data.closestPivot.type} at ${formatPrice(data.pair, data.closestPivot.level)}`}
             >
-              <div className="text-xs font-bold mb-1">{formatPairDisplay(data.pair)}</div>
-              <div className="text-xs">
+              {/* Live indicator dot */}
+              <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-green-500 rounded-full animate-ping"></div>
+              <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+              
+              <div className="text-xs font-bold mb-1 tracking-wider">{formatPairDisplay(data.pair)}</div>
+              <div className={`text-sm font-mono font-bold ${(data.changePercent || 0) > 0 ? 'text-green-400' : (data.changePercent || 0) < 0 ? 'text-red-400' : 'text-gray-400'}`}>
                 {(data.changePercent || 0) > 0 ? '+' : ''}{(data.changePercent || 0).toFixed(2)}%
               </div>
-              <div className="text-xs mt-1 px-1 py-0.5 rounded text-white" style={{
-                backgroundColor: data.signal === 'BUY' ? '#16a34a' : data.signal === 'SELL' ? '#dc2626' : '#6b7280'
-              }}>
+              <div className={`text-[10px] mt-1 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide
+                ${data.signal === 'BUY' ? 'bg-green-500 text-white shadow-green-500/50 shadow-md' : 
+                  data.signal === 'SELL' ? 'bg-red-500 text-white shadow-red-500/50 shadow-md' : 
+                  'bg-gray-600 text-gray-200'}`}>
                 {data.signal}
               </div>
             </div>
           ))
         )}
+      </div>
+      
+      {/* Heat Map Legend */}
+      <div className="flex items-center justify-center gap-6 mb-6 p-3 bg-gray-800/50 rounded-lg">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-green-500/40 rounded border border-green-500"></div>
+          <span className="text-xs text-gray-300">Bullish</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-red-500/40 rounded border border-red-500"></div>
+          <span className="text-xs text-gray-300">Bearish</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span className="text-xs text-gray-300">Live Data</span>
+        </div>
+        <div className="text-xs text-gray-400">Click any pair for detailed analysis</div>
       </div>
 
       {/* Detailed Analysis for Selected Pair */}

@@ -48,16 +48,18 @@ const FirstTimeUserTutorial = () => {
             <CardContent className="pt-6">
               <p className="text-foreground font-medium mb-3">🎯 What You'll Discover:</p>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Real-time market analysis and institutional data</li>
+                <li>• Real-time market analysis and institutional COT data</li>
+                <li>• <strong className="text-primary">NEW:</strong> Personalized profile with trading preferences</li>
+                <li>• <strong className="text-primary">NEW:</strong> Live charts and seasonality analysis</li>
+                <li>• <strong className="text-primary">NEW:</strong> Chart pattern recognition by trading style</li>
                 <li>• Central bank decisions and economic forecasts</li>
                 <li>• Professional trading education and strategies</li>
-                <li>• Community insights and trading tools</li>
               </ul>
             </CardContent>
           </Card>
           <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
             <p className="text-sm text-primary font-medium">
-              💡 Bookmark this site and check daily for the latest market intelligence!
+              💡 Create your profile to unlock personalized chart patterns and trading insights!
             </p>
           </div>
         </div>
@@ -203,8 +205,82 @@ const FirstTimeUserTutorial = () => {
       )
     },
     {
-      title: "🤝 Community & Tools",
+      title: "📊 NEW: Live Charts & Seasonality",
+      icon: <BarChart3 className="h-8 w-8 text-primary" />,
+      content: (
+        <div className="space-y-4">
+          <p className="text-foreground text-base">
+            Access live TradingView charts and analyze seasonal patterns for all currency pairs.
+          </p>
+          <Card className="bg-card border-primary/20">
+            <CardContent className="pt-6">
+              <p className="text-foreground font-semibold mb-3">Charts Page Features:</p>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary mt-2" />
+                  <span><strong className="text-foreground">Live Charts</strong> - TradingView integration with all major pairs</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary mt-2" />
+                  <span><strong className="text-foreground">Seasonality Radar</strong> - Analyze seasonal trends for any COT pair</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary mt-2" />
+                  <span><strong className="text-foreground">Performance Tracking</strong> - Monitor your favorite pairs</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+          <Button 
+            onClick={() => navigateToPage('/charts', 'Live Charts')} 
+            className="w-full bg-primary hover:bg-primary/90"
+          >
+            <BarChart3 className="h-4 w-4 mr-2" />
+            View Live Charts
+          </Button>
+        </div>
+      )
+    },
+    {
+      title: "👤 NEW: Your Trading Profile",
       icon: <Users className="h-8 w-8 text-primary" />,
+      content: (
+        <div className="space-y-4">
+          <p className="text-foreground text-base">
+            Personalize your experience with custom trading preferences and chart patterns.
+          </p>
+          <Card className="bg-card border-primary/20">
+            <CardContent className="pt-6">
+              <p className="text-foreground font-semibold mb-3">Profile Customization:</p>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-success mt-2" />
+                  <span><strong className="text-foreground">Trading Style</strong> - Aggressive or Conservative patterns</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-success mt-2" />
+                  <span><strong className="text-foreground">Favorite Pairs</strong> - Track your preferred currency pairs</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-success mt-2" />
+                  <span><strong className="text-foreground">Chart Patterns</strong> - See patterns matching your style</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+          <Button 
+            onClick={() => navigateToPage('/profile', 'Your Profile')} 
+            className="w-full bg-success hover:bg-success/90 text-success-foreground"
+          >
+            <Users className="h-4 w-4 mr-2" />
+            Set Up Profile
+          </Button>
+        </div>
+      )
+    },
+    {
+      title: "🤝 Community & Tools",
+      icon: <Wrench className="h-8 w-8 text-primary" />,
       content: (
         <div className="space-y-4">
           <p className="text-foreground text-base">
@@ -217,7 +293,7 @@ const FirstTimeUserTutorial = () => {
                   <MessageSquare className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <h4 className="font-semibold text-foreground mb-2">Trading Community</h4>
-                    <p className="text-sm text-muted-foreground">Connect with fellow traders, share insights, discuss strategies, and learn from experienced members.</p>
+                    <p className="text-sm text-muted-foreground">Connect with fellow traders, share insights, and learn strategies.</p>
                   </div>
                 </div>
                 <Button 
@@ -237,7 +313,7 @@ const FirstTimeUserTutorial = () => {
                   <Wrench className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <h4 className="font-semibold text-foreground mb-2">Trading Tools</h4>
-                    <p className="text-sm text-muted-foreground">Position calculators, lot size tools, market timers, correlation analysis, and more professional utilities.</p>
+                    <p className="text-sm text-muted-foreground">Position calculators, lot size tools, and correlation analysis.</p>
                   </div>
                 </div>
                 <Button 
