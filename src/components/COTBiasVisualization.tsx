@@ -100,59 +100,53 @@ const COTBiasVisualization = ({ data }: COTBiasVisualizationProps) => {
           </div>
         </div>
         
-        <div className="h-96 w-full mb-6 bg-background/50 dark:bg-card/20 p-4 rounded-lg border border-border/50">
+        <div className="h-[500px] w-full mb-6 bg-background dark:bg-card p-4 rounded-lg border-2 border-border shadow-lg">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="horizontal" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} className="dark:opacity-30" />
+            <BarChart data={data} layout="vertical" margin={{ top: 10, right: 40, left: 100, bottom: 10 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.6} />
               <XAxis 
                 type="number"
                 stroke="hsl(var(--foreground))"
-                fontSize={14}
-                fontWeight={700}
-                tickFormatter={(value) => value.toLocaleString()}
-                label={{ 
-                  value: 'Net Position (Contracts)', 
-                  position: 'insideBottom', 
-                  offset: -5, 
-                  style: { 
-                    fill: 'hsl(var(--foreground))', 
-                    fontWeight: 700, 
-                    fontSize: 14 
-                  } 
-                }}
+                fontSize={12}
+                fontWeight={600}
+                tickFormatter={(value) => (value / 1000).toFixed(0) + 'K'}
+                domain={['dataMin - 10000', 'dataMax + 10000']}
               />
               <YAxis 
                 type="category"
                 dataKey="currency"
                 stroke="hsl(var(--foreground))"
-                fontSize={16}
-                fontWeight={900}
-                width={80}
+                fontSize={13}
+                fontWeight={700}
+                width={90}
                 tickFormatter={(value) => formatCurrencyPair(value)}
+                tick={{ fill: 'hsl(var(--foreground))' }}
               />
               <Tooltip 
-                formatter={(value: number) => [value.toLocaleString(), 'Net Position']}
-                labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}
+                formatter={(value: number) => [value.toLocaleString() + ' contracts', 'Net Position']}
+                labelFormatter={(label) => formatCurrencyPair(label)}
+                labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 700, fontSize: 14 }}
                 contentStyle={{ 
-                  backgroundColor: 'hsl(var(--popover))', 
-                  border: '2px solid hsl(var(--border))',
+                  backgroundColor: 'hsl(var(--background))', 
+                  border: '2px solid hsl(var(--primary))',
                   borderRadius: '8px',
                   fontWeight: 600,
-                  color: 'hsl(var(--popover-foreground))'
+                  color: 'hsl(var(--foreground))',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
                 }}
               />
-              <ReferenceLine x={0} stroke="hsl(var(--foreground))" strokeWidth={3} strokeDasharray="5 5" opacity={0.8} />
+              <ReferenceLine x={0} stroke="hsl(var(--muted-foreground))" strokeWidth={2} strokeDasharray="5 5" />
               
               <Bar 
                 dataKey="netPosition" 
                 fill="hsl(var(--primary))"
-                radius={[0, 8, 8, 0]}
+                radius={[0, 6, 6, 0]}
+                animationDuration={800}
               >
                 {data.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={entry.netPosition > 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} 
-                    opacity={0.9}
+                    fill={entry.netPosition > 0 ? '#22c55e' : '#ef4444'} 
                   />
                 ))}
               </Bar>
