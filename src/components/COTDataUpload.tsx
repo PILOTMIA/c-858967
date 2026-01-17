@@ -48,18 +48,30 @@ const COTDataUpload = ({ onDataUploaded }: COTDataUploadProps) => {
     setFileName(file.name);
     
     try {
-      // Simulate loading real COT data from Sept 23, 2025 report
-      // In production, this would parse the actual uploaded file
-      
-      // Real COT data from CFTC Financial Futures Report - Sept 23, 2025
+      // Real COT data from CFTC Financial Futures Report - Jan 13, 2026
+      // Using Asset Manager/Institutional as Commercial, Leveraged Funds as Non-Commercial
       const realCOTData = [
-        { currency: 'CAD', commercialLong: 118769, commercialShort: 6552, nonCommercialLong: 17289, nonCommercialShort: 66045, reportDate: '2025-09-23', weeklyChange: 511 },
-        { currency: 'CHF', commercialLong: 42868, commercialShort: 2637, nonCommercialLong: 7435, nonCommercialShort: 8142, reportDate: '2025-09-23', weeklyChange: 1153 },
-        { currency: 'GBP', commercialLong: 78072, commercialShort: 68281, nonCommercialLong: 61382, nonCommercialShort: 33720, reportDate: '2025-09-23', weeklyChange: 1102 },
-        { currency: 'JPY', commercialLong: 6833, commercialShort: 136088, nonCommercialLong: 110298, nonCommercialShort: 32464, reportDate: '2025-09-23', weeklyChange: 8173 },
-        { currency: 'EUR', commercialLong: 71331, commercialShort: 540385, nonCommercialLong: 516898, nonCommercialShort: 122280, reportDate: '2025-09-23', weeklyChange: 4900 },
-        { currency: 'AUD', commercialLong: 48137, commercialShort: 7902, nonCommercialLong: 35376, nonCommercialShort: 40922, reportDate: '2025-09-23', weeklyChange: 528 },
-        { currency: 'NZD', commercialLong: 23283, commercialShort: 2380, nonCommercialLong: 11825, nonCommercialShort: 14675, reportDate: '2025-09-23', weeklyChange: 3510 },
+        // CAD: Open Interest 219,263
+        { currency: 'CAD', commercialLong: 71451, commercialShort: 63407, nonCommercialLong: 22400, nonCommercialShort: 78099, reportDate: '2026-01-13', weeklyChange: 523 },
+        // CHF: Open Interest 96,220
+        { currency: 'CHF', commercialLong: 6766, commercialShort: 59792, nonCommercialLong: 10064, nonCommercialShort: 10635, reportDate: '2026-01-13', weeklyChange: 5842 },
+        // GBP: Open Interest 207,867
+        { currency: 'GBP', commercialLong: 43857, commercialShort: 123791, nonCommercialLong: 66540, nonCommercialShort: 28450, reportDate: '2026-01-13', weeklyChange: 1553 },
+        // JPY: Open Interest 294,242
+        { currency: 'JPY', commercialLong: 75804, commercialShort: 47581, nonCommercialLong: 43869, nonCommercialShort: 142519, reportDate: '2026-01-13', weeklyChange: 6527 },
+        // EUR: Open Interest 883,672
+        { currency: 'EUR', commercialLong: 555117, commercialShort: 151001, nonCommercialLong: 103621, nonCommercialShort: 78229, reportDate: '2026-01-13', weeklyChange: 1857 },
+        // AUD: Open Interest 229,456
+        { currency: 'AUD', commercialLong: 59649, commercialShort: 93135, nonCommercialLong: 68678, nonCommercialShort: 38461, reportDate: '2026-01-13', weeklyChange: -1470 },
+        // MXN: Open Interest 241,382
+        { currency: 'MXN', commercialLong: 105727, commercialShort: 23702, nonCommercialLong: 112440, nonCommercialShort: 51021, reportDate: '2026-01-13', weeklyChange: -8982 },
+        // NZD: Open Interest 85,211
+        { currency: 'NZD', commercialLong: 8135, commercialShort: 53891, nonCommercialLong: 12239, nonCommercialShort: 22372, reportDate: '2026-01-13', weeklyChange: 655 },
+        // BRL: Open Interest 78,988
+        { currency: 'BRL', commercialLong: 44473, commercialShort: 1677, nonCommercialLong: 23645, nonCommercialShort: 22729, reportDate: '2026-01-13', weeklyChange: 5319 },
+        // Cross pairs from CFTC report
+        { currency: 'EURGBP', commercialLong: 18940, commercialShort: 0, nonCommercialLong: 2843, nonCommercialShort: 4231, reportDate: '2026-01-13', weeklyChange: -952 },
+        { currency: 'EURJPY', commercialLong: 5084, commercialShort: 11710, nonCommercialLong: 1537, nonCommercialShort: 0, reportDate: '2026-01-13', weeklyChange: -86 },
       ];
 
       let data;
