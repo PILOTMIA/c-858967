@@ -31,26 +31,27 @@ const getPairCode = (currency: string): string => {
   return `${currency}USD`;
 };
 
-// Fallback prices - Updated Dec 9, 2024 (accurate market levels)
+// Fallback prices - Updated Jan 17, 2026 (accurate market levels)
 const fallbackPrices: Record<string, number> = {
-  EURUSD: 1.0565,
-  GBPUSD: 1.2755,
-  USDJPY: 151.25,
-  USDCHF: 0.8785,
-  AUDUSD: 0.6405,
-  USDCAD: 1.4175,
-  USDMXN: 20.18,
-  NZDUSD: 0.5855,
-  EURJPY: 159.85,
-  GBPJPY: 192.95,
-  EURGBP: 0.8285,
-  GBPCAD: 1.8085,
-  AUDJPY: 96.90,
-  EURAUD: 1.6495,
-  GBPAUD: 1.9915,
-  EURCAD: 1.4980,
-  NZDJPY: 88.55,
-  CADJPY: 107.35,
+  EURUSD: 1.0285,
+  GBPUSD: 1.2195,
+  USDJPY: 156.15,
+  USDCHF: 0.9125,
+  AUDUSD: 0.6185,
+  USDCAD: 1.4445,
+  USDMXN: 20.68,
+  NZDUSD: 0.5595,
+  USDBRL: 6.0650,
+  EURJPY: 160.60,
+  GBPJPY: 190.40,
+  EURGBP: 0.8435,
+  GBPCAD: 1.7620,
+  AUDJPY: 96.55,
+  EURAUD: 1.6635,
+  GBPAUD: 1.9720,
+  EURCAD: 1.4860,
+  NZDJPY: 87.35,
+  CADJPY: 108.10,
 };
 
 export const fetchForexPrice = async (currency: string): Promise<number> => {
