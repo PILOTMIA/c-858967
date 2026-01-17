@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { ExternalLink, MessageCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import DOMPurify from "dompurify";
 
 interface TelegramPost {
   title: string;
@@ -58,9 +59,9 @@ const TelegramChannelFeed = () => {
   };
 
   const stripHtml = (html: string) => {
-    const tmp = document.createElement("div");
-    tmp.innerHTML = html;
-    return tmp.textContent || tmp.innerText || "";
+    // Use DOMPurify to sanitize HTML and strip all tags safely
+    const sanitized = DOMPurify.sanitize(html, { ALLOWED_TAGS: [] });
+    return sanitized;
   };
 
   const formatDate = (dateString: string) => {
