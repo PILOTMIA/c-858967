@@ -1,9 +1,26 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Allowed origins for CORS - restrict to known domains
+const allowedOrigins = [
+  'https://miafx-labs.lovable.app',
+  'https://id-preview--6a0f0541-134b-49ea-8f03-f61068dd9b3e.lovable.app',
+  'http://localhost:8080',
+  'http://localhost:5173',
+];
+
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  // Check if origin is allowed
+  const isAllowed = origin && allowedOrigins.some(allowed => 
+    origin === allowed || origin.endsWith('.lovable.app')
+  );
+  
+  return {
+    'Access-Control-Allow-Origin': isAllowed && origin ? origin : allowedOrigins[0],
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Max-Age': '86400',
+  };
+}
 
 // Fallback prices if all APIs fail - Updated Jan 17, 2026 (accurate market levels)
 const fallbackPrices: Record<string, number> = {
@@ -29,20 +46,50 @@ const fallbackPrices: Record<string, number> = {
 };
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Only allow GET requests
+  if (req.method !== 'GET') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     const url = new URL(req.url);
-    const pairs = url.searchParams.get('pairs')?.split(',') || [];
+    const pairsParam = url.searchParams.get('pairs');
+    
+    // Validate pairs parameter
+    if (!pairsParam) {
+      return new Response(JSON.stringify({ error: 'Missing pairs parameter' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Validate and sanitize pairs input
+    const pairs = pairsParam.split(',')
+      .map(p => p.trim().toUpperCase())
+      .filter(p => /^[A-Z]{6}$/.test(p))
+      .slice(0, 20); // Limit to 20 pairs max
+    
+    if (pairs.length === 0) {
+      return new Response(JSON.stringify({ error: 'No valid currency pairs provided' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     
     const results: Record<string, { rate: number; source: string }> = {};
     
-    for (const pair of pairs) {
-      const pairCode = pair.toUpperCase();
-      
+    for (const pairCode of pairs) {
       // Try FreeForexAPI
       try {
         const freeForexRes = await fetch(
@@ -57,8 +104,8 @@ serve(async (req) => {
             continue;
           }
         }
-      } catch (e) {
-        console.log(`FreeForexAPI failed for ${pairCode}`);
+      } catch {
+        // Silent fallback to next API
       }
       
       // Try ExchangeRate-API (free tier)
@@ -76,8 +123,8 @@ serve(async (req) => {
             continue;
           }
         }
-      } catch (e) {
-        console.log(`ExchangeRate-API failed for ${pairCode}`);
+      } catch {
+        // Silent fallback to next API
       }
 
       // Try Frankfurter API (free, no key needed)
@@ -95,8 +142,8 @@ serve(async (req) => {
             continue;
           }
         }
-      } catch (e) {
-        console.log(`Frankfurter failed for ${pairCode}`);
+      } catch {
+        // Silent fallback
       }
       
       // Fallback
@@ -109,8 +156,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error fetching forex prices:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

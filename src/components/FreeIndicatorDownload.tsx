@@ -4,7 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Download, FileText, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { z } from 'zod';
+
+// Email validation schema
+const emailSchema = z.string().email("Please enter a valid email address").max(255, "Email is too long");
 
 const FreeIndicatorDownload = () => {
   const [email, setEmail] = useState('');
@@ -13,10 +16,13 @@ const FreeIndicatorDownload = () => {
   const { toast } = useToast();
 
   const handleDownload = async () => {
-    if (!email || !email.includes('@')) {
+    // Validate email using zod schema
+    const emailValidation = emailSchema.safeParse(email.trim());
+    
+    if (!emailValidation.success) {
       toast({
         title: "Email Required",
-        description: "Please enter a valid email address to download the indicator.",
+        description: emailValidation.error.errors[0]?.message || "Please enter a valid email address to download the indicator.",
         variant: "destructive"
       });
       return;
@@ -25,27 +31,6 @@ const FreeIndicatorDownload = () => {
     setIsLoading(true);
 
     try {
-      // Only try to save to database if Supabase is configured
-      if (isSupabaseConfigured && supabase) {
-        const { error } = await supabase
-          .from('indicator_downloads')
-          .insert([
-            { 
-              email: email,
-              downloaded_at: new Date().toISOString(),
-              indicator_name: 'Premium Trading Indicator'
-            }
-          ]);
-
-        if (error) {
-          console.error('Supabase error:', error);
-          // Continue with download even if database save fails
-          console.log('Continuing with download despite database error');
-        }
-      } else {
-        console.log('Supabase not configured, skipping database save');
-      }
-
       // Open Google Drive share link for download
       const shareUrl = 'https://drive.google.com/file/d/15_5u0AovYVaPhDEWJyXuhF0ayi4BCVre/view?usp=sharing';
       window.open(shareUrl, '_blank');
@@ -63,8 +48,7 @@ const FreeIndicatorDownload = () => {
         setEmail('');
       }, 5000);
 
-    } catch (error) {
-      console.error('Download error:', error);
+    } catch {
       toast({
         title: "Error",
         description: "Something went wrong. Please try again.",
@@ -149,6 +133,7 @@ const FreeIndicatorDownload = () => {
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading || isDownloaded}
               className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+              maxLength={255}
             />
           </div>
           
