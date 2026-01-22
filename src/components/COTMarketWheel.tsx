@@ -39,9 +39,10 @@ const COTMarketWheel = () => {
   const handleCurrencyClick = (item: WheelDataItem) => {
     console.log('Currency clicked:', item.currency);
     
-    // Jan 13, 2026 CFTC data - Real institutional positioning from Financial Traders report
+    // Jan 21, 2026 CFTC Report (data as of Jan 13, 2026) - Real institutional positioning
     const positionData: Record<string, { long: number; short: number; ncLong: number; ncShort: number }> = {
       // Major USD pairs - Asset Mgr (Commercial) and Leveraged Funds (Non-Commercial)
+      // Verified from CFTC Financial Traders report released Jan 21, 2026
       'CAD': { long: 71451, short: 63407, ncLong: 22400, ncShort: 78099 },
       'CHF': { long: 6766, short: 59792, ncLong: 10064, ncShort: 10635 },
       'GBP': { long: 43857, short: 123791, ncLong: 66540, ncShort: 28450 },
@@ -74,7 +75,7 @@ const COTMarketWheel = () => {
       commercialShort: data.short,
       nonCommercialLong: data.ncLong,
       nonCommercialShort: data.ncShort,
-      reportDate: '2026-01-13T00:00:00Z',
+      reportDate: '2026-01-21T00:00:00Z',
       weeklyChange: item.weeklyChange
     };
     
@@ -85,20 +86,20 @@ const COTMarketWheel = () => {
 
   // Generate data from uploaded COT data or fallback to mock data
   const generateData = (): WheelDataItem[] => {
-    // Jan 13, 2026 CFTC Financial Traders Report - Actual data
+    // Jan 21, 2026 CFTC Report (data as of Jan 13, 2026) - VERIFIED from uploaded PDF
     const majorPairs: WheelDataItem[] = [
       // EUR: NC Long 103,621 - NC Short 78,229 = +25,392 (Bullish)
-      { currency: 'EUR', netPosition: 25392, strength: 25392, bias: 'BULLISH', weeklyChange: -6690, color: '#7EBF8E', type: 'major' },
+      { currency: 'EUR', netPosition: 25392, strength: 25392, bias: 'BULLISH', weeklyChange: -25208, color: '#7EBF8E', type: 'major' },
       // GBP: NC Long 66,540 - NC Short 28,450 = +38,090 (Bullish)
       { currency: 'GBP', netPosition: 38090, strength: 38090, bias: 'BULLISH', weeklyChange: 9143, color: '#7EBF8E', type: 'major' },
-      // JPY: NC Long 43,869 - NC Short 142,519 = -98,650 (Bearish)
+      // JPY: NC Long 43,869 - NC Short 142,519 = -98,650 (Bearish) - STRONGEST BEARISH
       { currency: 'JPY', netPosition: -98650, strength: 98650, bias: 'BEARISH', weeklyChange: -35420, color: '#EF4444', type: 'major' },
       // CHF: NC Long 10,064 - NC Short 10,635 = -571 (Neutral)
       { currency: 'CHF', netPosition: -571, strength: 571, bias: 'NEUTRAL', weeklyChange: 669, color: '#8B8B8B', type: 'major' },
       // AUD: NC Long 68,678 - NC Short 38,461 = +30,217 (Bullish)
       { currency: 'AUD', netPosition: 30217, strength: 30217, bias: 'BULLISH', weeklyChange: -4898, color: '#7EBF8E', type: 'major' },
       // CAD: NC Long 22,400 - NC Short 78,099 = -55,699 (Bearish)
-      { currency: 'CAD', netPosition: -55699, strength: 55699, bias: 'BEARISH', weeklyChange: -4603, color: '#EF4444', type: 'major' },
+      { currency: 'CAD', netPosition: -55699, strength: 55699, bias: 'BEARISH', weeklyChange: 1397, color: '#EF4444', type: 'major' },
       // MXN: NC Long 112,440 - NC Short 51,021 = +61,419 (Bullish)
       { currency: 'MXN', netPosition: 61419, strength: 61419, bias: 'BULLISH', weeklyChange: -2096, color: '#7EBF8E', type: 'major' },
       // NZD: NC Long 12,239 - NC Short 22,372 = -10,133 (Bearish)
@@ -109,7 +110,7 @@ const COTMarketWheel = () => {
     const crossPairs: WheelDataItem[] = [
       // EURJPY: From report - NC Long 1,537 - NC Short 0 = +1,537 (Bullish)
       { currency: 'EURJPY', netPosition: 1537, strength: 1537, bias: 'BULLISH', weeklyChange: -297, color: '#7EBF8E', type: 'cross' },
-      // GBPJPY: GBP bullish + JPY bearish = Strong Bullish on GBPJPY
+      // GBPJPY: GBP bullish + JPY bearish = Strong Bullish on GBPJPY - STRONGEST CROSS
       { currency: 'GBPJPY', netPosition: 136740, strength: 136740, bias: 'BULLISH', weeklyChange: 44563, color: '#7EBF8E', type: 'cross' },
       // EURGBP: From report - NC Long 2,843 - NC Short 4,231 = -1,388 (Bearish)
       { currency: 'EURGBP', netPosition: -1388, strength: 1388, bias: 'BEARISH', weeklyChange: 0, color: '#EF4444', type: 'cross' },
@@ -117,7 +118,7 @@ const COTMarketWheel = () => {
       { currency: 'GBPCAD', netPosition: 93789, strength: 93789, bias: 'BULLISH', weeklyChange: 13746, color: '#7EBF8E', type: 'cross' },
       // AUDJPY: AUD bullish + JPY bearish = Bullish
       { currency: 'AUDJPY', netPosition: 128867, strength: 128867, bias: 'BULLISH', weeklyChange: 30522, color: '#7EBF8E', type: 'cross' },
-      // EURAUD: EUR bullish + AUD bullish but EUR stronger
+      // EURAUD: EUR bullish + AUD bullish but EUR weaker
       { currency: 'EURAUD', netPosition: -4825, strength: 4825, bias: 'BEARISH', weeklyChange: -1792, color: '#EF4444', type: 'cross' },
       // GBPAUD: GBP bullish + AUD bullish but GBP stronger
       { currency: 'GBPAUD', netPosition: 7873, strength: 7873, bias: 'BULLISH', weeklyChange: 14041, color: '#7EBF8E', type: 'cross' },
@@ -199,7 +200,7 @@ const COTMarketWheel = () => {
           🎯 COT Market Positioning
         </CardTitle>
         <CardDescription className="font-medium">
-          Click any pair to see detailed COT analysis and trading signals. Data from CFTC report Jan 13, 2026.
+          Click any pair to see detailed COT analysis and trading signals. Data from CFTC report Jan 21, 2026 (as of Jan 13).
           {lastUpdated && (
             <div className="text-xs text-success mt-1 flex items-center gap-1">
               <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
@@ -238,7 +239,7 @@ const COTMarketWheel = () => {
 
         {/* Market Summary */}
         <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg p-4 border border-primary/20">
-          <h4 className="font-bold text-primary mb-2">Quick Summary - Jan 13, 2026</h4>
+          <h4 className="font-bold text-primary mb-2">Quick Summary - Jan 21, 2026 Report</h4>
           <div className="text-sm text-foreground grid grid-cols-2 gap-2">
             <div>
               <span className="text-muted-foreground">Most Bullish:</span>
