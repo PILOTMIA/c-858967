@@ -51,11 +51,11 @@ const fetchFedData = async (): Promise<FedData> => {
   } catch (error) {
     console.log('Using fallback data due to API limits');
     return {
-      currentRate: 5.25,
-      nextMeetingDate: "2024-12-18",
-      probabilities: { rateCut: 65.3, rateHold: 28.2, rateHike: 6.5 },
-      sentiment: 'DOVISH',
-      nextRateChange: -0.25
+      currentRate: 4.50,
+      nextMeetingDate: "2026-05-07",
+      probabilities: { rateCut: 35.2, rateHold: 58.5, rateHike: 6.3 },
+      sentiment: 'NEUTRAL',
+      nextRateChange: 0
     };
   }
 };

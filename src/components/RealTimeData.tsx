@@ -30,14 +30,14 @@ const fetchRealTimeData = async () => {
         const fallbackResponse = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
         const fallbackData = await fallbackResponse.json();
         cryptoData = {
-          bitcoin: { price: 116533, change: 2.0 },
-          ethereum: { price: 4620, change: 4.4 }
+          bitcoin: { price: 84200, change: -1.2 },
+          ethereum: { price: 1950, change: -2.5 }
         };
       }
     } catch {
       cryptoData = {
-        bitcoin: { price: 97250, change: 3.42 },
-        ethereum: { price: 3685, change: 4.18 }
+        bitcoin: { price: 84200, change: -1.2 },
+        ethereum: { price: 1950, change: -2.5 }
       };
     }
 
@@ -61,21 +61,21 @@ const fetchRealTimeData = async () => {
       },
       commodities: {
         gold: { 
-          price: 2055 + (Math.random() * 100 - 50), 
-          change: Math.random() * 2 - 1 
+          price: 3030 + (Math.random() * 40 - 20), 
+          change: Math.random() * 1.5 - 0.5 
         },
         oil: { 
-          price: 78.45, 
+          price: 67.80, 
           change: Math.random() * 3 - 1.5 
         }
       },
       economic: {
         vix: { 
-          value: 18.5, 
+          value: 21.4, 
           change: Math.random() * 2 - 1 
         },
         yields: { 
-          ten_year: 4.25, 
+          ten_year: 4.28, 
           change: Math.random() * 0.2 - 0.1 
         }
       }
@@ -84,16 +84,16 @@ const fetchRealTimeData = async () => {
     console.log('Using fallback real-time data');
     return {
       crypto: {
-        bitcoin: { price: 97250, change: 3.42 },
-        ethereum: { price: 3685, change: 4.18 }
+        bitcoin: { price: 84200, change: -1.2 },
+        ethereum: { price: 1950, change: -2.5 }
       },
       commodities: {
-        gold: { price: 2688.30, change: -0.65 },
-        oil: { price: 85.45, change: 2.8 }
+        gold: { price: 3030, change: 0.4 },
+        oil: { price: 67.80, change: -1.2 }
       },
       economic: {
-        vix: { value: 16.8, change: 1.2 },
-        yields: { ten_year: 4.48, change: 0.12 }
+        vix: { value: 21.4, change: 1.8 },
+        yields: { ten_year: 4.28, change: -0.05 }
       }
     };
   }

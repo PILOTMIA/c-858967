@@ -12,16 +12,16 @@ interface SentimentData {
 }
 
 const fetchSentimentData = async (): Promise<SentimentData[]> => {
-  // Current sentiment data as of November 10, 2025
-  // Reflects hawkish Fed pause, dovish ECB/RBNZ cuts, BoJ surprise hike
+  // Current sentiment data as of March 19, 2026
+  // Reflects Fed hold at 4.50%, ECB cuts to 2.75%, BoJ normalization to 0.75%, tariff uncertainty
   return [
-    { pair: 'EURUSD', bullish: 28, bearish: 65, neutral: 7, overall: 'BEARISH' },
-    { pair: 'GBPUSD', bullish: 58, bearish: 32, neutral: 10, overall: 'BULLISH' },
-    { pair: 'USDJPY', bullish: 35, bearish: 60, neutral: 5, overall: 'BEARISH' },
-    { pair: 'USDCHF', bullish: 45, bearish: 48, neutral: 7, overall: 'BEARISH' },
-    { pair: 'AUDUSD', bullish: 22, bearish: 70, neutral: 8, overall: 'BEARISH' },
-    { pair: 'NZDUSD', bullish: 18, bearish: 75, neutral: 7, overall: 'BEARISH' },
-    { pair: 'USDCAD', bullish: 42, bearish: 50, neutral: 8, overall: 'BEARISH' },
+    { pair: 'EURUSD', bullish: 45, bearish: 42, neutral: 13, overall: 'NEUTRAL' },
+    { pair: 'GBPUSD', bullish: 55, bearish: 35, neutral: 10, overall: 'BULLISH' },
+    { pair: 'USDJPY', bullish: 30, bearish: 62, neutral: 8, overall: 'BEARISH' },
+    { pair: 'USDCHF', bullish: 40, bearish: 50, neutral: 10, overall: 'BEARISH' },
+    { pair: 'AUDUSD', bullish: 52, bearish: 38, neutral: 10, overall: 'BULLISH' },
+    { pair: 'NZDUSD', bullish: 32, bearish: 58, neutral: 10, overall: 'BEARISH' },
+    { pair: 'USDCAD', bullish: 48, bearish: 44, neutral: 8, overall: 'BULLISH' },
   ];
 };
 
