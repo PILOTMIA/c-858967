@@ -22,27 +22,27 @@ function getCorsHeaders(origin: string | null): Record<string, string> {
   };
 }
 
-// Fallback prices if all APIs fail - Updated Jan 17, 2026 (accurate market levels)
+// Fallback prices if all APIs fail - Updated March 19, 2026 (accurate market levels)
 const fallbackPrices: Record<string, number> = {
-  EURUSD: 1.0285,
-  GBPUSD: 1.2195,
-  USDJPY: 156.15,
-  USDCHF: 0.9125,
-  AUDUSD: 0.6185,
-  USDCAD: 1.4445,
-  USDMXN: 20.68,
-  NZDUSD: 0.5595,
-  USDBRL: 6.0650,
-  EURJPY: 160.60,
-  GBPJPY: 190.40,
+  EURUSD: 1.0340,
+  GBPUSD: 1.2260,
+  USDJPY: 149.80,
+  USDCHF: 0.8985,
+  AUDUSD: 0.6310,
+  USDCAD: 1.4380,
+  USDMXN: 20.35,
+  NZDUSD: 0.5680,
+  USDBRL: 5.8450,
+  EURJPY: 154.90,
+  GBPJPY: 183.65,
   EURGBP: 0.8435,
-  GBPCAD: 1.7620,
-  AUDJPY: 96.55,
-  EURAUD: 1.6635,
-  GBPAUD: 1.9720,
-  EURCAD: 1.4860,
-  NZDJPY: 87.35,
-  CADJPY: 108.10,
+  GBPCAD: 1.7630,
+  AUDJPY: 94.50,
+  EURAUD: 1.6390,
+  GBPAUD: 1.9430,
+  EURCAD: 1.4870,
+  NZDJPY: 85.10,
+  CADJPY: 104.20,
 };
 
 serve(async (req) => {

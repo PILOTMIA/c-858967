@@ -129,40 +129,40 @@ const fetchBondData = async (): Promise<BondRadarData> => {
     console.error('Error fetching bond data:', error);
     return {
       treasury10Y: {
-        current: 4.5,
-        trend: "Stable yields with minimal change",
-        projectionLow: 4.2,
-        projectionHigh: 4.8,
+        current: 4.28,
+        trend: "Falling yields, bond prices rising",
+        projectionLow: 4.0,
+        projectionHigh: 4.5,
         historicalData: [],
-        change1M: 0.05,
-        change3M: 0.15
+        change1M: -0.12,
+        change3M: -0.22
       },
       breakeven10Y: {
-        current: 2.3,
+        current: 2.35,
         trend: "Stable inflation expectations",
-        projectionLow: 2.1,
-        projectionHigh: 2.5,
-        historicalData: [],
-        change1M: 0.02,
-        change3M: 0.08
-      },
-      treasury2Y: {
-        current: 4.3,
-        trend: "Stable yields with minimal change",
-        projectionLow: 4.0,
-        projectionHigh: 4.6,
+        projectionLow: 2.15,
+        projectionHigh: 2.55,
         historicalData: [],
         change1M: 0.03,
-        change3M: 0.12
+        change3M: 0.05
+      },
+      treasury2Y: {
+        current: 4.05,
+        trend: "Falling yields, bond prices rising",
+        projectionLow: 3.8,
+        projectionHigh: 4.3,
+        historicalData: [],
+        change1M: -0.08,
+        change3M: -0.20
       },
       yieldSpread: {
-        current: 0.2,
+        current: 0.23,
         trend: "Flattening yield curve",
-        projectionLow: 0.0,
-        projectionHigh: 0.4,
+        projectionLow: 0.05,
+        projectionHigh: 0.40,
         historicalData: [],
-        change1M: 0.02,
-        change3M: 0.03
+        change1M: -0.04,
+        change3M: -0.02
       }
     };
   }

@@ -84,16 +84,16 @@ const fetchRealTimeData = async () => {
     console.log('Using fallback real-time data');
     return {
       crypto: {
-        bitcoin: { price: 97250, change: 3.42 },
-        ethereum: { price: 3685, change: 4.18 }
+        bitcoin: { price: 84200, change: -1.2 },
+        ethereum: { price: 1950, change: -2.5 }
       },
       commodities: {
-        gold: { price: 2688.30, change: -0.65 },
-        oil: { price: 85.45, change: 2.8 }
+        gold: { price: 3030, change: 0.4 },
+        oil: { price: 67.80, change: -1.2 }
       },
       economic: {
-        vix: { value: 16.8, change: 1.2 },
-        yields: { ten_year: 4.48, change: 0.12 }
+        vix: { value: 21.4, change: 1.8 },
+        yields: { ten_year: 4.28, change: -0.05 }
       }
     };
   }

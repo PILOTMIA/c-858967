@@ -135,40 +135,40 @@ const fetchInflationData = async (): Promise<InflationData> => {
     // Return fallback data
     return {
       cpi: {
-        current: 2.9,
+        current: 2.8,
         trend: "Stable inflation trend with minimal change",
-        projectionLow: 2.7,
-        projectionHigh: 3.1,
-        nextRelease: "Jan 15, 2026",
+        projectionLow: 2.6,
+        projectionHigh: 3.0,
+        nextRelease: "Apr 10, 2026",
         historicalData: [],
-        yoyChange: 2.9
+        yoyChange: 2.8
       },
       coreCPI: {
-        current: 3.1,
-        trend: "Rising inflation trend, up 0.1 percentage points recently",
-        projectionLow: 2.9,
+        current: 3.0,
+        trend: "Stable inflation trend with minimal change",
+        projectionLow: 2.8,
         projectionHigh: 3.2,
-        nextRelease: "Jan 15, 2026",
+        nextRelease: "Apr 10, 2026",
         historicalData: [],
-        yoyChange: 3.1
+        yoyChange: 3.0
       },
       ppi: {
-        current: 2.6,
-        trend: "Stable inflation trend with minimal change",
-        projectionLow: 2.3,
-        projectionHigh: 2.9,
-        nextRelease: "Jan 15, 2026",
+        current: 2.4,
+        trend: "Declining inflation trend, down 0.2 percentage points recently",
+        projectionLow: 2.1,
+        projectionHigh: 2.7,
+        nextRelease: "Apr 11, 2026",
         historicalData: [],
-        yoyChange: 2.6
+        yoyChange: 2.4
       },
       exportPriceIndex: {
-        current: 1.8,
-        trend: "Declining inflation trend, down 0.2 percentage points recently",
-        projectionLow: 1.5,
-        projectionHigh: 2.1,
-        nextRelease: "Jan 15, 2026",
+        current: 1.5,
+        trend: "Declining inflation trend, down 0.3 percentage points recently",
+        projectionLow: 1.2,
+        projectionHigh: 1.8,
+        nextRelease: "Apr 14, 2026",
         historicalData: [],
-        yoyChange: 1.8
+        yoyChange: 1.5
       }
     };
   }
