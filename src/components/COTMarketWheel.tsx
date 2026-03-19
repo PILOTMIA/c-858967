@@ -229,7 +229,7 @@ const COTMarketWheel = () => {
 
         {/* Market Summary */}
         <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg p-4 border border-primary/20">
-          <h4 className="font-bold text-primary mb-2">Quick Summary - Jan 21, 2026 Report</h4>
+          <h4 className="font-bold text-primary mb-2">Quick Summary - Mar 19, 2026 Report</h4>
           <div className="text-sm text-foreground grid grid-cols-2 gap-2">
             <div>
               <span className="text-muted-foreground">Most Bullish:</span>
