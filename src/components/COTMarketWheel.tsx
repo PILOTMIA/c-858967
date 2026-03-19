@@ -75,7 +75,7 @@ const COTMarketWheel = () => {
       commercialShort: data.short,
       nonCommercialLong: data.ncLong,
       nonCommercialShort: data.ncShort,
-      reportDate: '2026-01-21T00:00:00Z',
+      reportDate: '2026-03-19T00:00:00Z',
       weeklyChange: item.weeklyChange
     };
     
