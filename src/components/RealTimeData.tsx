@@ -61,21 +61,21 @@ const fetchRealTimeData = async () => {
       },
       commodities: {
         gold: { 
-          price: 2055 + (Math.random() * 100 - 50), 
-          change: Math.random() * 2 - 1 
+          price: 3030 + (Math.random() * 40 - 20), 
+          change: Math.random() * 1.5 - 0.5 
         },
         oil: { 
-          price: 78.45, 
+          price: 67.80, 
           change: Math.random() * 3 - 1.5 
         }
       },
       economic: {
         vix: { 
-          value: 18.5, 
+          value: 21.4, 
           change: Math.random() * 2 - 1 
         },
         yields: { 
-          ten_year: 4.25, 
+          ten_year: 4.28, 
           change: Math.random() * 0.2 - 0.1 
         }
       }
