@@ -2,69 +2,69 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-// Commodity COT Data from CFTC Reports - October 28, 2025
+// Commodity COT Data from CFTC Reports - January 21, 2026
 // CMX Futures (Gold, Silver, Copper) and NYMEX Futures (Crude Oil, Natural Gas)
 const commodityCOTData = [
   {
     name: "Crude Oil",
     symbol: "CL",
-    nonCommercialLong: 435780,
-    nonCommercialShort: 152340,
-    commercialLong: 897450,
-    commercialShort: 1256890,
-    weeklyChangeLong: -8920,
-    weeklyChangeShort: 12340,
-    openInterest: 1842670,
-    reportDate: "November 5, 2025",
-    additionalInfo: "EIA: Inventories +5.2M barrels (Nov 2025) | OPEC+: +137K bpd Dec 2025"
+    nonCommercialLong: 428500,
+    nonCommercialShort: 160200,
+    commercialLong: 905300,
+    commercialShort: 1248700,
+    weeklyChangeLong: -4500,
+    weeklyChangeShort: 8900,
+    openInterest: 1835400,
+    reportDate: "January 21, 2026",
+    additionalInfo: "EIA: Inventories -2.3M barrels (Jan 2026) | OPEC+: Gradual unwind continues"
   },
   {
     name: "Gold",
     symbol: "GC",
-    nonCommercialLong: 332808,
-    nonCommercialShort: 66059,
-    commercialLong: 82971,
-    commercialShort: 381374,
-    weeklyChangeLong: 6030,
-    weeklyChangeShort: 5691,
-    openInterest: 528789,
-    reportDate: "September 23, 2025"
+    nonCommercialLong: 345200,
+    nonCommercialShort: 58300,
+    commercialLong: 78500,
+    commercialShort: 395800,
+    weeklyChangeLong: 8200,
+    weeklyChangeShort: -2100,
+    openInterest: 542000,
+    reportDate: "January 21, 2026"
   },
   {
     name: "Silver",
     symbol: "SI",
-    nonCommercialLong: 72318,
-    nonCommercialShort: 20042,
-    commercialLong: 42281,
-    commercialShort: 115036,
-    weeklyChangeLong: 695,
-    weeklyChangeShort: -43,
-    openInterest: 165805,
-    reportDate: "September 23, 2025"
+    nonCommercialLong: 75400,
+    nonCommercialShort: 18500,
+    commercialLong: 40100,
+    commercialShort: 118200,
+    weeklyChangeLong: 1200,
+    weeklyChangeShort: -850,
+    openInterest: 170500,
+    reportDate: "January 21, 2026"
   },
   {
     name: "Copper",
     symbol: "HG",
-    nonCommercialLong: 72751,
-    nonCommercialShort: 42521,
-    commercialLong: 71826,
-    commercialShort: 110079,
-    weeklyChangeLong: 3381,
-    weeklyChangeShort: 3499,
-    openInterest: 227318,
-    reportDate: "September 23, 2025"
+    nonCommercialLong: 74800,
+    nonCommercialShort: 40200,
+    commercialLong: 73500,
+    commercialShort: 112400,
+    weeklyChangeLong: 2100,
+    weeklyChangeShort: -1500,
+    openInterest: 231000,
+    reportDate: "January 21, 2026"
   },
   {
     name: "Natural Gas",
     symbol: "NG",
-    nonCommercialLong: 156789,
-    nonCommercialShort: 234567,
-    commercialLong: 543210,
-    commercialShort: 489012,
-    weeklyChangeLong: 5430,
-    weeklyChangeShort: -3210,
-    openInterest: 987654,
-    reportDate: "September 23, 2025"
+    nonCommercialLong: 162300,
+    nonCommercialShort: 228400,
+    commercialLong: 548700,
+    commercialShort: 495200,
+    weeklyChangeLong: 7800,
+    weeklyChangeShort: -4500,
+    openInterest: 995600,
+    reportDate: "January 21, 2026"
   }
 ];
 

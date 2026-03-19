@@ -53,161 +53,161 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       country: "New Zealand",
       currency: "NZD",
       centralBank: "Reserve Bank of New Zealand (RBNZ)",
-      currentRate: 5.25,
+      currentRate: 3.75,
       website: "https://www.rbnz.govt.nz/monetary-policy/official-cash-rate-decisions",
-      lastUpdate: "2025-08-14",
-      nextMeeting: "2025-10-09",
+      lastUpdate: "2026-02-19",
+      nextMeeting: "2026-04-09",
       projections: {
-        month6: { rate: 5.25, probability: 70, direction: 'down' },
-        month12: { rate: 4.75, probability: 75, direction: 'down' }
+        month6: { rate: 3.25, probability: 72, direction: 'down' },
+        month12: { rate: 3.00, probability: 78, direction: 'down' }
       },
       recentChanges: [
-        { date: "2024-02-28", change: 0, rate: 5.50 },
-        { date: "2023-11-29", change: 0, rate: 5.50 },
-        { date: "2023-10-04", change: 0, rate: 5.50 }
+        { date: "2026-02-19", change: -0.50, rate: 3.75 },
+        { date: "2025-11-27", change: -0.50, rate: 4.25 },
+        { date: "2025-10-09", change: -0.50, rate: 4.75 }
       ],
       seasonality: { q1: 'bullish', q2: 'neutral', q3: 'bearish', q4: 'neutral' },
       tradingInsights: {
-        bullishFactors: ["Higher dairy prices boost exports", "Carry trade appeal from high rates", "China economic recovery increases demand"],
-        bearishFactors: ["Small economy vulnerable to shocks", "Commodity price weakness", "RBNZ dovish rate cut cycle beginning"]
+        bullishFactors: ["Aggressive rate cuts may be priced in", "Dairy prices stabilizing", "China stimulus boosting demand"],
+        bearishFactors: ["RBNZ dovish rate cut cycle continues", "Weakest rates among majors", "Global trade uncertainty"]
       }
     },
     {
       country: "United States",
       currency: "USD",
       centralBank: "Federal Reserve (Fed)",
-      currentRate: 4.75,
+      currentRate: 4.50,
       website: "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
-      lastUpdate: "2025-11-05",
-      nextMeeting: "2025-12-17",
+      lastUpdate: "2026-03-19",
+      nextMeeting: "2026-05-07",
       projections: {
-        month6: { rate: 4.50, probability: 75, direction: 'down' },
-        month12: { rate: 4.00, probability: 80, direction: 'down' }
+        month6: { rate: 4.25, probability: 60, direction: 'down' },
+        month12: { rate: 3.75, probability: 70, direction: 'down' }
       },
       recentChanges: [
-        { date: "2025-11-05", change: 0, rate: 4.75 },
-        { date: "2025-09-17", change: -0.25, rate: 4.75 },
-        { date: "2025-07-31", change: -0.25, rate: 5.00 }
+        { date: "2026-03-19", change: 0, rate: 4.50 },
+        { date: "2026-01-29", change: 0, rate: 4.50 },
+        { date: "2025-12-18", change: -0.25, rate: 4.50 }
       ],
       seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'neutral' },
       tradingInsights: {
-        bullishFactors: ["Safe-haven demand in risk-off periods", "Strong labor market supports rates", "Reserve currency status drives demand"],
-        bearishFactors: ["Fed pivoting to rate cuts", "Increasing fiscal deficits", "Trade balance deficits weigh on dollar"]
+        bullishFactors: ["Tariff policy strengthens USD via safe-haven flows", "Fed holding rates higher for longer", "Strong labor market supports rates"],
+        bearishFactors: ["Rate cuts expected later in 2026", "Trade war uncertainty weighs on growth", "Fiscal deficit concerns growing"]
       }
     },
     {
       country: "Australia",
       currency: "AUD",
       centralBank: "Reserve Bank of Australia (RBA)",
-      currentRate: 4.35,
+      currentRate: 4.10,
       website: "https://www.rba.gov.au/monetary-policy/rba-board-minutes/",
-      lastUpdate: "2025-08-06",
-      nextMeeting: "2025-09-03",
+      lastUpdate: "2026-02-18",
+      nextMeeting: "2026-04-01",
       projections: {
-        month6: { rate: 4.10, probability: 65, direction: 'down' },
-        month12: { rate: 3.85, probability: 70, direction: 'down' }
+        month6: { rate: 3.85, probability: 65, direction: 'down' },
+        month12: { rate: 3.60, probability: 70, direction: 'down' }
       },
       recentChanges: [
-        { date: "2024-02-06", change: 0, rate: 4.35 },
-        { date: "2024-01-02", change: 0, rate: 4.35 },
-        { date: "2023-12-05", change: 0, rate: 4.35 }
+        { date: "2026-02-18", change: -0.25, rate: 4.10 },
+        { date: "2025-12-10", change: 0, rate: 4.35 },
+        { date: "2025-11-05", change: 0, rate: 4.35 }
       ],
       seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'bullish' },
       tradingInsights: {
-        bullishFactors: ["China growth benefits commodity exports", "Iron ore & coal demand strengthens AUD", "High rates attract carry traders"],
-        bearishFactors: ["China economic slowdown impacts exports", "RBA dovish rate outlook", "Property market weakness weighs on economy"]
+        bullishFactors: ["RBA just began cutting — priced in", "Iron ore demand from China infrastructure", "COT data shows institutions turning bullish on AUD"],
+        bearishFactors: ["China trade war exposure risks", "Slower domestic growth outlook", "Property market cooling"]
       }
     },
     {
       country: "Canada",
       currency: "CAD",
       centralBank: "Bank of Canada (BoC)",
-      currentRate: 4.25,
+      currentRate: 3.00,
       website: "https://www.bankofcanada.ca/core-functions/monetary-policy/key-interest-rate/",
-      lastUpdate: "2025-07-24",
-      nextMeeting: "2025-09-04",
+      lastUpdate: "2026-03-12",
+      nextMeeting: "2026-04-16",
       projections: {
-        month6: { rate: 4.50, probability: 75, direction: 'down' },
-        month12: { rate: 3.75, probability: 80, direction: 'down' }
+        month6: { rate: 2.75, probability: 68, direction: 'down' },
+        month12: { rate: 2.50, probability: 72, direction: 'down' }
       },
       recentChanges: [
-        { date: "2024-01-24", change: 0, rate: 5.00 },
-        { date: "2023-12-06", change: 0, rate: 5.00 },
-        { date: "2023-10-25", change: 0.25, rate: 5.00 }
+        { date: "2026-03-12", change: -0.25, rate: 3.00 },
+        { date: "2026-01-29", change: -0.25, rate: 3.25 },
+        { date: "2025-12-11", change: -0.50, rate: 3.50 }
       ],
       seasonality: { q1: 'neutral', q2: 'bearish', q3: 'bearish', q4: 'neutral' },
       tradingInsights: {
-        bullishFactors: ["Rising oil prices boost CAD", "US economic strength benefits trade", "Strong employment data supports rates"],
-        bearishFactors: ["BoC cutting rates faster than Fed", "Weak housing market impacts economy", "Oil price declines pressure CAD"]
+        bullishFactors: ["Oil prices may stabilize", "US-Canada trade integration", "Rate differential narrowing"],
+        bearishFactors: ["BoC cutting faster than Fed widens spread", "US tariff threats on Canadian exports", "Weak housing market"]
       }
     },
     {
       country: "United Kingdom",
       currency: "GBP",
       centralBank: "Bank of England (BoE)",
-      currentRate: 4.00,
+      currentRate: 4.50,
       website: "https://www.bankofengland.co.uk/monetary-policy/the-interest-rate-bank-rate",
-      lastUpdate: "2025-10-16",
-      nextMeeting: "2025-11-07",
+      lastUpdate: "2026-02-06",
+      nextMeeting: "2026-03-20",
       projections: {
-        month6: { rate: 3.75, probability: 77, direction: 'down' },
+        month6: { rate: 4.00, probability: 75, direction: 'down' },
         month12: { rate: 3.50, probability: 80, direction: 'down' }
       },
       recentChanges: [
-        { date: "2025-09-19", change: 0, rate: 4.00 },
-        { date: "2025-08-01", change: -0.25, rate: 4.00 },
-        { date: "2025-06-20", change: 0, rate: 4.25 }
+        { date: "2026-02-06", change: -0.25, rate: 4.50 },
+        { date: "2025-11-07", change: -0.25, rate: 4.75 },
+        { date: "2025-08-01", change: -0.25, rate: 5.00 }
       ],
       seasonality: { q1: 'bearish', q2: 'bearish', q3: 'neutral', q4: 'bullish' },
       tradingInsights: {
-        bullishFactors: ["Strong services sector supports GBP", "Higher rates than Eurozone attract capital", "London financial center drives demand"],
-        bearishFactors: ["BoE cutting rates amid weak growth", "Brexit impacts on trade continue", "Sticky inflation concerns slow cuts"]
+        bullishFactors: ["Rate parity with Fed supports GBP", "Strong services sector", "London financial center drives demand"],
+        bearishFactors: ["Gradual BoE cuts expected", "Weak manufacturing sector", "Sticky inflation complicates outlook"]
       }
     },
     {
       country: "Eurozone",
       currency: "EUR",
       centralBank: "European Central Bank (ECB)",
-      currentRate: 3.25,
+      currentRate: 2.65,
       website: "https://www.ecb.europa.eu/press/govcouncil/mopo/html/index.en.html",
-      lastUpdate: "2025-11-04",
-      nextMeeting: "2025-12-12",
+      lastUpdate: "2026-03-06",
+      nextMeeting: "2026-04-17",
       projections: {
-        month6: { rate: 3.00, probability: 80, direction: 'down' },
-        month12: { rate: 2.50, probability: 85, direction: 'down' }
+        month6: { rate: 2.25, probability: 80, direction: 'down' },
+        month12: { rate: 2.00, probability: 85, direction: 'down' }
       },
       recentChanges: [
-        { date: "2025-10-17", change: -0.25, rate: 3.25 },
-        { date: "2025-09-12", change: -0.25, rate: 3.50 },
-        { date: "2025-07-18", change: -0.25, rate: 3.75 }
+        { date: "2026-03-06", change: -0.25, rate: 2.65 },
+        { date: "2026-01-30", change: -0.25, rate: 2.90 },
+        { date: "2025-12-12", change: -0.25, rate: 3.15 }
       ],
       seasonality: { q1: 'bearish', q2: 'bearish', q3: 'neutral', q4: 'neutral' },
       tradingInsights: {
-        bullishFactors: ["Large economy with stable exports", "ECB balance sheet provides support", "Manufacturing recovery boosts EUR"],
-        bearishFactors: ["Aggressive ECB rate cuts weaken EUR", "Weak growth across member states", "Energy dependence creates vulnerability"]
+        bullishFactors: ["Rate cuts largely priced in", "German fiscal stimulus plans", "Defense spending boost"],
+        bearishFactors: ["Wide rate differential vs Fed", "Trade war exposure on exports", "Weak growth across member states"]
       }
     },
     {
       country: "Switzerland",
       currency: "CHF",
       centralBank: "Swiss National Bank (SNB)",
-      currentRate: 1.25,
+      currentRate: 0.50,
       website: "https://www.snb.ch/en/the-snb/mandates-goals/monetary-policy/monetary-policy-strategy",
-      lastUpdate: "2025-06-20",
-      nextMeeting: "2025-09-26",
+      lastUpdate: "2025-12-12",
+      nextMeeting: "2026-03-20",
       projections: {
-        month6: { rate: 1.50, probability: 60, direction: 'down' },
-        month12: { rate: 1.25, probability: 65, direction: 'down' }
+        month6: { rate: 0.25, probability: 55, direction: 'down' },
+        month12: { rate: 0.25, probability: 60, direction: 'hold' }
       },
       recentChanges: [
-        { date: "2023-12-14", change: 0, rate: 1.75 },
-        { date: "2023-09-21", change: 0.25, rate: 1.75 },
-        { date: "2023-06-22", change: 0.25, rate: 1.50 }
+        { date: "2025-12-12", change: -0.50, rate: 0.50 },
+        { date: "2025-09-26", change: -0.25, rate: 1.00 },
+        { date: "2025-06-20", change: -0.25, rate: 1.25 }
       ],
       seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'bullish' },
       tradingInsights: {
-        bullishFactors: ["Safe-haven status in crisis periods", "Strong banking sector reputation", "Low inflation maintains currency value"],
-        bearishFactors: ["SNB willing to intervene to weaken CHF", "Low rates reduce carry appeal", "Small open economy vulnerable to EU weakness"]
+        bullishFactors: ["Safe-haven status amid global uncertainty", "Near-zero rates limit further cuts", "Strong banking sector"],
+        bearishFactors: ["SNB willing to intervene to weaken CHF", "Very low rates reduce carry appeal", "EU weakness impacts Swiss exports"]
       }
     },
     {
@@ -216,21 +216,21 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       centralBank: "Bank of Japan (BoJ)",
       currentRate: 0.50,
       website: "https://www.boj.or.jp/en/mopo/outline/index.htm",
-      lastUpdate: "2025-10-16",
-      nextMeeting: "2025-10-31",
+      lastUpdate: "2026-01-24",
+      nextMeeting: "2026-03-14",
       projections: {
-        month6: { rate: 0.50, probability: 65, direction: 'hold' },
-        month12: { rate: 0.75, probability: 72, direction: 'up' }
+        month6: { rate: 0.75, probability: 70, direction: 'up' },
+        month12: { rate: 1.00, probability: 65, direction: 'up' }
       },
       recentChanges: [
-        { date: "2025-09-20", change: 0, rate: 0.50 },
-        { date: "2025-07-31", change: 0.25, rate: 0.50 },
-        { date: "2025-03-19", change: 0.40, rate: 0.25 }
+        { date: "2026-01-24", change: 0.25, rate: 0.50 },
+        { date: "2025-07-31", change: 0.25, rate: 0.25 },
+        { date: "2025-03-19", change: 0, rate: 0.00 }
       ],
       seasonality: { q1: 'bullish', q2: 'neutral', q3: 'bullish', q4: 'neutral' },
       tradingInsights: {
-        bullishFactors: ["BoJ normalizing policy strengthens JPY", "Repatriation flows support yen", "Risk-off sentiment boosts safe-haven demand"],
-        bearishFactors: ["Still lowest rates among majors", "Intervention threats limit upside", "Massive debt levels constrain rate hikes"]
+        bullishFactors: ["BoJ normalizing policy — only major bank hiking", "Repatriation flows support yen", "Risk-off sentiment from trade wars boosts JPY"],
+        bearishFactors: ["Still lowest rates among majors", "Gradual pace of normalization", "Massive government debt limits aggressive hikes"]
       }
     }
   ];
