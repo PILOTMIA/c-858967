@@ -30,14 +30,14 @@ const fetchRealTimeData = async () => {
         const fallbackResponse = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
         const fallbackData = await fallbackResponse.json();
         cryptoData = {
-          bitcoin: { price: 116533, change: 2.0 },
-          ethereum: { price: 4620, change: 4.4 }
+          bitcoin: { price: 84200, change: -1.2 },
+          ethereum: { price: 1950, change: -2.5 }
         };
       }
     } catch {
       cryptoData = {
-        bitcoin: { price: 97250, change: 3.42 },
-        ethereum: { price: 3685, change: 4.18 }
+        bitcoin: { price: 84200, change: -1.2 },
+        ethereum: { price: 1950, change: -2.5 }
       };
     }
 
