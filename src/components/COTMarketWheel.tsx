@@ -190,7 +190,7 @@ const COTMarketWheel = () => {
           🎯 COT Market Positioning
         </CardTitle>
         <CardDescription className="font-medium">
-          Click any pair to see detailed COT analysis and trading signals. Data from CFTC report Jan 21, 2026 (as of Jan 13).
+          Click any pair to see detailed COT analysis and trading signals. Data from CFTC report Mar 19, 2026 (as of Mar 10).
           {lastUpdated && (
             <div className="text-xs text-success mt-1 flex items-center gap-1">
               <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
