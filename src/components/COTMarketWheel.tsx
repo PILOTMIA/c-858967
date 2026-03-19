@@ -39,32 +39,32 @@ const COTMarketWheel = () => {
   const handleCurrencyClick = (item: WheelDataItem) => {
     console.log('Currency clicked:', item.currency);
     
-    // Jan 21, 2026 CFTC Report (data as of Jan 13, 2026) - Real institutional positioning
+    // Mar 19, 2026 CFTC Report (data as of Mar 10, 2026) - Real institutional positioning
     const positionData: Record<string, { long: number; short: number; ncLong: number; ncShort: number }> = {
       // Major USD pairs - Asset Mgr (Commercial) and Leveraged Funds (Non-Commercial)
-      // Verified from CFTC Financial Traders report released Jan 21, 2026
-      'CAD': { long: 71451, short: 63407, ncLong: 22400, ncShort: 78099 },
-      'CHF': { long: 6766, short: 59792, ncLong: 10064, ncShort: 10635 },
-      'GBP': { long: 43857, short: 123791, ncLong: 66540, ncShort: 28450 },
-      'JPY': { long: 75804, short: 47581, ncLong: 43869, ncShort: 142519 },
-      'EUR': { long: 555117, short: 151001, ncLong: 103621, ncShort: 78229 },
-      'AUD': { long: 59649, short: 93135, ncLong: 68678, ncShort: 38461 },
-      'MXN': { long: 105727, short: 23702, ncLong: 112440, ncShort: 51021 },
-      'NZD': { long: 8135, short: 53891, ncLong: 12239, ncShort: 22372 },
-      'BRL': { long: 44473, short: 1677, ncLong: 23645, ncShort: 22729 },
+      // Verified from CFTC Financial Traders report released Mar 19, 2026
+      'CAD': { long: 105105, short: 35593, ncLong: 28252, ncShort: 65411 },
+      'CHF': { long: 5888, short: 60251, ncLong: 10750, ncShort: 6470 },
+      'GBP': { long: 33647, short: 154150, ncLong: 48818, ncShort: 28716 },
+      'JPY': { long: 65494, short: 62663, ncLong: 77546, ncShort: 126765 },
+      'EUR': { long: 509748, short: 143449, ncLong: 105592, ncShort: 100361 },
+      'AUD': { long: 86048, short: 62719, ncLong: 69980, ncShort: 23412 },
+      'MXN': { long: 85939, short: 29494, ncLong: 89244, ncShort: 36359 },
+      'NZD': { long: 10660, short: 48031, ncLong: 11699, ncShort: 15865 },
+      'BRL': { long: 58972, short: 2305, ncLong: 33583, ncShort: 17985 },
       // Cross pairs - EURGBP from CFTC report
-      'EURGBP': { long: 18940, short: 0, ncLong: 2843, ncShort: 4231 },
+      'EURGBP': { long: 18478, short: 0, ncLong: 2869, ncShort: 3395 },
       // EURJPY from CFTC report
-      'EURJPY': { long: 5084, short: 11710, ncLong: 1537, ncShort: 0 },
+      'EURJPY': { long: 5437, short: 13164, ncLong: 2290, ncShort: 0 },
       // Derived cross pairs based on component positioning
-      'GBPJPY': { long: 119661, short: 171372, ncLong: 110409, ncShort: 170969 },
-      'GBPCAD': { long: 115308, short: 187198, ncLong: 88940, ncShort: 106549 },
-      'AUDJPY': { long: 135453, short: 140716, ncLong: 112547, ncShort: 180980 },
-      'EURAUD': { long: 614766, short: 244136, ncLong: 172299, ncShort: 116690 },
-      'GBPAUD': { long: 103506, short: 216926, ncLong: 135218, ncShort: 66911 },
-      'EURCAD': { long: 626568, short: 214408, ncLong: 126021, ncShort: 156328 },
-      'NZDJPY': { long: 83939, short: 101472, ncLong: 56108, ncShort: 164891 },
-      'CADJPY': { long: 147255, short: 110988, ncLong: 66269, ncShort: 220618 }
+      'GBPJPY': { long: 99141, short: 216813, ncLong: 126364, ncShort: 155481 },
+      'GBPCAD': { long: 138752, short: 189743, ncLong: 77070, ncShort: 94127 },
+      'AUDJPY': { long: 151542, short: 125382, ncLong: 147526, ncShort: 150177 },
+      'EURAUD': { long: 595796, short: 206168, ncLong: 175572, ncShort: 123773 },
+      'GBPAUD': { long: 119695, short: 216869, ncLong: 118798, ncShort: 52128 },
+      'EURCAD': { long: 614853, short: 179042, ncLong: 133844, ncShort: 135954 },
+      'NZDJPY': { long: 76154, short: 110694, ncLong: 89245, ncShort: 142630 },
+      'CADJPY': { long: 170599, short: 98256, ncLong: 105798, ncShort: 192176 }
     };
     
     const data = positionData[item.currency] || { long: 0, short: 0, ncLong: 0, ncShort: 0 };
@@ -75,7 +75,7 @@ const COTMarketWheel = () => {
       commercialShort: data.short,
       nonCommercialLong: data.ncLong,
       nonCommercialShort: data.ncShort,
-      reportDate: '2026-01-21T00:00:00Z',
+      reportDate: '2026-03-19T00:00:00Z',
       weeklyChange: item.weeklyChange
     };
     
@@ -86,48 +86,38 @@ const COTMarketWheel = () => {
 
   // Generate data from uploaded COT data or fallback to mock data
   const generateData = (): WheelDataItem[] => {
-    // Jan 21, 2026 CFTC Report (data as of Jan 13, 2026) - VERIFIED from uploaded PDF
+    // Mar 19, 2026 CFTC Report (data as of Mar 10, 2026) - VERIFIED from uploaded PDF
     const majorPairs: WheelDataItem[] = [
-      // EUR: NC Long 103,621 - NC Short 78,229 = +25,392 (Bullish)
-      { currency: 'EUR', netPosition: 25392, strength: 25392, bias: 'BULLISH', weeklyChange: -25208, color: '#7EBF8E', type: 'major' },
-      // GBP: NC Long 66,540 - NC Short 28,450 = +38,090 (Bullish)
-      { currency: 'GBP', netPosition: 38090, strength: 38090, bias: 'BULLISH', weeklyChange: 9143, color: '#7EBF8E', type: 'major' },
-      // JPY: NC Long 43,869 - NC Short 142,519 = -98,650 (Bearish) - STRONGEST BEARISH
-      { currency: 'JPY', netPosition: -98650, strength: 98650, bias: 'BEARISH', weeklyChange: -35420, color: '#EF4444', type: 'major' },
-      // CHF: NC Long 10,064 - NC Short 10,635 = -571 (Neutral)
-      { currency: 'CHF', netPosition: -571, strength: 571, bias: 'NEUTRAL', weeklyChange: 669, color: '#8B8B8B', type: 'major' },
-      // AUD: NC Long 68,678 - NC Short 38,461 = +30,217 (Bullish)
-      { currency: 'AUD', netPosition: 30217, strength: 30217, bias: 'BULLISH', weeklyChange: -4898, color: '#7EBF8E', type: 'major' },
-      // CAD: NC Long 22,400 - NC Short 78,099 = -55,699 (Bearish)
-      { currency: 'CAD', netPosition: -55699, strength: 55699, bias: 'BEARISH', weeklyChange: 1397, color: '#EF4444', type: 'major' },
-      // MXN: NC Long 112,440 - NC Short 51,021 = +61,419 (Bullish)
-      { currency: 'MXN', netPosition: 61419, strength: 61419, bias: 'BULLISH', weeklyChange: -2096, color: '#7EBF8E', type: 'major' },
-      // NZD: NC Long 12,239 - NC Short 22,372 = -10,133 (Bearish)
-      { currency: 'NZD', netPosition: -10133, strength: 10133, bias: 'BEARISH', weeklyChange: 472, color: '#EF4444', type: 'major' }
+      // EUR: NC Long 105,592 - NC Short 100,361 = +5,231 (Neutral — was +25K)
+      { currency: 'EUR', netPosition: 5231, strength: 5231, bias: 'NEUTRAL', weeklyChange: -24401, color: '#8B8B8B', type: 'major' },
+      // GBP: NC Long 48,818 - NC Short 28,716 = +20,102 (Bullish — was +38K)
+      { currency: 'GBP', netPosition: 20102, strength: 20102, bias: 'BULLISH', weeklyChange: -14404, color: '#7EBF8E', type: 'major' },
+      // JPY: NC Long 77,546 - NC Short 126,765 = -49,219 (Bearish — was -98K, shorts covering!)
+      { currency: 'JPY', netPosition: -49219, strength: 49219, bias: 'BEARISH', weeklyChange: -14994, color: '#EF4444', type: 'major' },
+      // CHF: NC Long 10,750 - NC Short 6,470 = +4,280 (Bullish — was -571, FLIPPED!)
+      { currency: 'CHF', netPosition: 4280, strength: 4280, bias: 'BULLISH', weeklyChange: -176, color: '#7EBF8E', type: 'major' },
+      // AUD: NC Long 69,980 - NC Short 23,412 = +46,568 (Bullish — was +30K, STRONGEST BULL!)
+      { currency: 'AUD', netPosition: 46568, strength: 46568, bias: 'BULLISH', weeklyChange: -8067, color: '#7EBF8E', type: 'major' },
+      // CAD: NC Long 28,252 - NC Short 65,411 = -37,159 (Bearish — was -55K, improving)
+      { currency: 'CAD', netPosition: -37159, strength: 37159, bias: 'BEARISH', weeklyChange: 4212, color: '#EF4444', type: 'major' },
+      // MXN: NC Long 89,244 - NC Short 36,359 = +52,885 (Bullish)
+      { currency: 'MXN', netPosition: 52885, strength: 52885, bias: 'BULLISH', weeklyChange: -1921, color: '#7EBF8E', type: 'major' },
+      // NZD: NC Long 11,699 - NC Short 15,865 = -4,166 (Bearish — was -10K, improving)
+      { currency: 'NZD', netPosition: -4166, strength: 4166, bias: 'BEARISH', weeklyChange: 6129, color: '#EF4444', type: 'major' }
     ];
 
-    // Cross pairs - derived from component currencies and CFTC report
+    // Cross pairs - derived from component currencies
     const crossPairs: WheelDataItem[] = [
-      // EURJPY: From report - NC Long 1,537 - NC Short 0 = +1,537 (Bullish)
-      { currency: 'EURJPY', netPosition: 1537, strength: 1537, bias: 'BULLISH', weeklyChange: -297, color: '#7EBF8E', type: 'cross' },
-      // GBPJPY: GBP bullish + JPY bearish = Strong Bullish on GBPJPY - STRONGEST CROSS
-      { currency: 'GBPJPY', netPosition: 136740, strength: 136740, bias: 'BULLISH', weeklyChange: 44563, color: '#7EBF8E', type: 'cross' },
-      // EURGBP: From report - NC Long 2,843 - NC Short 4,231 = -1,388 (Bearish)
-      { currency: 'EURGBP', netPosition: -1388, strength: 1388, bias: 'BEARISH', weeklyChange: 0, color: '#EF4444', type: 'cross' },
-      // GBPCAD: GBP bullish + CAD bearish = Bullish
-      { currency: 'GBPCAD', netPosition: 93789, strength: 93789, bias: 'BULLISH', weeklyChange: 13746, color: '#7EBF8E', type: 'cross' },
-      // AUDJPY: AUD bullish + JPY bearish = Bullish
-      { currency: 'AUDJPY', netPosition: 128867, strength: 128867, bias: 'BULLISH', weeklyChange: 30522, color: '#7EBF8E', type: 'cross' },
-      // EURAUD: EUR bullish + AUD bullish but EUR weaker
-      { currency: 'EURAUD', netPosition: -4825, strength: 4825, bias: 'BEARISH', weeklyChange: -1792, color: '#EF4444', type: 'cross' },
-      // GBPAUD: GBP bullish + AUD bullish but GBP stronger
-      { currency: 'GBPAUD', netPosition: 7873, strength: 7873, bias: 'BULLISH', weeklyChange: 14041, color: '#7EBF8E', type: 'cross' },
-      // EURCAD: EUR bullish + CAD bearish = Bullish
-      { currency: 'EURCAD', netPosition: 81091, strength: 81091, bias: 'BULLISH', weeklyChange: 2087, color: '#7EBF8E', type: 'cross' },
-      // NZDJPY: NZD bearish + JPY bearish but JPY more = Bullish
-      { currency: 'NZDJPY', netPosition: 88517, strength: 88517, bias: 'BULLISH', weeklyChange: 35892, color: '#7EBF8E', type: 'cross' },
-      // CADJPY: CAD bearish + JPY bearish but JPY more = Bullish
-      { currency: 'CADJPY', netPosition: 42951, strength: 42951, bias: 'BULLISH', weeklyChange: 30817, color: '#7EBF8E', type: 'cross' }
+      { currency: 'EURJPY', netPosition: 2290, strength: 2290, bias: 'BULLISH', weeklyChange: 185, color: '#7EBF8E', type: 'cross' },
+      { currency: 'GBPJPY', netPosition: 69321, strength: 69321, bias: 'BULLISH', weeklyChange: -14220, color: '#7EBF8E', type: 'cross' },
+      { currency: 'EURGBP', netPosition: -526, strength: 526, bias: 'NEUTRAL', weeklyChange: 0, color: '#8B8B8B', type: 'cross' },
+      { currency: 'GBPCAD', netPosition: 57261, strength: 57261, bias: 'BULLISH', weeklyChange: -18616, color: '#7EBF8E', type: 'cross' },
+      { currency: 'AUDJPY', netPosition: 95787, strength: 95787, bias: 'BULLISH', weeklyChange: 6927, color: '#7EBF8E', type: 'cross' },
+      { currency: 'EURAUD', netPosition: -41337, strength: 41337, bias: 'BEARISH', weeklyChange: -16334, color: '#EF4444', type: 'cross' },
+      { currency: 'GBPAUD', netPosition: -26466, strength: 26466, bias: 'BEARISH', weeklyChange: -6337, color: '#EF4444', type: 'cross' },
+      { currency: 'EURCAD', netPosition: 42390, strength: 42390, bias: 'BULLISH', weeklyChange: -28613, color: '#7EBF8E', type: 'cross' },
+      { currency: 'NZDJPY', netPosition: 45053, strength: 45053, bias: 'BULLISH', weeklyChange: 21123, color: '#7EBF8E', type: 'cross' },
+      { currency: 'CADJPY', netPosition: 12060, strength: 12060, bias: 'BULLISH', weeklyChange: 19206, color: '#7EBF8E', type: 'cross' }
     ];
 
     return [...majorPairs, ...crossPairs];
@@ -200,7 +190,7 @@ const COTMarketWheel = () => {
           🎯 COT Market Positioning
         </CardTitle>
         <CardDescription className="font-medium">
-          Click any pair to see detailed COT analysis and trading signals. Data from CFTC report Jan 21, 2026 (as of Jan 13).
+          Click any pair to see detailed COT analysis and trading signals. Data from CFTC report Mar 19, 2026 (as of Mar 10).
           {lastUpdated && (
             <div className="text-xs text-success mt-1 flex items-center gap-1">
               <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
@@ -239,7 +229,7 @@ const COTMarketWheel = () => {
 
         {/* Market Summary */}
         <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg p-4 border border-primary/20">
-          <h4 className="font-bold text-primary mb-2">Quick Summary - Jan 21, 2026 Report</h4>
+          <h4 className="font-bold text-primary mb-2">Quick Summary - Mar 19, 2026 Report</h4>
           <div className="text-sm text-foreground grid grid-cols-2 gap-2">
             <div>
               <span className="text-muted-foreground">Most Bullish:</span>
