@@ -74,6 +74,9 @@ const COTAnalysisContent = () => {
           </Card>
         </div>
 
+        {/* COT Pair Analyzer */}
+        <COTPairAnalyzer />
+
         {/* Main COT Data Component */}
         <COTData />
 
