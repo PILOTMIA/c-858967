@@ -53,7 +53,7 @@ const fetchFedData = async (): Promise<FedData> => {
     return {
       currentRate: 4.50,
       nextMeetingDate: "2026-05-07",
-      probabilities: { rateCut: 35.2, rateHold: 58.5, rateHike: 6.3 },
+      probabilities: { rateCut: 38.5, rateHold: 55.2, rateHike: 6.3 },
       sentiment: 'NEUTRAL',
       nextRateChange: 0
     };
