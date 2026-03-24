@@ -7,6 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TrendingUp, TrendingDown, Minus, Calendar, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
+interface MeetingMinutes {
+  date: string;
+  title: string;
+  summary: string;
+  keyTakeaways: string[];
+  link: string;
+  tone: 'hawkish' | 'dovish' | 'neutral';
+}
+
 interface CentralBankData {
   country: string;
   currency: string;
@@ -42,6 +51,7 @@ interface CentralBankData {
     bullishFactors: string[];
     bearishFactors: string[];
   };
+  latestMinutes: MeetingMinutes;
 }
 
 const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
