@@ -17,7 +17,7 @@ const AppNavigation = () => {
     { path: '/education', label: 'Education', icon: BookOpen },
     { path: '/community', label: 'Community', icon: Users },
     { path: '/tools', label: 'Trading Tools', icon: BarChart3 },
-    { path: '/central-bank-rates', label: 'Central Bank Rates', icon: Calendar },
+    { path: '/central-bank-rates', label: 'Central Banking', icon: Calendar },
     { path: '/profile', label: 'Profile', icon: Settings },
   ];
 

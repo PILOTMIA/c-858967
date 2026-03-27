@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { TrendingUp, TrendingDown, Minus, Clock, Globe, DollarSign } from 'lucide-react';
 
 interface NewsArticle {
@@ -21,263 +20,176 @@ interface NewsArticle {
   url: string;
 }
 
-// Mock data simulating real fundamental analysis
 const fetchFundamentalNews = async (): Promise<NewsArticle[]> => {
-  // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1000));
 
-  const articles: NewsArticle[] = [
+  return [
     {
       id: '1',
-      headline: 'Fed Holds Rates Steady, Signals End to 2024-25 Easing Cycle',
+      headline: 'Fed Holds at 4.50%, Powell: Tariffs Adding Inflation Uncertainty',
       source: 'Reuters',
-      publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      publishedAt: '2026-03-18T18:00:00Z',
       currency: 'USD',
       affectedPairs: ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD'],
       impact: 'High',
-      direction: 'Bullish',
-      fundamentalAnalysis: 'Hawkish Fed pause strengthens USD as rate differentials widen versus dovish ECB and RBNZ. Higher real yields attract capital flows into dollar assets.',
+      direction: 'Neutral',
+      fundamentalAnalysis: 'Fed holds amid conflicting signals — tariffs push inflation higher but growth is softening. Two cuts still projected for H2 2026 but timing uncertain.',
       category: 'Central Bank',
-      confidence: 92,
+      confidence: 88,
       url: 'https://www.reuters.com/markets/us/'
     },
     {
       id: '2',
-      headline: 'ECB Cuts Rates to 2.75%, Lagarde Warns of Weak Growth Outlook',
+      headline: 'ECB Delivers Sixth Consecutive Cut to 2.65%, Growth Forecast Slashed',
       source: 'Financial Times',
-      publishedAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+      publishedAt: '2026-03-06T13:00:00Z',
       currency: 'EUR',
       affectedPairs: ['EURUSD', 'EURGBP', 'EURJPY', 'EURCHF'],
       impact: 'High',
       direction: 'Bearish',
-      fundamentalAnalysis: 'Dovish ECB rate cut and weak growth warnings pressure EUR. Manufacturing recession deepening with more rate cuts priced for Q1 2026.',
+      fundamentalAnalysis: 'ECB in aggressive easing mode. 185bp rate gap vs Fed pressures EUR. Defense spending plans provide small upside risk.',
       category: 'Central Bank',
-      confidence: 89,
+      confidence: 90,
       url: 'https://www.ft.com/markets'
     },
     {
       id: '3',
-      headline: 'UK Inflation Jumps to 2.8%, BoE Rate Cut Bets Evaporate',
+      headline: 'BoE Unanimous 9-0 Hold at 3.75%, UK CPI Surprises at 3.0%',
       source: 'Bloomberg',
-      publishedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+      publishedAt: '2026-03-20T12:00:00Z',
       currency: 'GBP',
-      affectedPairs: ['GBPUSD', 'EURGBP', 'GBPJPY', 'GBPAUD'],
+      affectedPairs: ['GBPUSD', 'EURGBP', 'GBPJPY'],
       impact: 'High',
       direction: 'Bullish',
-      fundamentalAnalysis: 'Sticky UK inflation forces hawkish BoE stance, supporting GBP. Rate cut expectations pushed to 2026 as services inflation remains elevated above 5%.',
+      fundamentalAnalysis: 'Hawkish hold on inflation surprise. First unanimous vote since 2021 signals MPC consensus on patience. GBP supported.',
       category: 'Inflation',
       confidence: 87,
       url: 'https://www.bloomberg.com/markets'
     },
     {
       id: '4',
-      headline: 'Bank of Japan Hikes to 0.75%, Signals More Tightening Ahead',
+      headline: 'BoJ Hawkish Hold at 0.50%, April Hike Remains on the Table',
       source: 'Nikkei Asia',
-      publishedAt: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+      publishedAt: '2026-03-19T06:00:00Z',
       currency: 'JPY',
-      affectedPairs: ['USDJPY', 'EURJPY', 'GBPJPY', 'AUDJPY'],
+      affectedPairs: ['USDJPY', 'EURJPY', 'GBPJPY'],
       impact: 'High',
       direction: 'Bullish',
-      fundamentalAnalysis: 'Surprise BoJ rate hike and hawkish guidance dramatically shifts policy outlook. JPY benefits from rising rate differential versus other central banks.',
+      fundamentalAnalysis: 'Only major CB hiking. 5.4% wage growth supports normalization. JPY benefiting from policy divergence with dovish peers.',
       category: 'Central Bank',
-      confidence: 93,
+      confidence: 92,
       url: 'https://asia.nikkei.com/Economy'
     },
     {
       id: '5',
-      headline: 'Australian Dollar Plummets as China PMI Hits 18-Month Low',
-      source: 'Australian Financial Review',
-      publishedAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-      currency: 'AUD',
-      affectedPairs: ['AUDUSD', 'EURAUD', 'GBPAUD', 'AUDJPY'],
+      headline: 'BoC Cuts to 2.75%, Tariff Risks Dominate Canadian Outlook',
+      source: 'Globe and Mail',
+      publishedAt: '2026-03-12T15:00:00Z',
+      currency: 'CAD',
+      affectedPairs: ['USDCAD', 'EURCAD', 'CADJPY'],
       impact: 'High',
       direction: 'Bearish',
-      fundamentalAnalysis: 'Weak Chinese manufacturing data hits commodity-linked AUD. RBA dovish pivot and potential December rate cut add downside pressure.',
-      category: 'Economic Data',
+      fundamentalAnalysis: 'Seventh consecutive BoC cut. US tariff threats could slash Canadian GDP. Rate differential widening against USD.',
+      category: 'Central Bank',
       confidence: 85,
-      url: 'https://www.afr.com/markets'
-    },
-    {
-      id: '6',
-      headline: 'Canadian Dollar Surges on Oil Rally, BoC Maintains Hawkish Bias',
-      source: 'Globe and Mail',
-      publishedAt: new Date(Date.now() - 16 * 60 * 60 * 1000).toISOString(),
-      currency: 'CAD',
-      affectedPairs: ['USDCAD', 'EURCAD', 'GBPCAD', 'AUDCAD'],
-      impact: 'Medium',
-      direction: 'Bullish',
-      fundamentalAnalysis: 'WTI crude above $85 provides strong fundamental support for CAD. Bank of Canada pause on rate cuts and sticky inflation support currency strength.',
-      category: 'Economic Data',
-      confidence: 81,
       url: 'https://www.theglobeandmail.com/business/markets/'
     },
     {
-      id: '7',
-      headline: 'Eurozone Manufacturing PMI Contracts for 8th Consecutive Month',
-      source: 'S&P Global',
-      publishedAt: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
-      currency: 'EUR',
-      affectedPairs: ['EURUSD', 'EURGBP', 'EURJPY', 'EURCHF'],
-      impact: 'Medium',
+      id: '6',
+      headline: 'RBA Cuts to 4.10% — First Cut in 4 Years, AUD Weakens',
+      source: 'AFR',
+      publishedAt: '2026-02-18T04:30:00Z',
+      currency: 'AUD',
+      affectedPairs: ['AUDUSD', 'AUDNZD', 'EURAUD'],
+      impact: 'High',
       direction: 'Bearish',
-      fundamentalAnalysis: 'Prolonged manufacturing recession highlights Eurozone structural weakness. German industrial production particularly weak, pressuring EUR via growth concerns.',
-      category: 'Economic Data',
-      confidence: 78,
-      url: 'https://www.pmi.spglobal.com/'
+      fundamentalAnalysis: 'RBA begins easing cycle but Bullock warns against expecting rapid cuts. China slowdown and trade war risks weigh on AUD outlook.',
+      category: 'Central Bank',
+      confidence: 83,
+      url: 'https://www.afr.com/markets'
     },
     {
-      id: '8',
-      headline: 'Swiss Franc Hits Record High, SNB Intervention Chatter Grows',
-      source: 'Neue Zürcher Zeitung',
-      publishedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      id: '7',
+      headline: 'SNB Holds at 0.00%, CHF Appreciation Pressures Exporters',
+      source: 'NZZ',
+      publishedAt: '2026-03-19T08:30:00Z',
       currency: 'CHF',
-      affectedPairs: ['USDCHF', 'EURCHF', 'GBPCHF', 'CHFJPY'],
-      impact: 'High',
+      affectedPairs: ['USDCHF', 'EURCHF', 'CHFJPY'],
+      impact: 'Medium',
       direction: 'Neutral',
-      fundamentalAnalysis: 'Safe-haven flows push CHF to extremes but SNB intervention threats cap upside. EURCHF approaching parity creates policy dilemma for Swiss authorities.',
+      fundamentalAnalysis: 'At lower bound with 0.3% inflation. Safe-haven flows keep CHF strong despite SNB intervention threats.',
       category: 'Central Bank',
-      confidence: 74,
+      confidence: 75,
       url: 'https://www.nzz.ch/english/'
     },
     {
-      id: '9',
-      headline: 'US Nonfarm Payrolls Beat at 228K, Unemployment Holds at 3.9%',
+      id: '8',
+      headline: 'US NFP Beats at 151K, Unemployment Ticks Up to 4.1%',
       source: 'Wall Street Journal',
-      publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      publishedAt: '2026-03-07T13:30:00Z',
       currency: 'USD',
-      affectedPairs: ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF'],
+      affectedPairs: ['EURUSD', 'GBPUSD', 'USDJPY'],
       impact: 'High',
-      direction: 'Bullish',
-      fundamentalAnalysis: 'Resilient labor market supports Fed hawkish stance. Strong employment data reduces urgency for rate cuts and attracts capital to USD assets.',
+      direction: 'Neutral',
+      fundamentalAnalysis: 'Mixed jobs report — headline beat but unemployment rising. Supports Fed caution rather than urgency to cut or hold.',
       category: 'Employment',
-      confidence: 88,
+      confidence: 80,
       url: 'https://www.wsj.com/economy'
     },
     {
-      id: '10',
-      headline: 'Germany Q4 GDP Contracts 0.3%, Recession Fears Mount',
-      source: 'Deutsche Welle',
-      publishedAt: new Date(Date.now() - 1.5 * 24 * 60 * 60 * 1000).toISOString(),
-      currency: 'EUR',
-      affectedPairs: ['EURUSD', 'EURGBP', 'EURJPY', 'EURCHF'],
+      id: '9',
+      headline: 'US Tariff Escalation Triggers Global Risk-Off, Commodity Currencies Sink',
+      source: 'Reuters',
+      publishedAt: '2026-03-25T14:00:00Z',
+      currency: 'USD',
+      affectedPairs: ['AUDUSD', 'NZDUSD', 'USDCAD'],
       impact: 'High',
-      direction: 'Bearish',
-      fundamentalAnalysis: 'German economic contraction signals broader Eurozone weakness. Largest economy struggling with energy costs and weak external demand pressure EUR.',
-      category: 'Economic Data',
-      confidence: 84,
-      url: 'https://www.dw.com/en/business/'
-    },
-    {
-      id: '11',
-      headline: 'New Zealand RBNZ Delivers Surprise 50bp Cut to 4.25%',
-      source: 'Reserve Bank of New Zealand',
-      publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      currency: 'NZD',
-      affectedPairs: ['NZDUSD', 'AUDNZD', 'EURNZD', 'GBPNZD'],
-      impact: 'High',
-      direction: 'Bearish',
-      fundamentalAnalysis: 'Aggressive RBNZ easing shock crushes NZD. Inflation back in target band allows rapid policy normalization with terminal rate now at 3.0%.',
-      category: 'Central Bank',
-      confidence: 91,
-      url: 'https://www.rbnz.govt.nz/'
-    },
-    {
-      id: '12',
-      headline: 'OPEC+ Extends Output Cuts Through Q2 2026, Oil Surges',
-      source: 'Energy Intelligence',
-      publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      currency: 'CAD',
-      affectedPairs: ['USDCAD', 'CADJPY', 'AUDCAD', 'EURCAD'],
-      impact: 'Medium',
       direction: 'Bullish',
-      fundamentalAnalysis: 'Oil price strength provides strong fundamental support for commodity currencies. CAD and NOK primary beneficiaries of tighter crude market.',
-      category: 'Economic Data',
-      confidence: 79,
-      url: 'https://www.energyintel.com/'
+      fundamentalAnalysis: 'Broad tariff policy drives USD safe-haven bid. AUD, NZD, CAD weakest. Trade uncertainty could persist through Q2.',
+      category: 'Geopolitical',
+      confidence: 82,
+      url: 'https://www.reuters.com/markets/currencies/'
     }
   ];
-
-  return articles;
 };
 
 const FundamentalNewsAnalysis = () => {
-  const [selectedImpact, setSelectedImpact] = useState<string>('All');
   const [selectedCurrency, setSelectedCurrency] = useState<string>('All');
 
   const { data: articles, isLoading, error } = useQuery({
     queryKey: ['fundamentalNews'],
     queryFn: fetchFundamentalNews,
-    refetchInterval: 30000, // Refetch every 30 seconds
-    staleTime: 15000, // Consider data stale after 15 seconds
+    staleTime: 1000 * 60 * 60,
   });
 
-  const getDirectionIcon = (direction: string) => {
-    switch (direction) {
-      case 'Bullish':
-        return <TrendingUp className="w-4 h-4 text-green-400" />;
-      case 'Bearish':
-        return <TrendingDown className="w-4 h-4 text-red-400" />;
-      default:
-        return <Minus className="w-4 h-4 text-gray-400" />;
-    }
+  const getDirectionIcon = (d: string) => {
+    if (d === 'Bullish') return <TrendingUp className="w-4 h-4 text-green-400" />;
+    if (d === 'Bearish') return <TrendingDown className="w-4 h-4 text-red-400" />;
+    return <Minus className="w-4 h-4 text-yellow-400" />;
   };
 
-  const getDirectionColor = (direction: string) => {
-    switch (direction) {
-      case 'Bullish':
-        return 'text-green-400 border-green-400/20 bg-green-400/10';
-      case 'Bearish':
-        return 'text-red-400 border-red-400/20 bg-red-400/10';
-      default:
-        return 'text-gray-400 border-gray-400/20 bg-gray-400/10';
-    }
+  const getDirectionColor = (d: string) => {
+    if (d === 'Bullish') return 'text-green-400 border-green-400/20 bg-green-400/10';
+    if (d === 'Bearish') return 'text-red-400 border-red-400/20 bg-red-400/10';
+    return 'text-yellow-400 border-yellow-400/20 bg-yellow-400/10';
   };
 
-  const getImpactColor = (impact: string) => {
-    switch (impact) {
-      case 'High':
-        return 'bg-red-500/20 text-red-400 border-red-500/30';
-      case 'Medium':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      case 'Low':
-        return 'bg-green-500/20 text-green-400 border-green-500/30';
-      default:
-        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
-    }
+  const getImpactColor = (i: string) => {
+    if (i === 'High') return 'bg-red-500/20 text-red-400 border-red-500/30';
+    if (i === 'Medium') return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+    return 'bg-green-500/20 text-green-400 border-green-500/30';
   };
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'Central Bank':
-        return <DollarSign className="w-3 h-3" />;
-      case 'Economic Data':
-        return <TrendingUp className="w-3 h-3" />;
-      case 'Geopolitical':
-        return <Globe className="w-3 h-3" />;
-      default:
-        return <Clock className="w-3 h-3" />;
-    }
-  };
-
-  const filteredArticles = articles?.filter(article => {
-    const matchesImpact = selectedImpact === 'All' || article.impact === selectedImpact;
-    const matchesCurrency = selectedCurrency === 'All' || article.currency === selectedCurrency;
-    return matchesImpact && matchesCurrency;
-  }) || [];
-
-  const uniqueCurrencies = Array.from(new Set(articles?.map(a => a.currency) || []));
+  const filtered = articles?.filter(a => selectedCurrency === 'All' || a.currency === selectedCurrency) || [];
+  const currencies = Array.from(new Set(articles?.map(a => a.currency) || []));
 
   if (isLoading) {
     return (
-      <Card className="bg-gray-900/50 border-gray-700">
-        <CardHeader>
-          <CardTitle className="text-white">Fundamental News Analysis</CardTitle>
-        </CardHeader>
+      <Card className="bg-card border-border">
+        <CardHeader><CardTitle className="text-foreground">Fundamental News Analysis</CardTitle></CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-24 bg-gray-800 rounded" />
-            ))}
+            {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-muted rounded" />)}
           </div>
         </CardContent>
       </Card>
@@ -286,149 +198,64 @@ const FundamentalNewsAnalysis = () => {
 
   if (error) {
     return (
-      <Card className="bg-gray-900/50 border-gray-700">
+      <Card className="bg-card border-border">
         <CardContent className="p-6">
-          <div className="text-red-400 text-center">Failed to load news analysis</div>
+          <div className="text-destructive text-center">Failed to load news analysis</div>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <Card className="bg-gray-900/50 border-gray-700">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <Globe className="w-5 h-5" />
-            Fundamental News Analysis
-          </CardTitle>
-          <p className="text-gray-300 text-sm">
-            Real-time fundamental analysis of news events and their impact on currency pairs
-          </p>
-        </CardHeader>
-        <CardContent>
-          {/* Filters */}
-          <div className="flex flex-wrap gap-4 mb-6">
-            <div className="space-x-2">
-              <span className="text-sm text-gray-300">Impact:</span>
-              {['All', 'High', 'Medium', 'Low'].map(impact => (
-                <Button
-                  key={impact}
-                  variant={selectedImpact === impact ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setSelectedImpact(impact)}
-                  className="text-xs"
-                >
-                  {impact}
-                </Button>
-              ))}
-            </div>
-            <div className="space-x-2">
-              <span className="text-sm text-gray-300">Currency:</span>
-              <Button
-                variant={selectedCurrency === 'All' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedCurrency('All')}
-                className="text-xs"
-              >
-                All
-              </Button>
-              {uniqueCurrencies.map(currency => (
-                <Button
-                  key={currency}
-                  variant={selectedCurrency === currency ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setSelectedCurrency(currency)}
-                  className="text-xs"
-                >
-                  {currency}
-                </Button>
-              ))}
-            </div>
-          </div>
+    <Card className="bg-card border-border">
+      <CardHeader>
+        <CardTitle className="text-foreground flex items-center gap-2">
+          <Globe className="w-5 h-5 text-primary" />
+          Fundamental News — Q1 2026
+        </CardTitle>
+        <p className="text-muted-foreground text-sm">
+          Key economic events and their currency impact from January through March 2026
+        </p>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-wrap gap-2 mb-6">
+          <Button variant={selectedCurrency === 'All' ? 'default' : 'outline'} size="sm" onClick={() => setSelectedCurrency('All')} className="text-xs">All</Button>
+          {currencies.map(c => (
+            <Button key={c} variant={selectedCurrency === c ? 'default' : 'outline'} size="sm" onClick={() => setSelectedCurrency(c)} className="text-xs">{c}</Button>
+          ))}
+        </div>
 
-          {/* News Feed */}
-          <div className="space-y-4">
-            {filteredArticles.map(article => (
-              <div
-                key={article.id}
-                className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-4 hover:bg-gray-800/70 transition-all duration-200"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge className={getImpactColor(article.impact)}>
-                        {article.impact} Impact
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {getCategoryIcon(article.category)}
-                        <span className="ml-1">{article.category}</span>
-                      </Badge>
-                      <span className="text-xs text-gray-400">
-                        {new Date(article.publishedAt).toLocaleString()}
-                      </span>
-                    </div>
-                    <h3 className="text-white font-medium text-sm mb-2 leading-relaxed">
-                      {article.headline}
-                    </h3>
-                    <p className="text-gray-300 text-xs mb-3 leading-relaxed">
-                      {article.fundamentalAnalysis}
-                    </p>
-                    <div className="text-xs text-gray-400 mb-2">
-                      Source: {article.source}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400">Primary Currency:</span>
-                      <Badge variant="outline" className="text-xs font-mono">
-                        {article.currency}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400">Direction:</span>
-                      <Badge className={`${getDirectionColor(article.direction)} text-xs`}>
-                        {getDirectionIcon(article.direction)}
-                        <span className="ml-1">{article.direction}</span>
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400">Confidence:</span>
-                      <span className="text-xs font-medium text-white">{article.confidence}%</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Affected Pairs */}
-                <div className="mt-3 pt-3 border-t border-gray-600/30">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs text-gray-400">Affected Pairs:</span>
-                    {article.affectedPairs.map(pair => (
-                      <Badge
-                        key={pair}
-                        variant="outline"
-                        className="text-xs font-mono bg-gray-700/30"
-                      >
-                        {pair}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
+        <div className="space-y-3">
+          {filtered.map(article => (
+            <div key={article.id} className="bg-muted/50 border border-border rounded-lg p-4 hover:border-primary/50 transition-colors">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <Badge className={getImpactColor(article.impact)}>{article.impact}</Badge>
+                <Badge variant="outline" className="text-xs">{article.category}</Badge>
+                <span className="text-xs text-muted-foreground">{new Date(article.publishedAt).toLocaleDateString()}</span>
               </div>
-            ))}
-          </div>
-
-          {filteredArticles.length === 0 && (
-            <div className="text-center py-8 text-gray-400">
-              No articles match the selected filters
+              <a href={article.url} target="_blank" rel="noopener noreferrer" className="font-medium text-foreground text-sm hover:text-primary transition-colors block mb-1">
+                {article.headline}
+              </a>
+              <p className="text-muted-foreground text-xs mb-3">{article.fundamentalAnalysis}</p>
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-1.5">
+                  <Badge variant="outline" className="text-xs font-mono">{article.currency}</Badge>
+                </div>
+                <Badge className={`${getDirectionColor(article.direction)} text-xs`}>
+                  {getDirectionIcon(article.direction)}
+                  <span className="ml-1">{article.direction}</span>
+                </Badge>
+                <span className="text-xs text-muted-foreground">Confidence: {article.confidence}%</span>
+                <span className="text-xs text-muted-foreground ml-auto">{article.source}</span>
+              </div>
+              <div className="mt-2 pt-2 border-t border-border flex gap-1 flex-wrap">
+                {article.affectedPairs.map(p => <Badge key={p} variant="outline" className="text-xs font-mono">{p}</Badge>)}
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
