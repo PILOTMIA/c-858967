@@ -9,150 +9,86 @@ import { TrendingUp, Users, Building2 } from "lucide-react";
 const COTAnalysisContent = () => {
   const { selectedCurrency, isDetailModalOpen, setIsDetailModalOpen } = useCOTData();
 
+  const infoCards = [
+    { icon: Building2, title: 'Commercial Traders', label: 'Institutions', desc: 'Banks, hedge funds, and large financial institutions', accent: 'text-primary' },
+    { icon: TrendingUp, title: 'Non-Commercial', label: 'Speculators', desc: 'Large speculators and investment funds', accent: 'text-emerald-400' },
+    { icon: Users, title: 'Retail Traders', label: 'Small Specs', desc: 'Individual and small institutional traders', accent: 'text-amber-400' },
+  ];
+
+  const educationItems = [
+    { title: 'Commercial Traders (Smart Money)', text: 'These are the institutions that actually need the currencies for business purposes. When they\'re heavily positioned one way, it often indicates the underlying fundamentals.' },
+    { title: 'Non-Commercial (Large Specs)', text: 'Large speculative traders often drive short-term price movements. Extreme positioning can signal potential reversals.' },
+    { title: 'Net Positioning', text: 'The difference between long and short positions shows overall market sentiment. Extreme readings often precede trend changes.' },
+    { title: 'Weekly Changes', text: 'Look for significant changes in positioning week-over-week to identify shifts in market sentiment before they show up in price.' },
+  ];
+
   return (
     <>
-      <COTDetailModal 
-        open={isDetailModalOpen}
-        onOpenChange={setIsDetailModalOpen}
-        data={selectedCurrency}
-      />
+      <COTDetailModal open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen} data={selectedCurrency} />
 
-      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
-        {/* Header Section */}
-        <div className="mb-4 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">COT Analysis</h1>
-          <p className="text-muted-foreground text-sm sm:text-base md:text-lg">
-            Commitment of Traders data provides insights into institutional and retail positioning in forex markets
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <div className="px-4 pt-12 pb-8 text-center">
+          <h1 className="font-display-hero text-4xl sm:text-5xl font-bold text-foreground mb-3">COT Analysis</h1>
+          <p className="text-muted-foreground text-base sm:text-lg font-light max-w-2xl mx-auto">
+            Commitment of Traders data — insights into institutional and retail positioning
           </p>
         </div>
 
-        {/* Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6 mb-4 sm:mb-8">
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium text-card-foreground">
-                Commercial Traders
-              </CardTitle>
-              <Building2 className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-            </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0">
-              <div className="text-lg sm:text-2xl font-bold text-primary">Institutions</div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                Banks, hedge funds, and large financial institutions
-              </p>
-            </CardContent>
-          </Card>
+        <div className="max-w-7xl mx-auto px-4 pb-16 space-y-10">
+          {/* Info Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {infoCards.map((card) => {
+              const Icon = card.icon;
+              return (
+                <div key={card.title} className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{card.title}</span>
+                    <Icon className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className={`text-2xl font-bold ${card.accent} mb-1`}>{card.label}</div>
+                  <p className="text-xs text-muted-foreground">{card.desc}</p>
+                </div>
+              );
+            })}
+          </div>
 
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium text-card-foreground">
-                Non-Commercial
-              </CardTitle>
-              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-            </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0">
-              <div className="text-lg sm:text-2xl font-bold text-success">Speculators</div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                Large speculators and investment funds
-              </p>
-            </CardContent>
-          </Card>
+          <COTPairAnalyzer />
+          <COTData />
+          <COTCommodityData />
 
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium text-card-foreground">
-                Retail Traders
-              </CardTitle>
-              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-            </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0">
-              <div className="text-lg sm:text-2xl font-bold text-warning">Small Specs</div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                Individual and small institutional traders
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* COT Pair Analyzer */}
-        <COTPairAnalyzer />
-
-        {/* Main COT Data Component */}
-        <COTData />
-
-        {/* Commodity COT Data */}
-        <COTCommodityData />
-
-        {/* Educational Section */}
-        <Card className="bg-card border-border mt-4 sm:mt-8">
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-card-foreground text-lg sm:text-2xl">Understanding COT Data</CardTitle>
-            <CardDescription className="text-xs sm:text-sm">
+          {/* Educational Section */}
+          <div className="rounded-3xl border border-border/30 bg-card/20 backdrop-blur-sm p-8 sm:p-10">
+            <h2 className="font-display-hero text-2xl sm:text-3xl font-bold text-foreground mb-2">Understanding COT Data</h2>
+            <p className="text-muted-foreground text-sm mb-8">
               Learn how to interpret Commitment of Traders reports for better trading decisions
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-              <div>
-                <h3 className="font-semibold text-foreground mb-1 sm:mb-2 text-sm sm:text-base">Commercial Traders (Smart Money)</h3>
-                <p className="text-muted-foreground text-xs sm:text-sm">
-                  These are the institutions that actually need the currencies for business purposes. 
-                  When they're heavily positioned one way, it often indicates the underlying fundamentals.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-1 sm:mb-2 text-sm sm:text-base">Non-Commercial (Large Specs)</h3>
-                <p className="text-muted-foreground text-xs sm:text-sm">
-                  Large speculative traders often drive short-term price movements. 
-                  Extreme positioning can signal potential reversals.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-1 sm:mb-2 text-sm sm:text-base">Net Positioning</h3>
-                <p className="text-muted-foreground text-xs sm:text-sm">
-                  The difference between long and short positions shows overall market sentiment. 
-                  Extreme readings often precede trend changes.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-1 sm:mb-2 text-sm sm:text-base">Weekly Changes</h3>
-                <p className="text-muted-foreground text-xs sm:text-sm">
-                  Look for significant changes in positioning week-over-week to identify 
-                  shifts in market sentiment before they show up in price.
-                </p>
-              </div>
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {educationItems.map((item) => (
+                <div key={item.title}>
+                  <h3 className="font-semibold text-foreground mb-2 text-sm">{item.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">{item.text}</p>
+                </div>
+              ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* MidasFX Banner */}
-        <div className="mt-8 flex justify-center">
-          <a 
-            href="https://www.midasfx.com/?ib=1127736"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block hover:opacity-80 transition-opacity duration-300 shadow-lg hover:shadow-xl rounded-lg overflow-hidden"
-          >
-            <img 
-              src="https://my.midasfx.com/themes/midasfx/img/b/468x60.png" 
-              alt="MidasFX - Professional Forex Trading"
-              className="w-full h-auto max-w-[468px]"
-            />
-          </a>
+          {/* MidasFX Banner */}
+          <div className="flex justify-center">
+            <a href="https://www.midasfx.com/?ib=1127736" target="_blank" rel="noopener noreferrer" className="opacity-50 hover:opacity-100 transition-opacity duration-500">
+              <img src="https://my.midasfx.com/themes/midasfx/img/b/468x60.png" alt="MidasFX Trading" className="rounded-xl max-w-[468px]" />
+            </a>
+          </div>
         </div>
       </div>
     </>
   );
 };
 
-const COTAnalysis = () => {
-  return (
-    <COTDataProvider>
-      <div className="min-h-screen bg-background p-2 sm:p-4">
-        <COTAnalysisContent />
-      </div>
-    </COTDataProvider>
-  );
-};
+const COTAnalysis = () => (
+  <COTDataProvider>
+    <COTAnalysisContent />
+  </COTDataProvider>
+);
 
 export default COTAnalysis;

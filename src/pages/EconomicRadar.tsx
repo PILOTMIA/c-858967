@@ -3,155 +3,89 @@ import InflationRadar from "@/components/InflationRadar";
 import BondRadar from "@/components/BondRadar";
 import SeasonalityRadar from "@/components/SeasonalityRadar";
 import { BarChart3, TrendingUp, DollarSign, Briefcase, PieChart, Calendar } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 const EconomicRadar = () => {
-  return (
-    <div className="min-h-screen bg-background p-3 sm:p-4 lg:p-6">
-      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
-        {/* Header */}
-        <div className="mb-4 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Economic Radar</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Real-time economic indicators and market data from Federal Reserve Economic Data (FRED)
-          </p>
-        </div>
+  const navigate = useNavigate();
 
-        {/* Radar Type Tabs */}
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="px-4 pt-12 pb-8 text-center">
+        <h1 className="font-display-hero text-4xl sm:text-5xl font-bold text-foreground mb-3">Economic Radar</h1>
+        <p className="text-muted-foreground text-base sm:text-lg font-light max-w-2xl mx-auto">
+          Real-time economic indicators and market data from Federal Reserve Economic Data (FRED)
+        </p>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 pb-16 space-y-8">
         <Tabs defaultValue="inflation" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 gap-1 h-auto bg-card border border-border p-1 rounded-lg">
-            <TabsTrigger 
-              value="cot" 
-              className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded"
-            >
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 gap-1 h-auto bg-card/50 backdrop-blur-sm border border-border/30 p-1 rounded-xl">
+            <TabsTrigger value="cot" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-[10px] sm:text-sm data-[state=active]:bg-foreground data-[state=active]:text-background rounded-lg transition-all">
               <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">COT Radar</span>
+              <span className="hidden sm:inline">COT</span>
               <span className="sm:hidden">COT</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="jobs" 
-              className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded"
-            >
+            <TabsTrigger value="jobs" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-[10px] sm:text-sm data-[state=active]:bg-foreground data-[state=active]:text-background rounded-lg transition-all">
               <Briefcase className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Jobs Radar</span>
+              <span className="hidden sm:inline">Jobs</span>
               <span className="sm:hidden">Jobs</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="gdp" 
-              className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded"
-            >
+            <TabsTrigger value="gdp" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-[10px] sm:text-sm data-[state=active]:bg-foreground data-[state=active]:text-background rounded-lg transition-all">
               <PieChart className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">GDP Radar</span>
+              <span className="hidden sm:inline">GDP</span>
               <span className="sm:hidden">GDP</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="inflation" 
-              className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded"
-            >
+            <TabsTrigger value="inflation" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-[10px] sm:text-sm data-[state=active]:bg-foreground data-[state=active]:text-background rounded-lg transition-all">
               <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Inflation Radar</span>
-              <span className="sm:hidden">Inflation</span>
+              <span className="hidden sm:inline">Inflation</span>
+              <span className="sm:hidden">CPI</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="bond" 
-              className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded"
-            >
+            <TabsTrigger value="bond" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-[10px] sm:text-sm data-[state=active]:bg-foreground data-[state=active]:text-background rounded-lg transition-all">
               <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Bond Radar</span>
+              <span className="hidden sm:inline">Bond</span>
               <span className="sm:hidden">Bond</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="seasonality" 
-              className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded"
-            >
+            <TabsTrigger value="seasonality" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-[10px] sm:text-sm data-[state=active]:bg-foreground data-[state=active]:text-background rounded-lg transition-all">
               <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Seasonality</span>
               <span className="sm:hidden">Season</span>
             </TabsTrigger>
           </TabsList>
 
-          {/* COT Radar */}
           <TabsContent value="cot" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg sm:text-xl">COT Radar</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  Commitment of Traders positioning and analysis
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-sm sm:text-base">
-                <p className="text-muted-foreground mb-4">
-                  For detailed Commitment of Traders analysis, please visit our dedicated COT Analysis section.
-                </p>
-                <button 
-                  onClick={() => window.location.href = '/cot-analysis'}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base"
-                >
-                  View Full COT Analysis
-                </button>
-              </CardContent>
-            </Card>
+            <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-8 text-center">
+              <h3 className="text-xl font-semibold text-foreground mb-2">COT Radar</h3>
+              <p className="text-muted-foreground text-sm mb-6">For detailed Commitment of Traders analysis, visit our dedicated section.</p>
+              <button onClick={() => navigate('/cot-analysis')} className="bg-foreground text-background px-6 py-3 rounded-full font-semibold text-sm transition-all hover:scale-105">
+                View Full COT Analysis
+              </button>
+            </div>
           </TabsContent>
 
-          {/* Jobs Radar */}
           <TabsContent value="jobs" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg sm:text-xl">Jobs Radar</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">Coming Soon</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Employment data including Non-Farm Payrolls, unemployment rate, and labor force participation.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-8 text-center">
+              <h3 className="text-xl font-semibold text-foreground mb-2">Jobs Radar</h3>
+              <p className="text-muted-foreground text-sm">Employment data including Non-Farm Payrolls, unemployment rate, and labor force participation. Coming soon.</p>
+            </div>
           </TabsContent>
 
-          {/* GDP Radar */}
           <TabsContent value="gdp" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg sm:text-xl">GDP Radar</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">Coming Soon</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Gross Domestic Product growth, forecasts, and historical trends.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-8 text-center">
+              <h3 className="text-xl font-semibold text-foreground mb-2">GDP Radar</h3>
+              <p className="text-muted-foreground text-sm">Gross Domestic Product growth, forecasts, and historical trends. Coming soon.</p>
+            </div>
           </TabsContent>
 
-          {/* Inflation Radar */}
-          <TabsContent value="inflation" className="mt-6">
-            <InflationRadar />
-          </TabsContent>
-
-          {/* Bond Radar */}
-          <TabsContent value="bond" className="mt-6">
-            <BondRadar />
-          </TabsContent>
-
-          {/* Seasonality Radar */}
-          <TabsContent value="seasonality" className="mt-6">
-            <SeasonalityRadar />
-          </TabsContent>
+          <TabsContent value="inflation" className="mt-6"><InflationRadar /></TabsContent>
+          <TabsContent value="bond" className="mt-6"><BondRadar /></TabsContent>
+          <TabsContent value="seasonality" className="mt-6"><SeasonalityRadar /></TabsContent>
         </Tabs>
 
         {/* MidasFX Banner */}
-        <div className="mt-8 flex justify-center">
-          <a 
-            href="https://www.midasfx.com/?ib=1127736"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block hover:opacity-80 transition-opacity duration-300 shadow-lg hover:shadow-xl rounded-lg overflow-hidden"
-          >
-            <img 
-              src="https://my.midasfx.com/themes/midasfx/img/b/468x60.png" 
-              alt="MidasFX - Professional Forex Trading"
-              className="w-full h-auto max-w-[468px]"
-            />
+        <div className="flex justify-center">
+          <a href="https://www.midasfx.com/?ib=1127736" target="_blank" rel="noopener noreferrer" className="opacity-50 hover:opacity-100 transition-opacity duration-500">
+            <img src="https://my.midasfx.com/themes/midasfx/img/b/468x60.png" alt="MidasFX Trading" className="rounded-xl max-w-[468px]" />
           </a>
         </div>
       </div>
