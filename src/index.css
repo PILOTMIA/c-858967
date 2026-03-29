@@ -1,5 +1,6 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -172,4 +173,56 @@
 
 .animate-shimmer {
   animation: shimmer 3s infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.4; filter: blur(60px); }
+  50% { opacity: 0.7; filter: blur(80px); }
+}
+
+@keyframes text-reveal {
+  0% { opacity: 0; transform: translateY(30px); filter: blur(10px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@keyframes line-expand {
+  0% { width: 0; }
+  100% { width: 80px; }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 4s ease-in-out infinite;
+}
+
+.animate-text-reveal {
+  animation: text-reveal 0.8s ease-out forwards;
+}
+
+.animate-text-reveal-delay {
+  animation: text-reveal 0.8s ease-out 0.2s forwards;
+  opacity: 0;
+}
+
+.animate-text-reveal-delay-2 {
+  animation: text-reveal 0.8s ease-out 0.4s forwards;
+  opacity: 0;
+}
+
+.animate-line-expand {
+  animation: line-expand 1s ease-out 0.6s forwards;
+  width: 0;
+}
+
+.font-display-hero {
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.04em;
 }
