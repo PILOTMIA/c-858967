@@ -1,4 +1,3 @@
-import { useState } from "react";
 import KnowledgeBase from "@/components/KnowledgeBase";
 import ForexList from "@/components/ForexList";
 import ClientLearningPath from "@/components/ClientLearningPath";
@@ -6,45 +5,40 @@ import FreeIndicatorDownload from "@/components/FreeIndicatorDownload";
 import TradingQuizGame from "@/components/TradingQuizGame";
 import TelegramChannelFeed from "@/components/TelegramChannelFeed";
 import EconomicEducation from "@/components/EconomicEducation";
-import { BookOpen, GraduationCap, Trophy, Wrench } from "lucide-react";
+import { GraduationCap, BookOpen, Trophy } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Education = () => {
   return (
-    <div className="min-h-screen bg-background p-3 sm:p-4">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <div className="flex items-center justify-center gap-3 mb-3">
-            <BookOpen className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">Education Center</h1>
-          </div>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            Learn forex trading from the ground up — organized by skill level so you always know what to study next.
-          </p>
-        </div>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="px-4 pt-12 pb-8 text-center">
+        <h1 className="font-display-hero text-4xl sm:text-5xl font-bold text-foreground mb-3">Education</h1>
+        <p className="text-muted-foreground text-base sm:text-lg font-light max-w-xl mx-auto">
+          Learn forex trading from the ground up — organized by skill level
+        </p>
+      </div>
 
-        {/* Telegram Feed */}
+      <div className="max-w-6xl mx-auto px-4 pb-16 space-y-8">
         <TelegramChannelFeed />
 
-        {/* Skill Level Tabs */}
-        <Tabs defaultValue="beginner" className="space-y-6">
-          <TabsList className="w-full max-w-lg mx-auto grid grid-cols-3 bg-muted">
-            <TabsTrigger value="beginner" className="data-[state=active]:bg-green-600 data-[state=active]:text-white gap-1.5 text-xs sm:text-sm">
+        <Tabs defaultValue="beginner" className="space-y-8">
+          <TabsList className="w-full max-w-lg mx-auto grid grid-cols-3 bg-card/50 backdrop-blur-sm border border-border/30 rounded-full p-1">
+            <TabsTrigger value="beginner" className="data-[state=active]:bg-foreground data-[state=active]:text-background rounded-full gap-1.5 text-xs sm:text-sm transition-all">
               <GraduationCap className="h-4 w-4 hidden sm:block" /> Beginner
             </TabsTrigger>
-            <TabsTrigger value="intermediate" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white gap-1.5 text-xs sm:text-sm">
+            <TabsTrigger value="intermediate" className="data-[state=active]:bg-foreground data-[state=active]:text-background rounded-full gap-1.5 text-xs sm:text-sm transition-all">
               <BookOpen className="h-4 w-4 hidden sm:block" /> Intermediate
             </TabsTrigger>
-            <TabsTrigger value="advanced" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white gap-1.5 text-xs sm:text-sm">
+            <TabsTrigger value="advanced" className="data-[state=active]:bg-foreground data-[state=active]:text-background rounded-full gap-1.5 text-xs sm:text-sm transition-all">
               <Trophy className="h-4 w-4 hidden sm:block" /> Advanced
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="beginner" className="space-y-6">
-            <div className="p-4 bg-green-900/10 border border-green-700/30 rounded-lg">
-              <h2 className="text-lg font-bold text-foreground mb-1 flex items-center gap-2">
-                <GraduationCap className="h-5 w-5 text-green-400" />
+          <TabsContent value="beginner" className="space-y-8">
+            <div className="rounded-2xl border border-border/30 bg-card/20 backdrop-blur-sm p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+                <GraduationCap className="h-5 w-5 text-primary" />
                 Beginner — Foundations
               </h2>
               <p className="text-sm text-muted-foreground">
@@ -56,10 +50,10 @@ const Education = () => {
             <ClientLearningPath />
           </TabsContent>
 
-          <TabsContent value="intermediate" className="space-y-6">
-            <div className="p-4 bg-blue-900/10 border border-blue-700/30 rounded-lg">
-              <h2 className="text-lg font-bold text-foreground mb-1 flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-blue-400" />
+          <TabsContent value="intermediate" className="space-y-8">
+            <div className="rounded-2xl border border-border/30 bg-card/20 backdrop-blur-sm p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-primary" />
                 Intermediate — Market Analysis
               </h2>
               <p className="text-sm text-muted-foreground">
@@ -68,16 +62,16 @@ const Education = () => {
             </div>
             <EconomicEducation />
             <div className="space-y-4">
-              <h3 className="text-xl font-bold text-foreground text-center">🎮 Test Your Knowledge</h3>
+              <h3 className="text-xl font-semibold text-foreground text-center">Test Your Knowledge</h3>
               <p className="text-sm text-muted-foreground text-center">Interactive quiz based on Dr. Elder's "Trading for a Living"</p>
               <TradingQuizGame />
             </div>
           </TabsContent>
 
-          <TabsContent value="advanced" className="space-y-6">
-            <div className="p-4 bg-purple-900/10 border border-purple-700/30 rounded-lg">
-              <h2 className="text-lg font-bold text-foreground mb-1 flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-purple-400" />
+          <TabsContent value="advanced" className="space-y-8">
+            <div className="rounded-2xl border border-border/30 bg-card/20 backdrop-blur-sm p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-primary" />
                 Advanced — Professional Tools
               </h2>
               <p className="text-sm text-muted-foreground">
@@ -90,17 +84,8 @@ const Education = () => {
 
         {/* MidasFX Banner */}
         <div className="flex justify-center pt-4">
-          <a 
-            href="https://www.midasfx.com/?ib=1127736"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="opacity-70 hover:opacity-100 transition-opacity"
-          >
-            <img 
-              src="https://my.midasfx.com/themes/midasfx/img/b/468x60.png" 
-              alt="MidasFX - Professional Forex Trading"
-              className="rounded-lg border border-border max-w-[468px]"
-            />
+          <a href="https://www.midasfx.com/?ib=1127736" target="_blank" rel="noopener noreferrer" className="opacity-50 hover:opacity-100 transition-opacity duration-500">
+            <img src="https://my.midasfx.com/themes/midasfx/img/b/468x60.png" alt="MidasFX Trading" className="rounded-xl max-w-[468px]" />
           </a>
         </div>
       </div>
