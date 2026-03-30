@@ -262,31 +262,31 @@ const COTData = () => {
     }));
   };
 
-  // Generate bias data for all currencies including cross pairs - UPDATED Mar 19, 2026 CFTC Data (as of Mar 10, 2026)
+  // Generate bias data for all currencies including cross pairs - UPDATED Mar 29, 2026 CFTC Data (as of Mar 24, 2026)
   const generateBiasData = () => {
     const currencies = ['EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'MXN', 'NZD', 'EURJPY', 'GBPJPY', 'EURGBP', 'GBPCAD', 'AUDJPY', 'EURAUD', 'GBPAUD', 'EURCAD', 'NZDJPY', 'CADJPY'];
     return currencies.map(curr => {
-      // ✅ VERIFIED from CFTC Report Mar 19, 2026 (data as of Mar 10) - includes cross pairs
+      // ✅ VERIFIED from CFTC Report Mar 29, 2026 (data as of Mar 24) - includes cross pairs
       const mockCotData: Record<string, { netPosition: number; bias: 'BULLISH' | 'BEARISH' | 'NEUTRAL'; weeklyChange: number; price: number }> = {
-        EUR: { netPosition: 5231, bias: 'NEUTRAL', weeklyChange: -24401, price: 1.0340 },
-        GBP: { netPosition: 20102, bias: 'BULLISH', weeklyChange: -14404, price: 1.2260 },
-        JPY: { netPosition: -49219, bias: 'BEARISH', weeklyChange: -14994, price: 149.80 },
-        CHF: { netPosition: 4280, bias: 'BULLISH', weeklyChange: -176, price: 0.8985 },
-        AUD: { netPosition: 46568, bias: 'BULLISH', weeklyChange: -8067, price: 0.6310 },
-        CAD: { netPosition: -37159, bias: 'BEARISH', weeklyChange: 4212, price: 1.4380 },
-        MXN: { netPosition: 52885, bias: 'BULLISH', weeklyChange: -1921, price: 20.35 },
-        NZD: { netPosition: -4166, bias: 'BEARISH', weeklyChange: 6129, price: 0.5680 },
+        EUR: { netPosition: -13538, bias: 'BEARISH', weeklyChange: -6586, price: 1.0820 },
+        GBP: { netPosition: 15716, bias: 'BULLISH', weeklyChange: 3948, price: 1.2940 },
+        JPY: { netPosition: -54852, bias: 'BEARISH', weeklyChange: 10577, price: 150.60 },
+        CHF: { netPosition: 235, bias: 'NEUTRAL', weeklyChange: -278, price: 0.8820 },
+        AUD: { netPosition: 49145, bias: 'BULLISH', weeklyChange: 3786, price: 0.6290 },
+        CAD: { netPosition: -31700, bias: 'BEARISH', weeklyChange: 6152, price: 1.4320 },
+        MXN: { netPosition: 54787, bias: 'BULLISH', weeklyChange: 7841, price: 20.18 },
+        NZD: { netPosition: -16730, bias: 'BEARISH', weeklyChange: -813, price: 0.5710 },
         // Cross pairs
-        EURJPY: { netPosition: 2290, bias: 'BULLISH', weeklyChange: 185, price: 154.90 },
-        GBPJPY: { netPosition: 69321, bias: 'BULLISH', weeklyChange: -14220, price: 183.65 },
-        EURGBP: { netPosition: -526, bias: 'NEUTRAL', weeklyChange: 0, price: 0.8435 },
-        GBPCAD: { netPosition: 57261, bias: 'BULLISH', weeklyChange: -18616, price: 1.7630 },
-        AUDJPY: { netPosition: 95787, bias: 'BULLISH', weeklyChange: 6927, price: 94.50 },
-        EURAUD: { netPosition: -41337, bias: 'BEARISH', weeklyChange: -16334, price: 1.6390 },
-        GBPAUD: { netPosition: -26466, bias: 'BEARISH', weeklyChange: -6337, price: 1.9430 },
-        EURCAD: { netPosition: 42390, bias: 'BULLISH', weeklyChange: -28613, price: 1.4870 },
-        NZDJPY: { netPosition: 45053, bias: 'BULLISH', weeklyChange: 21123, price: 85.10 },
-        CADJPY: { netPosition: 12060, bias: 'BULLISH', weeklyChange: 19206, price: 104.20 }
+        EURJPY: { netPosition: 1954, bias: 'NEUTRAL', weeklyChange: -336, price: 163.00 },
+        GBPJPY: { netPosition: 70568, bias: 'BULLISH', weeklyChange: -6629, price: 194.90 },
+        EURGBP: { netPosition: -4197, bias: 'BEARISH', weeklyChange: -3671, price: 0.8360 },
+        GBPCAD: { netPosition: 47416, bias: 'BULLISH', weeklyChange: -2204, price: 1.8530 },
+        AUDJPY: { netPosition: 103997, bias: 'BULLISH', weeklyChange: -6791, price: 94.70 },
+        EURAUD: { netPosition: -62683, bias: 'BEARISH', weeklyChange: -10372, price: 1.7200 },
+        GBPAUD: { netPosition: -33429, bias: 'BEARISH', weeklyChange: 162, price: 2.0570 },
+        EURCAD: { netPosition: 18162, bias: 'BULLISH', weeklyChange: -12738, price: 1.5490 },
+        NZDJPY: { netPosition: 38122, bias: 'BULLISH', weeklyChange: -11390, price: 85.90 },
+        CADJPY: { netPosition: 23152, bias: 'BULLISH', weeklyChange: -4425, price: 105.20 }
       };
       
       const data = mockCotData[curr] || { netPosition: 0, bias: 'NEUTRAL' as const, weeklyChange: 0, price: 1.0000 };
