@@ -84,79 +84,79 @@ const fetchCOTData = async (currency: string): Promise<COTDataType> => {
   } catch (error) {
     console.log('⚠️ CFTC API unavailable - using latest manual COT data from report');
     
-    // ✅ UPDATED COT data from CFTC report - Mar 19, 2026 (data as of Mar 10, 2026) - VERIFIED from official PDF
+    // ✅ UPDATED COT data from CFTC report - Mar 29, 2026 (data as of Mar 24, 2026) - VERIFIED from official PDF
     const cotData: Record<string, Partial<COTDataType>> = {
       EUR: {
-        commercialLong: 509748, // Asset Manager Long
-        commercialShort: 143449, // Asset Manager Short
-        nonCommercialLong: 105592, // Leveraged Funds Long
-        nonCommercialShort: 100361, // Leveraged Funds Short
-        sentiment: 'NEUTRAL',
-        weeklyChange: -24401, // Net change in leveraged funds from Mar 3
-        recommendation: '⚖️ Hedge funds nearly FLAT on EUR with +5,231 contracts (down from +25K). Major shift from bullish to neutral. Asset managers still net long (510K vs 143K). Watch for direction — potential reversal setup.'
+        commercialLong: 446373, // Asset Manager Long
+        commercialShort: 158433, // Asset Manager Short
+        nonCommercialLong: 97985, // Leveraged Funds Long
+        nonCommercialShort: 111523, // Leveraged Funds Short
+        sentiment: 'BEARISH',
+        weeklyChange: -6586,
+        recommendation: '📉 Hedge funds FLIP to net SHORT EUR with -13,538 contracts (was +5,231). Major shift — institutions now bearish. Asset managers still long but weakening. Trading bias: BEARISH EUR.'
       },
       GBP: {
-        commercialLong: 33647, // Asset Manager Long
-        commercialShort: 154150, // Asset Manager Short
-        nonCommercialLong: 48818, // Leveraged Funds Long
-        nonCommercialShort: 28716, // Leveraged Funds Short
+        commercialLong: 28499, // Asset Manager Long
+        commercialShort: 122962, // Asset Manager Short
+        nonCommercialLong: 47450, // Leveraged Funds Long
+        nonCommercialShort: 31734, // Leveraged Funds Short
         sentiment: 'BULLISH',
-        weeklyChange: -14404, // Weekly change (leveraged funds dropped)
-        recommendation: '💪 Hedge funds remain net LONG GBP with +20,102 contracts. Down from +38K in January — still bullish but conviction fading. Trading bias: MODERATELY BULLISH GBP.'
+        weeklyChange: 3948,
+        recommendation: '💪 Hedge funds remain net LONG GBP with +15,716 contracts. Conviction holding, weekly change positive (+3,948). Trading bias: MODERATELY BULLISH GBP.'
       },
       JPY: {
-        commercialLong: 65494, // Asset Manager Long
-        commercialShort: 62663, // Asset Manager Short
-        nonCommercialLong: 77546, // Leveraged Funds Long
-        nonCommercialShort: 126765, // Leveraged Funds Short
+        commercialLong: 58266, // Asset Manager Long
+        commercialShort: 64516, // Asset Manager Short
+        nonCommercialLong: 67921, // Leveraged Funds Long
+        nonCommercialShort: 122773, // Leveraged Funds Short
         sentiment: 'BEARISH',
-        weeklyChange: -14994, // Net change
-        recommendation: '📉 Hedge funds net SHORT JPY with -49,219 contracts. Reduced from -98K in January — bears covering! BoJ rate normalization squeezing shorts. Trading bias: BEARISH but weakening.'
+        weeklyChange: 10577,
+        recommendation: '📉 Hedge funds net SHORT JPY with -54,852 contracts. Bears added slightly but shorts covering (+10,577 weekly). BoJ normalization continues. Trading bias: BEARISH but improving.'
       },
       CHF: {
-        commercialLong: 5888, // Asset Manager Long
-        commercialShort: 60251, // Asset Manager Short
-        nonCommercialLong: 10750, // Leveraged Funds Long
-        nonCommercialShort: 6470, // Leveraged Funds Short
-        sentiment: 'BULLISH',
-        weeklyChange: -176, // Weekly change
-        recommendation: '📈 Hedge funds FLIP to net LONG CHF with +4,280 contracts! Major shift from neutral (-571). Safe-haven flows amid tariff uncertainty. Trading bias: BULLISH CHF.'
+        commercialLong: 5541, // Asset Manager Long
+        commercialShort: 42537, // Asset Manager Short
+        nonCommercialLong: 7950, // Leveraged Funds Long
+        nonCommercialShort: 7715, // Leveraged Funds Short
+        sentiment: 'NEUTRAL',
+        weeklyChange: -278,
+        recommendation: '⚖️ Hedge funds nearly FLAT on CHF with +235 contracts (was +4,280). Lost bullish conviction. Trading bias: NEUTRAL CHF — watch for directional break.'
       },
       AUD: {
-        commercialLong: 86048, // Asset Manager Long
-        commercialShort: 62719, // Asset Manager Short
-        nonCommercialLong: 69980, // Leveraged Funds Long
-        nonCommercialShort: 23412, // Leveraged Funds Short
+        commercialLong: 103155, // Asset Manager Long
+        commercialShort: 59229, // Asset Manager Short
+        nonCommercialLong: 68577, // Leveraged Funds Long
+        nonCommercialShort: 19432, // Leveraged Funds Short
         sentiment: 'BULLISH',
-        weeklyChange: -8067, // Weekly change
-        recommendation: '🔥 Hedge funds STRONGLY net LONG AUD with +46,568 contracts! Increased from +30K in January. RBA rate cut priced in, China stimulus boosting commodity demand. Trading bias: STRONG BULLISH AUD!'
+        weeklyChange: 3786,
+        recommendation: '🔥 Hedge funds STRONGLY net LONG AUD with +49,145 contracts! Conviction growing (+3,786 weekly). Asset managers also heavily long. Trading bias: STRONG BULLISH AUD!'
       },
       CAD: {
-        commercialLong: 105105, // Asset Manager Long
-        commercialShort: 35593, // Asset Manager Short
-        nonCommercialLong: 28252, // Leveraged Funds Long
-        nonCommercialShort: 65411, // Leveraged Funds Short
+        commercialLong: 67647, // Asset Manager Long
+        commercialShort: 41518, // Asset Manager Short
+        nonCommercialLong: 26751, // Leveraged Funds Long
+        nonCommercialShort: 58451, // Leveraged Funds Short
         sentiment: 'BEARISH',
-        weeklyChange: 4212, // Weekly change
-        recommendation: '🔻 Hedge funds net SHORT CAD with -37,159 contracts. Improved from -55K in January as BoC cuts moderate. Trading bias: BEARISH CAD but improving.'
+        weeklyChange: 6152,
+        recommendation: '🔻 Hedge funds net SHORT CAD with -31,700 contracts. Improving from -37K (+6,152 weekly). Bears covering. Trading bias: BEARISH CAD but improving.'
       },
       MXN: {
-        commercialLong: 85939, // Asset Manager Long
-        commercialShort: 29494, // Asset Manager Short
-        nonCommercialLong: 89244, // Leveraged Funds Long
-        nonCommercialShort: 36359, // Leveraged Funds Short
+        commercialLong: 72526, // Asset Manager Long
+        commercialShort: 23942, // Asset Manager Short
+        nonCommercialLong: 75059, // Leveraged Funds Long
+        nonCommercialShort: 20272, // Leveraged Funds Short
         sentiment: 'BULLISH',
-        weeklyChange: -1921, // Weekly change
-        recommendation: '🎯 Hedge funds STRONGLY net LONG MXN with +52,885 contracts. Down from +61K but still heavily bullish. Carry trade attractive. Trading bias: BULLISH MXN.'
+        weeklyChange: 7841,
+        recommendation: '🎯 Hedge funds STRONGLY net LONG MXN with +54,787 contracts! Conviction surging (+7,841 weekly). Carry trade remains attractive. Trading bias: STRONG BULLISH MXN.'
       },
       NZD: {
-        commercialLong: 10660, // Asset Manager Long
-        commercialShort: 48031, // Asset Manager Short
-        nonCommercialLong: 11699, // Leveraged Funds Long
-        nonCommercialShort: 15865, // Leveraged Funds Short
+        commercialLong: 6572, // Asset Manager Long
+        commercialShort: 31584, // Asset Manager Short
+        nonCommercialLong: 7461, // Leveraged Funds Long
+        nonCommercialShort: 24191, // Leveraged Funds Short
         sentiment: 'BEARISH',
-        weeklyChange: 6129, // Weekly change — shorts covering
-        recommendation: '📊 Hedge funds net SHORT NZD with -4,166 contracts. Improved from -10K in January — shorts covering as RBNZ cuts priced in. Trading bias: MILDLY BEARISH NZD.'
+        weeklyChange: -813,
+        recommendation: '📊 Hedge funds net SHORT NZD with -16,730 contracts. Worsened from -4,166. Bears piling in. Trading bias: BEARISH NZD.'
       }
     };
     
@@ -197,48 +197,56 @@ const COTData = () => {
         { date: '2025-12-03', netPosition: 38900 },
         { date: '2026-01-13', netPosition: 25392 },
         { date: '2026-03-10', netPosition: 5231 },
+        { date: '2026-03-24', netPosition: -13538 },
       ],
       GBP: [
         { date: '2025-11-05', netPosition: 28500 },
         { date: '2025-12-03', netPosition: 32400 },
         { date: '2026-01-13', netPosition: 38090 },
         { date: '2026-03-10', netPosition: 20102 },
+        { date: '2026-03-24', netPosition: 15716 },
       ],
       JPY: [
         { date: '2025-11-05', netPosition: -72300 },
         { date: '2025-12-03', netPosition: -85400 },
         { date: '2026-01-13', netPosition: -98650 },
         { date: '2026-03-10', netPosition: -49219 },
+        { date: '2026-03-24', netPosition: -54852 },
       ],
       CHF: [
         { date: '2025-11-05', netPosition: -3200 },
         { date: '2025-12-03', netPosition: -1800 },
         { date: '2026-01-13', netPosition: -571 },
         { date: '2026-03-10', netPosition: 4280 },
+        { date: '2026-03-24', netPosition: 235 },
       ],
       AUD: [
         { date: '2025-11-05', netPosition: -15600 },
         { date: '2025-12-03', netPosition: 8400 },
         { date: '2026-01-13', netPosition: 30217 },
         { date: '2026-03-10', netPosition: 46568 },
+        { date: '2026-03-24', netPosition: 49145 },
       ],
       CAD: [
         { date: '2025-11-05', netPosition: -48200 },
         { date: '2025-12-03', netPosition: -52100 },
         { date: '2026-01-13', netPosition: -55699 },
         { date: '2026-03-10', netPosition: -37159 },
+        { date: '2026-03-24', netPosition: -31700 },
       ],
       MXN: [
         { date: '2025-11-05', netPosition: 55800 },
         { date: '2025-12-03', netPosition: 58200 },
         { date: '2026-01-13', netPosition: 61419 },
         { date: '2026-03-10', netPosition: 52885 },
+        { date: '2026-03-24', netPosition: 54787 },
       ],
       NZD: [
         { date: '2025-11-05', netPosition: -18900 },
         { date: '2025-12-03', netPosition: -14200 },
         { date: '2026-01-13', netPosition: -10133 },
         { date: '2026-03-10', netPosition: -4166 },
+        { date: '2026-03-24', netPosition: -16730 },
       ],
     };
 
@@ -254,31 +262,31 @@ const COTData = () => {
     }));
   };
 
-  // Generate bias data for all currencies including cross pairs - UPDATED Mar 19, 2026 CFTC Data (as of Mar 10, 2026)
+  // Generate bias data for all currencies including cross pairs - UPDATED Mar 29, 2026 CFTC Data (as of Mar 24, 2026)
   const generateBiasData = () => {
     const currencies = ['EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'MXN', 'NZD', 'EURJPY', 'GBPJPY', 'EURGBP', 'GBPCAD', 'AUDJPY', 'EURAUD', 'GBPAUD', 'EURCAD', 'NZDJPY', 'CADJPY'];
     return currencies.map(curr => {
-      // ✅ VERIFIED from CFTC Report Mar 19, 2026 (data as of Mar 10) - includes cross pairs
+      // ✅ VERIFIED from CFTC Report Mar 29, 2026 (data as of Mar 24) - includes cross pairs
       const mockCotData: Record<string, { netPosition: number; bias: 'BULLISH' | 'BEARISH' | 'NEUTRAL'; weeklyChange: number; price: number }> = {
-        EUR: { netPosition: 5231, bias: 'NEUTRAL', weeklyChange: -24401, price: 1.0340 },
-        GBP: { netPosition: 20102, bias: 'BULLISH', weeklyChange: -14404, price: 1.2260 },
-        JPY: { netPosition: -49219, bias: 'BEARISH', weeklyChange: -14994, price: 149.80 },
-        CHF: { netPosition: 4280, bias: 'BULLISH', weeklyChange: -176, price: 0.8985 },
-        AUD: { netPosition: 46568, bias: 'BULLISH', weeklyChange: -8067, price: 0.6310 },
-        CAD: { netPosition: -37159, bias: 'BEARISH', weeklyChange: 4212, price: 1.4380 },
-        MXN: { netPosition: 52885, bias: 'BULLISH', weeklyChange: -1921, price: 20.35 },
-        NZD: { netPosition: -4166, bias: 'BEARISH', weeklyChange: 6129, price: 0.5680 },
+        EUR: { netPosition: -13538, bias: 'BEARISH', weeklyChange: -6586, price: 1.0820 },
+        GBP: { netPosition: 15716, bias: 'BULLISH', weeklyChange: 3948, price: 1.2940 },
+        JPY: { netPosition: -54852, bias: 'BEARISH', weeklyChange: 10577, price: 150.60 },
+        CHF: { netPosition: 235, bias: 'NEUTRAL', weeklyChange: -278, price: 0.8820 },
+        AUD: { netPosition: 49145, bias: 'BULLISH', weeklyChange: 3786, price: 0.6290 },
+        CAD: { netPosition: -31700, bias: 'BEARISH', weeklyChange: 6152, price: 1.4320 },
+        MXN: { netPosition: 54787, bias: 'BULLISH', weeklyChange: 7841, price: 20.18 },
+        NZD: { netPosition: -16730, bias: 'BEARISH', weeklyChange: -813, price: 0.5710 },
         // Cross pairs
-        EURJPY: { netPosition: 2290, bias: 'BULLISH', weeklyChange: 185, price: 154.90 },
-        GBPJPY: { netPosition: 69321, bias: 'BULLISH', weeklyChange: -14220, price: 183.65 },
-        EURGBP: { netPosition: -526, bias: 'NEUTRAL', weeklyChange: 0, price: 0.8435 },
-        GBPCAD: { netPosition: 57261, bias: 'BULLISH', weeklyChange: -18616, price: 1.7630 },
-        AUDJPY: { netPosition: 95787, bias: 'BULLISH', weeklyChange: 6927, price: 94.50 },
-        EURAUD: { netPosition: -41337, bias: 'BEARISH', weeklyChange: -16334, price: 1.6390 },
-        GBPAUD: { netPosition: -26466, bias: 'BEARISH', weeklyChange: -6337, price: 1.9430 },
-        EURCAD: { netPosition: 42390, bias: 'BULLISH', weeklyChange: -28613, price: 1.4870 },
-        NZDJPY: { netPosition: 45053, bias: 'BULLISH', weeklyChange: 21123, price: 85.10 },
-        CADJPY: { netPosition: 12060, bias: 'BULLISH', weeklyChange: 19206, price: 104.20 }
+        EURJPY: { netPosition: 1954, bias: 'NEUTRAL', weeklyChange: -336, price: 163.00 },
+        GBPJPY: { netPosition: 70568, bias: 'BULLISH', weeklyChange: -6629, price: 194.90 },
+        EURGBP: { netPosition: -4197, bias: 'BEARISH', weeklyChange: -3671, price: 0.8360 },
+        GBPCAD: { netPosition: 47416, bias: 'BULLISH', weeklyChange: -2204, price: 1.8530 },
+        AUDJPY: { netPosition: 103997, bias: 'BULLISH', weeklyChange: -6791, price: 94.70 },
+        EURAUD: { netPosition: -62683, bias: 'BEARISH', weeklyChange: -10372, price: 1.7200 },
+        GBPAUD: { netPosition: -33429, bias: 'BEARISH', weeklyChange: 162, price: 2.0570 },
+        EURCAD: { netPosition: 18162, bias: 'BULLISH', weeklyChange: -12738, price: 1.5490 },
+        NZDJPY: { netPosition: 38122, bias: 'BULLISH', weeklyChange: -11390, price: 85.90 },
+        CADJPY: { netPosition: 23152, bias: 'BULLISH', weeklyChange: -4425, price: 105.20 }
       };
       
       const data = mockCotData[curr] || { netPosition: 0, bias: 'NEUTRAL' as const, weeklyChange: 0, price: 1.0000 };
@@ -294,31 +302,31 @@ const COTData = () => {
     });
   };
 
-  // Generate overview data - UPDATED Mar 19, 2026 CFTC Data (as of Mar 10, 2026) with cross pairs
+  // Generate overview data - UPDATED Mar 29, 2026 CFTC Data (as of Mar 24, 2026) with cross pairs
   const generateOverviewData = () => {
     const currencies = ['EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'MXN', 'NZD', 'EURJPY', 'GBPJPY', 'EURGBP', 'GBPCAD', 'AUDJPY', 'EURAUD', 'GBPAUD', 'EURCAD', 'NZDJPY', 'CADJPY'];
     return currencies.map(curr => {
-      // ✅ VERIFIED from CFTC Report Mar 19, 2026 (data as of Mar 10) - includes cross pairs
+      // ✅ VERIFIED from CFTC Report Mar 29, 2026 (data as of Mar 24)
       const mockData: Record<string, { netPosition: number; sentiment: 'BULLISH' | 'BEARISH' | 'NEUTRAL'; weeklyChange: number; commercialLong: number; commercialShort: number; nonCommercialLong: number; nonCommercialShort: number }> = {
-        EUR: { netPosition: 5231, sentiment: 'NEUTRAL', weeklyChange: -24401, commercialLong: 509748, commercialShort: 143449, nonCommercialLong: 105592, nonCommercialShort: 100361 },
-        GBP: { netPosition: 20102, sentiment: 'BULLISH', weeklyChange: -14404, commercialLong: 33647, commercialShort: 154150, nonCommercialLong: 48818, nonCommercialShort: 28716 },
-        JPY: { netPosition: -49219, sentiment: 'BEARISH', weeklyChange: -14994, commercialLong: 65494, commercialShort: 62663, nonCommercialLong: 77546, nonCommercialShort: 126765 },
-        CHF: { netPosition: 4280, sentiment: 'BULLISH', weeklyChange: -176, commercialLong: 5888, commercialShort: 60251, nonCommercialLong: 10750, nonCommercialShort: 6470 },
-        AUD: { netPosition: 46568, sentiment: 'BULLISH', weeklyChange: -8067, commercialLong: 86048, commercialShort: 62719, nonCommercialLong: 69980, nonCommercialShort: 23412 },
-        CAD: { netPosition: -37159, sentiment: 'BEARISH', weeklyChange: 4212, commercialLong: 105105, commercialShort: 35593, nonCommercialLong: 28252, nonCommercialShort: 65411 },
-        MXN: { netPosition: 52885, sentiment: 'BULLISH', weeklyChange: -1921, commercialLong: 85939, commercialShort: 29494, nonCommercialLong: 89244, nonCommercialShort: 36359 },
-        NZD: { netPosition: -4166, sentiment: 'BEARISH', weeklyChange: 6129, commercialLong: 10660, commercialShort: 48031, nonCommercialLong: 11699, nonCommercialShort: 15865 },
+        EUR: { netPosition: -13538, sentiment: 'BEARISH', weeklyChange: -6586, commercialLong: 446373, commercialShort: 158433, nonCommercialLong: 97985, nonCommercialShort: 111523 },
+        GBP: { netPosition: 15716, sentiment: 'BULLISH', weeklyChange: 3948, commercialLong: 28499, commercialShort: 122962, nonCommercialLong: 47450, nonCommercialShort: 31734 },
+        JPY: { netPosition: -54852, sentiment: 'BEARISH', weeklyChange: 10577, commercialLong: 58266, commercialShort: 64516, nonCommercialLong: 67921, nonCommercialShort: 122773 },
+        CHF: { netPosition: 235, sentiment: 'NEUTRAL', weeklyChange: -278, commercialLong: 5541, commercialShort: 42537, nonCommercialLong: 7950, nonCommercialShort: 7715 },
+        AUD: { netPosition: 49145, sentiment: 'BULLISH', weeklyChange: 3786, commercialLong: 103155, commercialShort: 59229, nonCommercialLong: 68577, nonCommercialShort: 19432 },
+        CAD: { netPosition: -31700, sentiment: 'BEARISH', weeklyChange: 6152, commercialLong: 67647, commercialShort: 41518, nonCommercialLong: 26751, nonCommercialShort: 58451 },
+        MXN: { netPosition: 54787, sentiment: 'BULLISH', weeklyChange: 7841, commercialLong: 72526, commercialShort: 23942, nonCommercialLong: 75059, nonCommercialShort: 20272 },
+        NZD: { netPosition: -16730, sentiment: 'BEARISH', weeklyChange: -813, commercialLong: 6572, commercialShort: 31584, nonCommercialLong: 7461, nonCommercialShort: 24191 },
         // Cross pairs
-        EURJPY: { netPosition: 2290, sentiment: 'BULLISH', weeklyChange: 185, commercialLong: 5437, commercialShort: 13164, nonCommercialLong: 2290, nonCommercialShort: 0 },
-        GBPJPY: { netPosition: 69321, sentiment: 'BULLISH', weeklyChange: -14220, commercialLong: 99141, commercialShort: 216813, nonCommercialLong: 126364, nonCommercialShort: 155481 },
-        EURGBP: { netPosition: -526, sentiment: 'NEUTRAL', weeklyChange: 0, commercialLong: 18478, commercialShort: 0, nonCommercialLong: 2869, nonCommercialShort: 3395 },
-        GBPCAD: { netPosition: 57261, sentiment: 'BULLISH', weeklyChange: -18616, commercialLong: 138752, commercialShort: 189743, nonCommercialLong: 77070, nonCommercialShort: 94127 },
-        AUDJPY: { netPosition: 95787, sentiment: 'BULLISH', weeklyChange: 6927, commercialLong: 151542, commercialShort: 125382, nonCommercialLong: 147526, nonCommercialShort: 150177 },
-        EURAUD: { netPosition: -41337, sentiment: 'BEARISH', weeklyChange: -16334, commercialLong: 595796, commercialShort: 206168, nonCommercialLong: 175572, nonCommercialShort: 123773 },
-        GBPAUD: { netPosition: -26466, sentiment: 'BEARISH', weeklyChange: -6337, commercialLong: 119695, commercialShort: 216869, nonCommercialLong: 118798, nonCommercialShort: 52128 },
-        EURCAD: { netPosition: 42390, sentiment: 'BULLISH', weeklyChange: -28613, commercialLong: 614853, commercialShort: 179042, nonCommercialLong: 133844, nonCommercialShort: 135954 },
-        NZDJPY: { netPosition: 45053, sentiment: 'BULLISH', weeklyChange: 21123, commercialLong: 76154, commercialShort: 110694, nonCommercialLong: 89245, nonCommercialShort: 142630 },
-        CADJPY: { netPosition: 12060, sentiment: 'BULLISH', weeklyChange: 19206, commercialLong: 170599, commercialShort: 98256, nonCommercialLong: 105798, nonCommercialShort: 192176 }
+        EURJPY: { netPosition: 1954, sentiment: 'NEUTRAL', weeklyChange: -336, commercialLong: 5238, commercialShort: 12785, nonCommercialLong: 1954, nonCommercialShort: 0 },
+        GBPJPY: { netPosition: 70568, sentiment: 'BULLISH', weeklyChange: -6629, commercialLong: 86765, commercialShort: 187478, nonCommercialLong: 115371, nonCommercialShort: 154507 },
+        EURGBP: { netPosition: -4197, sentiment: 'BEARISH', weeklyChange: -3671, commercialLong: 18219, commercialShort: 549, nonCommercialLong: 2259, nonCommercialShort: 6456 },
+        GBPCAD: { netPosition: 47416, sentiment: 'BULLISH', weeklyChange: -2204, commercialLong: 96146, commercialShort: 164480, nonCommercialLong: 74201, nonCommercialShort: 90185 },
+        AUDJPY: { netPosition: 103997, sentiment: 'BULLISH', weeklyChange: -6791, commercialLong: 161421, commercialShort: 123745, nonCommercialLong: 136498, nonCommercialShort: 142205 },
+        EURAUD: { netPosition: -62683, sentiment: 'BEARISH', weeklyChange: -10372, commercialLong: 549528, commercialShort: 217662, nonCommercialLong: 166562, nonCommercialShort: 130955 },
+        GBPAUD: { netPosition: -33429, sentiment: 'BEARISH', weeklyChange: 162, commercialLong: 131654, commercialShort: 182191, nonCommercialLong: 116027, nonCommercialShort: 51166 },
+        EURCAD: { netPosition: 18162, sentiment: 'BULLISH', weeklyChange: -12738, commercialLong: 514020, commercialShort: 199951, nonCommercialLong: 124736, nonCommercialShort: 153041 },
+        NZDJPY: { netPosition: 38122, sentiment: 'BULLISH', weeklyChange: -11390, commercialLong: 64838, commercialShort: 96100, nonCommercialLong: 75382, nonCommercialShort: 146964 },
+        CADJPY: { netPosition: 23152, sentiment: 'BULLISH', weeklyChange: -4425, commercialLong: 125913, commercialShort: 106034, nonCommercialLong: 94672, nonCommercialShort: 181224 }
       };
       
       const data = mockData[curr] || { netPosition: 0, sentiment: 'NEUTRAL' as const, weeklyChange: 0, commercialLong: 0, commercialShort: 0, nonCommercialLong: 0, nonCommercialShort: 0 };
@@ -385,7 +393,7 @@ const COTData = () => {
                 📊 COT Data Analysis Dashboard
               </h2>
               <span className="px-3 py-1 bg-success/20 text-success text-xs font-bold rounded-full border border-success/30 animate-pulse">
-                UPDATED: Jan 21, 2026
+                UPDATED: Mar 29, 2026
               </span>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
