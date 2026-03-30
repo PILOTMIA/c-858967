@@ -2,8 +2,7 @@ import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, ArrowRight, Zap, Shield, BarChart3 } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
+import { TrendingUp, TrendingDown, ArrowRight, Zap, Shield } from "lucide-react";
 
 // COT net positions from March 29, 2026 CFTC report (leveraged funds, data as of March 24, 2026)
 const COT_POSITIONS: Record<string, {
