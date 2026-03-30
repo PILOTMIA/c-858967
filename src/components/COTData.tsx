@@ -84,79 +84,79 @@ const fetchCOTData = async (currency: string): Promise<COTDataType> => {
   } catch (error) {
     console.log('⚠️ CFTC API unavailable - using latest manual COT data from report');
     
-    // ✅ UPDATED COT data from CFTC report - Mar 19, 2026 (data as of Mar 10, 2026) - VERIFIED from official PDF
+    // ✅ UPDATED COT data from CFTC report - Mar 29, 2026 (data as of Mar 24, 2026) - VERIFIED from official PDF
     const cotData: Record<string, Partial<COTDataType>> = {
       EUR: {
-        commercialLong: 509748, // Asset Manager Long
-        commercialShort: 143449, // Asset Manager Short
-        nonCommercialLong: 105592, // Leveraged Funds Long
-        nonCommercialShort: 100361, // Leveraged Funds Short
-        sentiment: 'NEUTRAL',
-        weeklyChange: -24401, // Net change in leveraged funds from Mar 3
-        recommendation: '⚖️ Hedge funds nearly FLAT on EUR with +5,231 contracts (down from +25K). Major shift from bullish to neutral. Asset managers still net long (510K vs 143K). Watch for direction — potential reversal setup.'
+        commercialLong: 446373, // Asset Manager Long
+        commercialShort: 158433, // Asset Manager Short
+        nonCommercialLong: 97985, // Leveraged Funds Long
+        nonCommercialShort: 111523, // Leveraged Funds Short
+        sentiment: 'BEARISH',
+        weeklyChange: -6586,
+        recommendation: '📉 Hedge funds FLIP to net SHORT EUR with -13,538 contracts (was +5,231). Major shift — institutions now bearish. Asset managers still long but weakening. Trading bias: BEARISH EUR.'
       },
       GBP: {
-        commercialLong: 33647, // Asset Manager Long
-        commercialShort: 154150, // Asset Manager Short
-        nonCommercialLong: 48818, // Leveraged Funds Long
-        nonCommercialShort: 28716, // Leveraged Funds Short
+        commercialLong: 28499, // Asset Manager Long
+        commercialShort: 122962, // Asset Manager Short
+        nonCommercialLong: 47450, // Leveraged Funds Long
+        nonCommercialShort: 31734, // Leveraged Funds Short
         sentiment: 'BULLISH',
-        weeklyChange: -14404, // Weekly change (leveraged funds dropped)
-        recommendation: '💪 Hedge funds remain net LONG GBP with +20,102 contracts. Down from +38K in January — still bullish but conviction fading. Trading bias: MODERATELY BULLISH GBP.'
+        weeklyChange: 3948,
+        recommendation: '💪 Hedge funds remain net LONG GBP with +15,716 contracts. Conviction holding, weekly change positive (+3,948). Trading bias: MODERATELY BULLISH GBP.'
       },
       JPY: {
-        commercialLong: 65494, // Asset Manager Long
-        commercialShort: 62663, // Asset Manager Short
-        nonCommercialLong: 77546, // Leveraged Funds Long
-        nonCommercialShort: 126765, // Leveraged Funds Short
+        commercialLong: 58266, // Asset Manager Long
+        commercialShort: 64516, // Asset Manager Short
+        nonCommercialLong: 67921, // Leveraged Funds Long
+        nonCommercialShort: 122773, // Leveraged Funds Short
         sentiment: 'BEARISH',
-        weeklyChange: -14994, // Net change
-        recommendation: '📉 Hedge funds net SHORT JPY with -49,219 contracts. Reduced from -98K in January — bears covering! BoJ rate normalization squeezing shorts. Trading bias: BEARISH but weakening.'
+        weeklyChange: 10577,
+        recommendation: '📉 Hedge funds net SHORT JPY with -54,852 contracts. Bears added slightly but shorts covering (+10,577 weekly). BoJ normalization continues. Trading bias: BEARISH but improving.'
       },
       CHF: {
-        commercialLong: 5888, // Asset Manager Long
-        commercialShort: 60251, // Asset Manager Short
-        nonCommercialLong: 10750, // Leveraged Funds Long
-        nonCommercialShort: 6470, // Leveraged Funds Short
-        sentiment: 'BULLISH',
-        weeklyChange: -176, // Weekly change
-        recommendation: '📈 Hedge funds FLIP to net LONG CHF with +4,280 contracts! Major shift from neutral (-571). Safe-haven flows amid tariff uncertainty. Trading bias: BULLISH CHF.'
+        commercialLong: 5541, // Asset Manager Long
+        commercialShort: 42537, // Asset Manager Short
+        nonCommercialLong: 7950, // Leveraged Funds Long
+        nonCommercialShort: 7715, // Leveraged Funds Short
+        sentiment: 'NEUTRAL',
+        weeklyChange: -278,
+        recommendation: '⚖️ Hedge funds nearly FLAT on CHF with +235 contracts (was +4,280). Lost bullish conviction. Trading bias: NEUTRAL CHF — watch for directional break.'
       },
       AUD: {
-        commercialLong: 86048, // Asset Manager Long
-        commercialShort: 62719, // Asset Manager Short
-        nonCommercialLong: 69980, // Leveraged Funds Long
-        nonCommercialShort: 23412, // Leveraged Funds Short
+        commercialLong: 103155, // Asset Manager Long
+        commercialShort: 59229, // Asset Manager Short
+        nonCommercialLong: 68577, // Leveraged Funds Long
+        nonCommercialShort: 19432, // Leveraged Funds Short
         sentiment: 'BULLISH',
-        weeklyChange: -8067, // Weekly change
-        recommendation: '🔥 Hedge funds STRONGLY net LONG AUD with +46,568 contracts! Increased from +30K in January. RBA rate cut priced in, China stimulus boosting commodity demand. Trading bias: STRONG BULLISH AUD!'
+        weeklyChange: 3786,
+        recommendation: '🔥 Hedge funds STRONGLY net LONG AUD with +49,145 contracts! Conviction growing (+3,786 weekly). Asset managers also heavily long. Trading bias: STRONG BULLISH AUD!'
       },
       CAD: {
-        commercialLong: 105105, // Asset Manager Long
-        commercialShort: 35593, // Asset Manager Short
-        nonCommercialLong: 28252, // Leveraged Funds Long
-        nonCommercialShort: 65411, // Leveraged Funds Short
+        commercialLong: 67647, // Asset Manager Long
+        commercialShort: 41518, // Asset Manager Short
+        nonCommercialLong: 26751, // Leveraged Funds Long
+        nonCommercialShort: 58451, // Leveraged Funds Short
         sentiment: 'BEARISH',
-        weeklyChange: 4212, // Weekly change
-        recommendation: '🔻 Hedge funds net SHORT CAD with -37,159 contracts. Improved from -55K in January as BoC cuts moderate. Trading bias: BEARISH CAD but improving.'
+        weeklyChange: 6152,
+        recommendation: '🔻 Hedge funds net SHORT CAD with -31,700 contracts. Improving from -37K (+6,152 weekly). Bears covering. Trading bias: BEARISH CAD but improving.'
       },
       MXN: {
-        commercialLong: 85939, // Asset Manager Long
-        commercialShort: 29494, // Asset Manager Short
-        nonCommercialLong: 89244, // Leveraged Funds Long
-        nonCommercialShort: 36359, // Leveraged Funds Short
+        commercialLong: 72526, // Asset Manager Long
+        commercialShort: 23942, // Asset Manager Short
+        nonCommercialLong: 75059, // Leveraged Funds Long
+        nonCommercialShort: 20272, // Leveraged Funds Short
         sentiment: 'BULLISH',
-        weeklyChange: -1921, // Weekly change
-        recommendation: '🎯 Hedge funds STRONGLY net LONG MXN with +52,885 contracts. Down from +61K but still heavily bullish. Carry trade attractive. Trading bias: BULLISH MXN.'
+        weeklyChange: 7841,
+        recommendation: '🎯 Hedge funds STRONGLY net LONG MXN with +54,787 contracts! Conviction surging (+7,841 weekly). Carry trade remains attractive. Trading bias: STRONG BULLISH MXN.'
       },
       NZD: {
-        commercialLong: 10660, // Asset Manager Long
-        commercialShort: 48031, // Asset Manager Short
-        nonCommercialLong: 11699, // Leveraged Funds Long
-        nonCommercialShort: 15865, // Leveraged Funds Short
+        commercialLong: 6572, // Asset Manager Long
+        commercialShort: 31584, // Asset Manager Short
+        nonCommercialLong: 7461, // Leveraged Funds Long
+        nonCommercialShort: 24191, // Leveraged Funds Short
         sentiment: 'BEARISH',
-        weeklyChange: 6129, // Weekly change — shorts covering
-        recommendation: '📊 Hedge funds net SHORT NZD with -4,166 contracts. Improved from -10K in January — shorts covering as RBNZ cuts priced in. Trading bias: MILDLY BEARISH NZD.'
+        weeklyChange: -813,
+        recommendation: '📊 Hedge funds net SHORT NZD with -16,730 contracts. Worsened from -4,166. Bears piling in. Trading bias: BEARISH NZD.'
       }
     };
     
