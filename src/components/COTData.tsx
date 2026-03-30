@@ -393,7 +393,7 @@ const COTData = () => {
                 📊 COT Data Analysis Dashboard
               </h2>
               <span className="px-3 py-1 bg-success/20 text-success text-xs font-bold rounded-full border border-success/30 animate-pulse">
-                UPDATED: Jan 21, 2026
+                UPDATED: Mar 29, 2026
               </span>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
