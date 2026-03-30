@@ -302,31 +302,31 @@ const COTData = () => {
     });
   };
 
-  // Generate overview data - UPDATED Mar 19, 2026 CFTC Data (as of Mar 10, 2026) with cross pairs
+  // Generate overview data - UPDATED Mar 29, 2026 CFTC Data (as of Mar 24, 2026) with cross pairs
   const generateOverviewData = () => {
     const currencies = ['EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'MXN', 'NZD', 'EURJPY', 'GBPJPY', 'EURGBP', 'GBPCAD', 'AUDJPY', 'EURAUD', 'GBPAUD', 'EURCAD', 'NZDJPY', 'CADJPY'];
     return currencies.map(curr => {
-      // ✅ VERIFIED from CFTC Report Mar 19, 2026 (data as of Mar 10) - includes cross pairs
+      // ✅ VERIFIED from CFTC Report Mar 29, 2026 (data as of Mar 24)
       const mockData: Record<string, { netPosition: number; sentiment: 'BULLISH' | 'BEARISH' | 'NEUTRAL'; weeklyChange: number; commercialLong: number; commercialShort: number; nonCommercialLong: number; nonCommercialShort: number }> = {
-        EUR: { netPosition: 5231, sentiment: 'NEUTRAL', weeklyChange: -24401, commercialLong: 509748, commercialShort: 143449, nonCommercialLong: 105592, nonCommercialShort: 100361 },
-        GBP: { netPosition: 20102, sentiment: 'BULLISH', weeklyChange: -14404, commercialLong: 33647, commercialShort: 154150, nonCommercialLong: 48818, nonCommercialShort: 28716 },
-        JPY: { netPosition: -49219, sentiment: 'BEARISH', weeklyChange: -14994, commercialLong: 65494, commercialShort: 62663, nonCommercialLong: 77546, nonCommercialShort: 126765 },
-        CHF: { netPosition: 4280, sentiment: 'BULLISH', weeklyChange: -176, commercialLong: 5888, commercialShort: 60251, nonCommercialLong: 10750, nonCommercialShort: 6470 },
-        AUD: { netPosition: 46568, sentiment: 'BULLISH', weeklyChange: -8067, commercialLong: 86048, commercialShort: 62719, nonCommercialLong: 69980, nonCommercialShort: 23412 },
-        CAD: { netPosition: -37159, sentiment: 'BEARISH', weeklyChange: 4212, commercialLong: 105105, commercialShort: 35593, nonCommercialLong: 28252, nonCommercialShort: 65411 },
-        MXN: { netPosition: 52885, sentiment: 'BULLISH', weeklyChange: -1921, commercialLong: 85939, commercialShort: 29494, nonCommercialLong: 89244, nonCommercialShort: 36359 },
-        NZD: { netPosition: -4166, sentiment: 'BEARISH', weeklyChange: 6129, commercialLong: 10660, commercialShort: 48031, nonCommercialLong: 11699, nonCommercialShort: 15865 },
+        EUR: { netPosition: -13538, sentiment: 'BEARISH', weeklyChange: -6586, commercialLong: 446373, commercialShort: 158433, nonCommercialLong: 97985, nonCommercialShort: 111523 },
+        GBP: { netPosition: 15716, sentiment: 'BULLISH', weeklyChange: 3948, commercialLong: 28499, commercialShort: 122962, nonCommercialLong: 47450, nonCommercialShort: 31734 },
+        JPY: { netPosition: -54852, sentiment: 'BEARISH', weeklyChange: 10577, commercialLong: 58266, commercialShort: 64516, nonCommercialLong: 67921, nonCommercialShort: 122773 },
+        CHF: { netPosition: 235, sentiment: 'NEUTRAL', weeklyChange: -278, commercialLong: 5541, commercialShort: 42537, nonCommercialLong: 7950, nonCommercialShort: 7715 },
+        AUD: { netPosition: 49145, sentiment: 'BULLISH', weeklyChange: 3786, commercialLong: 103155, commercialShort: 59229, nonCommercialLong: 68577, nonCommercialShort: 19432 },
+        CAD: { netPosition: -31700, sentiment: 'BEARISH', weeklyChange: 6152, commercialLong: 67647, commercialShort: 41518, nonCommercialLong: 26751, nonCommercialShort: 58451 },
+        MXN: { netPosition: 54787, sentiment: 'BULLISH', weeklyChange: 7841, commercialLong: 72526, commercialShort: 23942, nonCommercialLong: 75059, nonCommercialShort: 20272 },
+        NZD: { netPosition: -16730, sentiment: 'BEARISH', weeklyChange: -813, commercialLong: 6572, commercialShort: 31584, nonCommercialLong: 7461, nonCommercialShort: 24191 },
         // Cross pairs
-        EURJPY: { netPosition: 2290, sentiment: 'BULLISH', weeklyChange: 185, commercialLong: 5437, commercialShort: 13164, nonCommercialLong: 2290, nonCommercialShort: 0 },
-        GBPJPY: { netPosition: 69321, sentiment: 'BULLISH', weeklyChange: -14220, commercialLong: 99141, commercialShort: 216813, nonCommercialLong: 126364, nonCommercialShort: 155481 },
-        EURGBP: { netPosition: -526, sentiment: 'NEUTRAL', weeklyChange: 0, commercialLong: 18478, commercialShort: 0, nonCommercialLong: 2869, nonCommercialShort: 3395 },
-        GBPCAD: { netPosition: 57261, sentiment: 'BULLISH', weeklyChange: -18616, commercialLong: 138752, commercialShort: 189743, nonCommercialLong: 77070, nonCommercialShort: 94127 },
-        AUDJPY: { netPosition: 95787, sentiment: 'BULLISH', weeklyChange: 6927, commercialLong: 151542, commercialShort: 125382, nonCommercialLong: 147526, nonCommercialShort: 150177 },
-        EURAUD: { netPosition: -41337, sentiment: 'BEARISH', weeklyChange: -16334, commercialLong: 595796, commercialShort: 206168, nonCommercialLong: 175572, nonCommercialShort: 123773 },
-        GBPAUD: { netPosition: -26466, sentiment: 'BEARISH', weeklyChange: -6337, commercialLong: 119695, commercialShort: 216869, nonCommercialLong: 118798, nonCommercialShort: 52128 },
-        EURCAD: { netPosition: 42390, sentiment: 'BULLISH', weeklyChange: -28613, commercialLong: 614853, commercialShort: 179042, nonCommercialLong: 133844, nonCommercialShort: 135954 },
-        NZDJPY: { netPosition: 45053, sentiment: 'BULLISH', weeklyChange: 21123, commercialLong: 76154, commercialShort: 110694, nonCommercialLong: 89245, nonCommercialShort: 142630 },
-        CADJPY: { netPosition: 12060, sentiment: 'BULLISH', weeklyChange: 19206, commercialLong: 170599, commercialShort: 98256, nonCommercialLong: 105798, nonCommercialShort: 192176 }
+        EURJPY: { netPosition: 1954, sentiment: 'NEUTRAL', weeklyChange: -336, commercialLong: 5238, commercialShort: 12785, nonCommercialLong: 1954, nonCommercialShort: 0 },
+        GBPJPY: { netPosition: 70568, sentiment: 'BULLISH', weeklyChange: -6629, commercialLong: 86765, commercialShort: 187478, nonCommercialLong: 115371, nonCommercialShort: 154507 },
+        EURGBP: { netPosition: -4197, sentiment: 'BEARISH', weeklyChange: -3671, commercialLong: 18219, commercialShort: 549, nonCommercialLong: 2259, nonCommercialShort: 6456 },
+        GBPCAD: { netPosition: 47416, sentiment: 'BULLISH', weeklyChange: -2204, commercialLong: 96146, commercialShort: 164480, nonCommercialLong: 74201, nonCommercialShort: 90185 },
+        AUDJPY: { netPosition: 103997, sentiment: 'BULLISH', weeklyChange: -6791, commercialLong: 161421, commercialShort: 123745, nonCommercialLong: 136498, nonCommercialShort: 142205 },
+        EURAUD: { netPosition: -62683, sentiment: 'BEARISH', weeklyChange: -10372, commercialLong: 549528, commercialShort: 217662, nonCommercialLong: 166562, nonCommercialShort: 130955 },
+        GBPAUD: { netPosition: -33429, sentiment: 'BEARISH', weeklyChange: 162, commercialLong: 131654, commercialShort: 182191, nonCommercialLong: 116027, nonCommercialShort: 51166 },
+        EURCAD: { netPosition: 18162, sentiment: 'BULLISH', weeklyChange: -12738, commercialLong: 514020, commercialShort: 199951, nonCommercialLong: 124736, nonCommercialShort: 153041 },
+        NZDJPY: { netPosition: 38122, sentiment: 'BULLISH', weeklyChange: -11390, commercialLong: 64838, commercialShort: 96100, nonCommercialLong: 75382, nonCommercialShort: 146964 },
+        CADJPY: { netPosition: 23152, sentiment: 'BULLISH', weeklyChange: -4425, commercialLong: 125913, commercialShort: 106034, nonCommercialLong: 94672, nonCommercialShort: 181224 }
       };
       
       const data = mockData[curr] || { netPosition: 0, sentiment: 'NEUTRAL' as const, weeklyChange: 0, commercialLong: 0, commercialShort: 0, nonCommercialLong: 0, nonCommercialShort: 0 };
