@@ -39,32 +39,26 @@ const COTMarketWheel = () => {
   const handleCurrencyClick = (item: WheelDataItem) => {
     console.log('Currency clicked:', item.currency);
     
-    // Mar 19, 2026 CFTC Report (data as of Mar 10, 2026) - Real institutional positioning
+    // Mar 29, 2026 CFTC Report (data as of Mar 24, 2026) - Real institutional positioning
     const positionData: Record<string, { long: number; short: number; ncLong: number; ncShort: number }> = {
-      // Major USD pairs - Asset Mgr (Commercial) and Leveraged Funds (Non-Commercial)
-      // Verified from CFTC Financial Traders report released Mar 19, 2026
-      'CAD': { long: 105105, short: 35593, ncLong: 28252, ncShort: 65411 },
-      'CHF': { long: 5888, short: 60251, ncLong: 10750, ncShort: 6470 },
-      'GBP': { long: 33647, short: 154150, ncLong: 48818, ncShort: 28716 },
-      'JPY': { long: 65494, short: 62663, ncLong: 77546, ncShort: 126765 },
-      'EUR': { long: 509748, short: 143449, ncLong: 105592, ncShort: 100361 },
-      'AUD': { long: 86048, short: 62719, ncLong: 69980, ncShort: 23412 },
-      'MXN': { long: 85939, short: 29494, ncLong: 89244, ncShort: 36359 },
-      'NZD': { long: 10660, short: 48031, ncLong: 11699, ncShort: 15865 },
-      'BRL': { long: 58972, short: 2305, ncLong: 33583, ncShort: 17985 },
-      // Cross pairs - EURGBP from CFTC report
-      'EURGBP': { long: 18478, short: 0, ncLong: 2869, ncShort: 3395 },
-      // EURJPY from CFTC report
-      'EURJPY': { long: 5437, short: 13164, ncLong: 2290, ncShort: 0 },
-      // Derived cross pairs based on component positioning
-      'GBPJPY': { long: 99141, short: 216813, ncLong: 126364, ncShort: 155481 },
-      'GBPCAD': { long: 138752, short: 189743, ncLong: 77070, ncShort: 94127 },
-      'AUDJPY': { long: 151542, short: 125382, ncLong: 147526, ncShort: 150177 },
-      'EURAUD': { long: 595796, short: 206168, ncLong: 175572, ncShort: 123773 },
-      'GBPAUD': { long: 119695, short: 216869, ncLong: 118798, ncShort: 52128 },
-      'EURCAD': { long: 614853, short: 179042, ncLong: 133844, ncShort: 135954 },
-      'NZDJPY': { long: 76154, short: 110694, ncLong: 89245, ncShort: 142630 },
-      'CADJPY': { long: 170599, short: 98256, ncLong: 105798, ncShort: 192176 }
+      'CAD': { long: 67647, short: 41518, ncLong: 26751, ncShort: 58451 },
+      'CHF': { long: 5541, short: 42537, ncLong: 7950, ncShort: 7715 },
+      'GBP': { long: 28499, short: 122962, ncLong: 47450, ncShort: 31734 },
+      'JPY': { long: 58266, short: 64516, ncLong: 67921, ncShort: 122773 },
+      'EUR': { long: 446373, short: 158433, ncLong: 97985, ncShort: 111523 },
+      'AUD': { long: 103155, short: 59229, ncLong: 68577, ncShort: 19432 },
+      'MXN': { long: 72526, short: 23942, ncLong: 75059, ncShort: 20272 },
+      'NZD': { long: 6572, short: 31584, ncLong: 7461, ncShort: 24191 },
+      'EURGBP': { long: 18219, short: 549, ncLong: 2259, ncShort: 6456 },
+      'EURJPY': { long: 5238, short: 12785, ncLong: 1954, ncShort: 0 },
+      'GBPJPY': { long: 86765, short: 187478, ncLong: 115371, ncShort: 154507 },
+      'GBPCAD': { long: 96146, short: 164480, ncLong: 74201, ncShort: 90185 },
+      'AUDJPY': { long: 161421, short: 123745, ncLong: 136498, ncShort: 142205 },
+      'EURAUD': { long: 549528, short: 217662, ncLong: 166562, ncShort: 130955 },
+      'GBPAUD': { long: 131654, short: 182191, ncLong: 116027, ncShort: 51166 },
+      'EURCAD': { long: 514020, short: 199951, ncLong: 124736, ncShort: 153041 },
+      'NZDJPY': { long: 64838, short: 96100, ncLong: 75382, ncShort: 146964 },
+      'CADJPY': { long: 125913, short: 106034, ncLong: 94672, ncShort: 181224 }
     };
     
     const data = positionData[item.currency] || { long: 0, short: 0, ncLong: 0, ncShort: 0 };
