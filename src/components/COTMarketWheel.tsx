@@ -80,38 +80,29 @@ const COTMarketWheel = () => {
 
   // Generate data from uploaded COT data or fallback to mock data
   const generateData = (): WheelDataItem[] => {
-    // Mar 19, 2026 CFTC Report (data as of Mar 10, 2026) - VERIFIED from uploaded PDF
+    // Mar 29, 2026 CFTC Report (data as of Mar 24, 2026) - VERIFIED from uploaded PDF
     const majorPairs: WheelDataItem[] = [
-      // EUR: NC Long 105,592 - NC Short 100,361 = +5,231 (Neutral — was +25K)
-      { currency: 'EUR', netPosition: 5231, strength: 5231, bias: 'NEUTRAL', weeklyChange: -24401, color: '#8B8B8B', type: 'major' },
-      // GBP: NC Long 48,818 - NC Short 28,716 = +20,102 (Bullish — was +38K)
-      { currency: 'GBP', netPosition: 20102, strength: 20102, bias: 'BULLISH', weeklyChange: -14404, color: '#7EBF8E', type: 'major' },
-      // JPY: NC Long 77,546 - NC Short 126,765 = -49,219 (Bearish — was -98K, shorts covering!)
-      { currency: 'JPY', netPosition: -49219, strength: 49219, bias: 'BEARISH', weeklyChange: -14994, color: '#EF4444', type: 'major' },
-      // CHF: NC Long 10,750 - NC Short 6,470 = +4,280 (Bullish — was -571, FLIPPED!)
-      { currency: 'CHF', netPosition: 4280, strength: 4280, bias: 'BULLISH', weeklyChange: -176, color: '#7EBF8E', type: 'major' },
-      // AUD: NC Long 69,980 - NC Short 23,412 = +46,568 (Bullish — was +30K, STRONGEST BULL!)
-      { currency: 'AUD', netPosition: 46568, strength: 46568, bias: 'BULLISH', weeklyChange: -8067, color: '#7EBF8E', type: 'major' },
-      // CAD: NC Long 28,252 - NC Short 65,411 = -37,159 (Bearish — was -55K, improving)
-      { currency: 'CAD', netPosition: -37159, strength: 37159, bias: 'BEARISH', weeklyChange: 4212, color: '#EF4444', type: 'major' },
-      // MXN: NC Long 89,244 - NC Short 36,359 = +52,885 (Bullish)
-      { currency: 'MXN', netPosition: 52885, strength: 52885, bias: 'BULLISH', weeklyChange: -1921, color: '#7EBF8E', type: 'major' },
-      // NZD: NC Long 11,699 - NC Short 15,865 = -4,166 (Bearish — was -10K, improving)
-      { currency: 'NZD', netPosition: -4166, strength: 4166, bias: 'BEARISH', weeklyChange: 6129, color: '#EF4444', type: 'major' }
+      { currency: 'EUR', netPosition: -13538, strength: 13538, bias: 'BEARISH', weeklyChange: -6586, color: '#EF4444', type: 'major' },
+      { currency: 'GBP', netPosition: 15716, strength: 15716, bias: 'BULLISH', weeklyChange: 3948, color: '#7EBF8E', type: 'major' },
+      { currency: 'JPY', netPosition: -54852, strength: 54852, bias: 'BEARISH', weeklyChange: 10577, color: '#EF4444', type: 'major' },
+      { currency: 'CHF', netPosition: 235, strength: 235, bias: 'NEUTRAL', weeklyChange: -278, color: '#8B8B8B', type: 'major' },
+      { currency: 'AUD', netPosition: 49145, strength: 49145, bias: 'BULLISH', weeklyChange: 3786, color: '#7EBF8E', type: 'major' },
+      { currency: 'CAD', netPosition: -31700, strength: 31700, bias: 'BEARISH', weeklyChange: 6152, color: '#EF4444', type: 'major' },
+      { currency: 'MXN', netPosition: 54787, strength: 54787, bias: 'BULLISH', weeklyChange: 7841, color: '#7EBF8E', type: 'major' },
+      { currency: 'NZD', netPosition: -16730, strength: 16730, bias: 'BEARISH', weeklyChange: -813, color: '#EF4444', type: 'major' }
     ];
 
-    // Cross pairs - derived from component currencies
     const crossPairs: WheelDataItem[] = [
-      { currency: 'EURJPY', netPosition: 2290, strength: 2290, bias: 'BULLISH', weeklyChange: 185, color: '#7EBF8E', type: 'cross' },
-      { currency: 'GBPJPY', netPosition: 69321, strength: 69321, bias: 'BULLISH', weeklyChange: -14220, color: '#7EBF8E', type: 'cross' },
-      { currency: 'EURGBP', netPosition: -526, strength: 526, bias: 'NEUTRAL', weeklyChange: 0, color: '#8B8B8B', type: 'cross' },
-      { currency: 'GBPCAD', netPosition: 57261, strength: 57261, bias: 'BULLISH', weeklyChange: -18616, color: '#7EBF8E', type: 'cross' },
-      { currency: 'AUDJPY', netPosition: 95787, strength: 95787, bias: 'BULLISH', weeklyChange: 6927, color: '#7EBF8E', type: 'cross' },
-      { currency: 'EURAUD', netPosition: -41337, strength: 41337, bias: 'BEARISH', weeklyChange: -16334, color: '#EF4444', type: 'cross' },
-      { currency: 'GBPAUD', netPosition: -26466, strength: 26466, bias: 'BEARISH', weeklyChange: -6337, color: '#EF4444', type: 'cross' },
-      { currency: 'EURCAD', netPosition: 42390, strength: 42390, bias: 'BULLISH', weeklyChange: -28613, color: '#7EBF8E', type: 'cross' },
-      { currency: 'NZDJPY', netPosition: 45053, strength: 45053, bias: 'BULLISH', weeklyChange: 21123, color: '#7EBF8E', type: 'cross' },
-      { currency: 'CADJPY', netPosition: 12060, strength: 12060, bias: 'BULLISH', weeklyChange: 19206, color: '#7EBF8E', type: 'cross' }
+      { currency: 'EURJPY', netPosition: 1954, strength: 1954, bias: 'NEUTRAL', weeklyChange: -336, color: '#8B8B8B', type: 'cross' },
+      { currency: 'GBPJPY', netPosition: 70568, strength: 70568, bias: 'BULLISH', weeklyChange: -6629, color: '#7EBF8E', type: 'cross' },
+      { currency: 'EURGBP', netPosition: -4197, strength: 4197, bias: 'BEARISH', weeklyChange: -3671, color: '#EF4444', type: 'cross' },
+      { currency: 'GBPCAD', netPosition: 47416, strength: 47416, bias: 'BULLISH', weeklyChange: -2204, color: '#7EBF8E', type: 'cross' },
+      { currency: 'AUDJPY', netPosition: 103997, strength: 103997, bias: 'BULLISH', weeklyChange: -6791, color: '#7EBF8E', type: 'cross' },
+      { currency: 'EURAUD', netPosition: -62683, strength: 62683, bias: 'BEARISH', weeklyChange: -10372, color: '#EF4444', type: 'cross' },
+      { currency: 'GBPAUD', netPosition: -33429, strength: 33429, bias: 'BEARISH', weeklyChange: 162, color: '#EF4444', type: 'cross' },
+      { currency: 'EURCAD', netPosition: 18162, strength: 18162, bias: 'BULLISH', weeklyChange: -12738, color: '#7EBF8E', type: 'cross' },
+      { currency: 'NZDJPY', netPosition: 38122, strength: 38122, bias: 'BULLISH', weeklyChange: -11390, color: '#7EBF8E', type: 'cross' },
+      { currency: 'CADJPY', netPosition: 23152, strength: 23152, bias: 'BULLISH', weeklyChange: -4425, color: '#7EBF8E', type: 'cross' }
     ];
 
     return [...majorPairs, ...crossPairs];
