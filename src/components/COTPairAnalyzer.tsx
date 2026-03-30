@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, ArrowRight, Zap, Shield, BarChart3 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-// COT net positions from March 19, 2026 CFTC report (leveraged funds)
+// COT net positions from March 29, 2026 CFTC report (leveraged funds, data as of March 24, 2026)
 const COT_POSITIONS: Record<string, {
   netPosition: number;
   long: number;
@@ -13,15 +13,15 @@ const COT_POSITIONS: Record<string, {
   sentiment: string;
   weeklyChange: number;
 }> = {
-  EUR: { netPosition: 5231, long: 105592, short: 100361, sentiment: 'NEUTRAL', weeklyChange: -24401 },
-  GBP: { netPosition: 20102, long: 48818, short: 28716, sentiment: 'BULLISH', weeklyChange: -14404 },
-  JPY: { netPosition: -49219, long: 77546, short: 126765, sentiment: 'BEARISH', weeklyChange: -14994 },
-  CHF: { netPosition: 4280, long: 10750, short: 6470, sentiment: 'BULLISH', weeklyChange: -176 },
-  AUD: { netPosition: 46568, long: 69980, short: 23412, sentiment: 'BULLISH', weeklyChange: -8067 },
-  CAD: { netPosition: -37159, long: 28252, short: 65411, sentiment: 'BEARISH', weeklyChange: 4212 },
-  MXN: { netPosition: 52885, long: 89244, short: 36359, sentiment: 'BULLISH', weeklyChange: -1921 },
-  NZD: { netPosition: -4166, long: 11699, short: 15865, sentiment: 'BEARISH', weeklyChange: 6129 },
-  USD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0 }, // baseline
+  EUR: { netPosition: -13538, long: 97985, short: 111523, sentiment: 'BEARISH', weeklyChange: -6586 },
+  GBP: { netPosition: 15716, long: 47450, short: 31734, sentiment: 'BULLISH', weeklyChange: 3948 },
+  JPY: { netPosition: -54852, long: 67921, short: 122773, sentiment: 'BEARISH', weeklyChange: 10577 },
+  CHF: { netPosition: 235, long: 7950, short: 7715, sentiment: 'NEUTRAL', weeklyChange: -278 },
+  AUD: { netPosition: 49145, long: 68577, short: 19432, sentiment: 'BULLISH', weeklyChange: 3786 },
+  CAD: { netPosition: -31700, long: 26751, short: 58451, sentiment: 'BEARISH', weeklyChange: 6152 },
+  MXN: { netPosition: 54787, long: 75059, short: 20272, sentiment: 'BULLISH', weeklyChange: 7841 },
+  NZD: { netPosition: -16730, long: 7461, short: 24191, sentiment: 'BEARISH', weeklyChange: -813 },
+  USD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0 },
 };
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'NZD', 'MXN'];
@@ -40,26 +40,16 @@ const COTPairAnalyzer = () => {
     const quote = COT_POSITIONS[quoteCurrency];
     if (!base || !quote) return null;
 
-    // For a pair like GBPJPY:
-    // If institutions are LONG GBP (bullish GBP) → bullish for GBPJPY
-    // If institutions are SHORT JPY (bearish JPY) → also bullish for GBPJPY
-    // Combined score = base net position - quote net position
-    // Positive = bullish for the pair, Negative = bearish
-
-    // Normalize positions to a -100 to +100 scale for comparison
-    const maxPos = 100000; // normalization factor
+    const maxPos = 100000;
     const baseScore = (base.netPosition / maxPos) * 100;
     const quoteScore = (quote.netPosition / maxPos) * 100;
 
-    // The pair bias: bullish base + bearish quote = bullish pair
     const pairScore = baseScore - quoteScore;
     const clampedScore = Math.max(-100, Math.min(100, pairScore));
 
-    // Calculate bull/bear percentages
     const bullPercent = Math.round(50 + clampedScore / 2);
     const bearPercent = 100 - bullPercent;
 
-    // Total contracts on each side
     const bullContracts = base.long + quote.short;
     const bearContracts = base.short + quote.long;
 
@@ -99,36 +89,33 @@ const COTPairAnalyzer = () => {
     if (verdict.includes('BULLISH')) return 'text-success';
     if (verdict.includes('STRONG BEARISH')) return 'text-destructive';
     if (verdict.includes('BEARISH')) return 'text-destructive';
-    return 'text-warning';
+    return 'text-muted-foreground';
   };
 
   const getVerdictBg = (verdict: string) => {
-    if (verdict.includes('STRONG BULLISH')) return 'bg-success/20 border-success/40';
-    if (verdict.includes('BULLISH')) return 'bg-success/15 border-success/30';
-    if (verdict.includes('STRONG BEARISH')) return 'bg-destructive/20 border-destructive/40';
-    if (verdict.includes('BEARISH')) return 'bg-destructive/15 border-destructive/30';
-    return 'bg-warning/15 border-warning/30';
+    if (verdict.includes('BULLISH')) return 'bg-success/10 border-success/20';
+    if (verdict.includes('BEARISH')) return 'bg-destructive/10 border-destructive/20';
+    return 'bg-muted/10 border-muted/20';
   };
 
   return (
-    <Card className="bg-card border-border overflow-hidden">
-      <CardHeader className="p-4 sm:p-6 pb-3">
-        <div className="flex items-center gap-2">
-          <Zap className="h-5 w-5 text-primary" />
-          <CardTitle className="text-lg sm:text-xl">COT Pair Analyzer</CardTitle>
-        </div>
-        <CardDescription className="text-xs sm:text-sm">
-          Select any two currencies to see institutional positioning — are the big players bullish or bearish on this pair?
+    <Card className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm">
+      <CardHeader>
+        <CardTitle className="text-foreground flex items-center gap-2 font-display-hero text-xl">
+          <Zap className="w-5 h-5 text-primary" />
+          COT Pair Analyzer
+        </CardTitle>
+        <CardDescription>
+          Compare institutional positioning between any two currencies. Data from CFTC report Mar 29, 2026 (as of Mar 24).
         </CardDescription>
       </CardHeader>
-
-      <CardContent className="p-4 sm:p-6 pt-0 space-y-5">
+      <CardContent className="space-y-6">
         {/* Currency Selectors */}
-        <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
-          <div className="flex-1 min-w-[120px]">
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Base Currency</label>
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <div className="flex-1 w-full">
+            <label className="text-xs text-muted-foreground mb-1 block font-medium">Base Currency</label>
             <Select value={baseCurrency} onValueChange={setBaseCurrency}>
-              <SelectTrigger className="bg-background border-border">
+              <SelectTrigger className="bg-background/50 border-border/30 rounded-xl">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -143,13 +130,13 @@ const COTPairAnalyzer = () => {
               </SelectContent>
             </Select>
           </div>
-
-          <ArrowRight className="h-5 w-5 text-muted-foreground mt-5 flex-shrink-0" />
-
-          <div className="flex-1 min-w-[120px]">
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Quote Currency</label>
+          
+          <ArrowRight className="w-5 h-5 text-muted-foreground mt-4 hidden sm:block" />
+          
+          <div className="flex-1 w-full">
+            <label className="text-xs text-muted-foreground mb-1 block font-medium">Quote Currency</label>
             <Select value={quoteCurrency} onValueChange={setQuoteCurrency}>
-              <SelectTrigger className="bg-background border-border">
+              <SelectTrigger className="bg-background/50 border-border/30 rounded-xl">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -168,144 +155,104 @@ const COTPairAnalyzer = () => {
 
         {analysis && (
           <>
-            {/* Verdict Banner */}
-            <div className={`rounded-xl border-2 p-4 text-center ${getVerdictBg(analysis.verdict)}`}>
-              <div className="text-sm text-muted-foreground mb-1">
-                {FLAG_EMOJIS[baseCurrency]} {baseCurrency}/{FLAG_EMOJIS[quoteCurrency]} {quoteCurrency} Institutional Bias
+            {/* Verdict */}
+            <div className={`rounded-xl p-5 border ${getVerdictBg(analysis.verdict)} text-center`}>
+              <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Institutional Verdict</div>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-3xl font-display-hero font-bold">
+                  {FLAG_EMOJIS[baseCurrency]}{baseCurrency}/{FLAG_EMOJIS[quoteCurrency]}{quoteCurrency}
+                </span>
               </div>
-              <div className={`text-2xl sm:text-3xl font-black ${getVerdictColor(analysis.verdict)}`}>
+              <div className={`text-2xl font-bold mt-2 ${getVerdictColor(analysis.verdict)}`}>
                 {analysis.verdict}
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                Based on CFTC COT Report — March 19, 2026
               </div>
             </div>
 
-            {/* Bull vs Bear Visual */}
+            {/* Bull/Bear Meter */}
             <div className="space-y-3">
-              <div className="flex justify-between items-center text-sm font-medium">
-                <span className="flex items-center gap-1.5 text-success">
-                  <TrendingUp className="h-4 w-4" />
-                  Bulls {analysis.bullPercent}%
+              <div className="flex justify-between text-sm">
+                <span className="flex items-center gap-1 text-success font-medium">
+                  <TrendingUp className="w-4 h-4" /> Bulls {analysis.bullPercent}%
                 </span>
-                <span className="flex items-center gap-1.5 text-destructive">
-                  Bears {analysis.bearPercent}%
-                  <TrendingDown className="h-4 w-4" />
+                <span className="flex items-center gap-1 text-destructive font-medium">
+                  Bears {analysis.bearPercent}% <TrendingDown className="w-4 h-4" />
                 </span>
               </div>
-
-              {/* Tug-of-war bar */}
-              <div className="relative h-10 rounded-full overflow-hidden bg-muted/30 border border-border">
+              <div className="relative h-3 bg-destructive/20 rounded-full overflow-hidden">
                 <div
-                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-success to-success/70 transition-all duration-700 ease-out flex items-center justify-end pr-2"
+                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-success to-success/80 rounded-full transition-all duration-500"
                   style={{ width: `${analysis.bullPercent}%` }}
-                >
-                  {analysis.bullPercent > 25 && (
-                    <span className="text-xs font-bold text-success-foreground drop-shadow-sm">
-                      {formatContracts(analysis.bullContracts)}
-                    </span>
-                  )}
-                </div>
-                <div
-                  className="absolute inset-y-0 right-0 bg-gradient-to-l from-destructive to-destructive/70 transition-all duration-700 ease-out flex items-center justify-start pl-2"
-                  style={{ width: `${analysis.bearPercent}%` }}
-                >
-                  {analysis.bearPercent > 25 && (
-                    <span className="text-xs font-bold text-destructive-foreground drop-shadow-sm">
-                      {formatContracts(analysis.bearContracts)}
-                    </span>
-                  )}
-                </div>
-                {/* Center marker */}
-                <div className="absolute inset-y-0 left-1/2 w-0.5 bg-foreground/30 z-10" />
+                />
+              </div>
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{formatContracts(analysis.bullContracts)} contracts</span>
+                <span>{formatContracts(analysis.bearContracts)} contracts</span>
               </div>
             </div>
 
             {/* Individual Currency Breakdown */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Base Currency */}
-              <div className="rounded-lg border border-border bg-background/50 p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-sm">{FLAG_EMOJIS[baseCurrency]} {baseCurrency}</span>
-                  <Badge className={
-                    analysis.base.netPosition > 5000 ? 'bg-success/20 text-success border-success/30' :
-                    analysis.base.netPosition < -5000 ? 'bg-destructive/20 text-destructive border-destructive/30' :
-                    'bg-warning/20 text-warning border-warning/30'
-                  }>
-                    {analysis.base.sentiment}
-                  </Badge>
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Net Position</span>
-                  <span className={`font-bold ${analysis.base.netPosition > 0 ? 'text-success' : 'text-destructive'}`}>
-                    {analysis.base.netPosition > 0 ? '+' : ''}{formatContracts(analysis.base.netPosition)}
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-success/10 rounded px-2 py-1 text-center">
-                    <div className="text-success/70">Longs</div>
-                    <div className="font-bold text-success">{formatContracts(analysis.base.long)}</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[analysis.base, analysis.quote].map((curr) => (
+                <div key={curr.currency} className="rounded-xl bg-muted/20 p-4 border border-border/20">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-bold text-foreground flex items-center gap-2">
+                      {FLAG_EMOJIS[curr.currency]} {curr.currency}
+                    </span>
+                    <Badge variant="secondary" className={`text-xs ${
+                      curr.sentiment === 'BULLISH' ? 'bg-success/20 text-success' :
+                      curr.sentiment === 'BEARISH' ? 'bg-destructive/20 text-destructive' :
+                      'bg-muted/30 text-muted-foreground'
+                    }`}>
+                      {curr.sentiment}
+                    </Badge>
                   </div>
-                  <div className="bg-destructive/10 rounded px-2 py-1 text-center">
-                    <div className="text-destructive/70">Shorts</div>
-                    <div className="font-bold text-destructive">{formatContracts(analysis.base.short)}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Quote Currency */}
-              <div className="rounded-lg border border-border bg-background/50 p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-sm">{FLAG_EMOJIS[quoteCurrency]} {quoteCurrency}</span>
-                  <Badge className={
-                    analysis.quote.netPosition > 5000 ? 'bg-success/20 text-success border-success/30' :
-                    analysis.quote.netPosition < -5000 ? 'bg-destructive/20 text-destructive border-destructive/30' :
-                    'bg-warning/20 text-warning border-warning/30'
-                  }>
-                    {analysis.quote.sentiment}
-                  </Badge>
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Net Position</span>
-                  <span className={`font-bold ${analysis.quote.netPosition > 0 ? 'text-success' : 'text-destructive'}`}>
-                    {analysis.quote.netPosition > 0 ? '+' : ''}{formatContracts(analysis.quote.netPosition)}
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-success/10 rounded px-2 py-1 text-center">
-                    <div className="text-success/70">Longs</div>
-                    <div className="font-bold text-success">{formatContracts(analysis.quote.long)}</div>
-                  </div>
-                  <div className="bg-destructive/10 rounded px-2 py-1 text-center">
-                    <div className="text-destructive/70">Shorts</div>
-                    <div className="font-bold text-destructive">{formatContracts(analysis.quote.short)}</div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Net Position</span>
+                      <span className={`font-mono font-bold ${curr.netPosition > 0 ? 'text-success' : 'text-destructive'}`}>
+                        {curr.netPosition > 0 ? '+' : ''}{curr.netPosition.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Weekly Δ</span>
+                      <span className={`font-mono text-xs ${curr.weeklyChange > 0 ? 'text-success' : 'text-destructive'}`}>
+                        {curr.weeklyChange > 0 ? '+' : ''}{curr.weeklyChange.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Long / Short</span>
+                      <span className="font-mono text-foreground">
+                        {formatContracts(curr.long)} / {formatContracts(curr.short)}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
 
-            {/* Explanation */}
-            <div className="rounded-lg bg-muted/30 border border-border p-3 text-xs sm:text-sm text-muted-foreground space-y-1.5">
-              <div className="flex items-start gap-2">
-                <Shield className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                <div>
-                  <strong className="text-foreground">How to read this:</strong> Institutions are{' '}
-                  <strong className={analysis.base.netPosition > 0 ? 'text-success' : 'text-destructive'}>
-                    {analysis.base.netPosition > 0 ? 'buying' : 'selling'} {baseCurrency}
-                  </strong>{' '}
-                  ({formatContracts(Math.abs(analysis.base.netPosition))} net contracts) and{' '}
-                  <strong className={analysis.quote.netPosition > 0 ? 'text-success' : 'text-destructive'}>
-                    {analysis.quote.netPosition > 0 ? 'buying' : 'selling'} {quoteCurrency}
-                  </strong>{' '}
-                  ({formatContracts(Math.abs(analysis.quote.netPosition))} net contracts).
-                  {analysis.isBullish
-                    ? ` This combination favors ${analysis.pair} to the UPSIDE.`
-                    : analysis.pairScore < -5
-                    ? ` This combination favors ${analysis.pair} to the DOWNSIDE.`
-                    : ` Institutional positioning is mixed — no strong directional bias.`
-                  }
-                </div>
+            {/* Smart Money Insight */}
+            <div className="rounded-xl bg-primary/5 p-4 border border-primary/20">
+              <div className="flex items-center gap-2 mb-2">
+                <Shield className="w-4 h-4 text-primary" />
+                <span className="font-semibold text-foreground text-sm">Smart Money Insight</span>
               </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {analysis.isBullish ? (
+                  <>Institutional money favors <strong className="text-success">{baseCurrency}</strong> over <strong className="text-destructive">{quoteCurrency}</strong>. 
+                  Hedge funds are net long {baseCurrency} ({formatContracts(analysis.base.long)} contracts) while being {analysis.quote.netPosition < 0 ? 'net short' : 'less bullish on'} {quoteCurrency}. 
+                  This creates a <strong className="text-success">{analysis.verdict.toLowerCase()}</strong> bias for {analysis.pair}.</>
+                ) : (
+                  <>Institutional money favors <strong className="text-success">{quoteCurrency}</strong> over <strong className="text-destructive">{baseCurrency}</strong>. 
+                  Hedge funds are {analysis.base.netPosition < 0 ? 'net short' : 'less bullish on'} {baseCurrency} while being more bullish on {quoteCurrency}. 
+                  This creates a <strong className="text-destructive">{analysis.verdict.toLowerCase()}</strong> bias for {analysis.pair}.</>
+                )}
+              </p>
+            </div>
+
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground">
+                Data: CFTC Financial Traders Report • Released Mar 29, 2026 • Positions as of Mar 24, 2026
+              </p>
             </div>
           </>
         )}
