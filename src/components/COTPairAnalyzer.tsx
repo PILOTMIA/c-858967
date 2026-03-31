@@ -159,7 +159,7 @@ const COTPairAnalyzer = () => {
               <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Institutional Verdict</div>
               <div className="flex items-center justify-center gap-2">
                 <span className="text-3xl font-display-hero font-bold">
-                  {FLAG_EMOJIS[baseCurrency]}{baseCurrency}/{FLAG_EMOJIS[quoteCurrency]}{quoteCurrency}
+                  {baseCurrency}/{quoteCurrency}
                 </span>
               </div>
               <div className={`text-2xl font-bold mt-2 ${getVerdictColor(analysis.verdict)}`}>
