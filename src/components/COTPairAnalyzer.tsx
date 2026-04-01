@@ -236,15 +236,39 @@ const COTPairAnalyzer = () => {
                 <span className="font-semibold text-foreground text-sm">Smart Money Insight</span>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                {analysis.isBullish ? (
-                  <>Institutional money favors <strong className="text-success">{baseCurrency}</strong> over <strong className="text-destructive">{quoteCurrency}</strong>. 
-                  Hedge funds are net long {baseCurrency} ({formatContracts(analysis.base.long)} contracts) while being {analysis.quote.netPosition < 0 ? 'net short' : 'less bullish on'} {quoteCurrency}. 
-                  This creates a <strong className="text-success">{analysis.verdict.toLowerCase()}</strong> bias for {analysis.pair}.</>
-                ) : (
-                  <>Institutional money favors <strong className="text-success">{quoteCurrency}</strong> over <strong className="text-destructive">{baseCurrency}</strong>. 
-                  Hedge funds are {analysis.base.netPosition < 0 ? 'net short' : 'less bullish on'} {baseCurrency} while being more bullish on {quoteCurrency}. 
-                  This creates a <strong className="text-destructive">{analysis.verdict.toLowerCase()}</strong> bias for {analysis.pair}.</>
-                )}
+                {(() => {
+                  const baseNet = analysis.base.netPosition;
+                  const quoteNet = analysis.quote.netPosition;
+                  const baseDesc = baseNet > 0 
+                    ? `net long ${baseCurrency} (${formatContracts(baseNet)} contracts)` 
+                    : `net short ${baseCurrency} (${formatContracts(Math.abs(baseNet))} contracts)`;
+                  const quoteDesc = quoteNet > 0 
+                    ? `net long ${quoteCurrency} (${formatContracts(quoteNet)} contracts)` 
+                    : `net short ${quoteCurrency} (${formatContracts(Math.abs(quoteNet))} contracts)`;
+                  
+                  const baseChg = analysis.base.weeklyChange;
+                  const quoteChg = analysis.quote.weeklyChange;
+                  const baseChgDesc = baseChg > 0 
+                    ? `adding ${formatContracts(Math.abs(baseChg))} net long contracts` 
+                    : `adding ${formatContracts(Math.abs(baseChg))} net short contracts`;
+                  const quoteChgDesc = quoteChg > 0 
+                    ? `adding ${formatContracts(Math.abs(quoteChg))} net long contracts` 
+                    : `adding ${formatContracts(Math.abs(quoteChg))} net short contracts`;
+
+                  if (analysis.isBullish) {
+                    return (
+                      <>Leveraged funds are {baseDesc} and {quoteDesc}. 
+                      This week, {baseCurrency} positioning shifted with funds {baseChgDesc}, while {quoteCurrency} saw funds {quoteChgDesc}. 
+                      The net differential favors <strong className="text-success">{baseCurrency}</strong> strength, creating a <strong className="text-success">{analysis.verdict.toLowerCase()}</strong> institutional bias for {baseCurrency}/{quoteCurrency}.</>
+                    );
+                  } else {
+                    return (
+                      <>Leveraged funds are {baseDesc} and {quoteDesc}. 
+                      This week, {baseCurrency} positioning shifted with funds {baseChgDesc}, while {quoteCurrency} saw funds {quoteChgDesc}. 
+                      The net differential favors <strong className="text-success">{quoteCurrency}</strong> strength, creating a <strong className="text-destructive">{analysis.verdict.toLowerCase()}</strong> institutional bias for {baseCurrency}/{quoteCurrency}.</>
+                    );
+                  }
+                })()}
               </p>
             </div>
 
