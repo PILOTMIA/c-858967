@@ -238,6 +238,73 @@ const COTPairAnalyzer = () => {
               ))}
             </div>
 
+            {/* Dealer & Asset Manager Positioning */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-primary" />
+                Institutional Breakdown
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[analysis.base, analysis.quote].map((curr) => {
+                  const dealerNet = curr.dealerLong - curr.dealerShort;
+                  const amNet = curr.assetManagerLong - curr.assetManagerShort;
+                  return (
+                    <div key={`inst-${curr.currency}`} className="rounded-xl bg-muted/10 p-4 border border-border/20 space-y-3">
+                      <span className="font-bold text-foreground text-sm">{FLAG_EMOJIS[curr.currency]} {curr.currency}</span>
+                      
+                      {/* Dealer */}
+                      <div className="p-2.5 rounded-lg bg-background/50 border border-border/10">
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <Building2 className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-xs font-medium text-muted-foreground">Dealers/Intermediaries</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-muted-foreground">Net</span>
+                          <span className={`font-mono font-bold text-sm ${dealerNet > 0 ? 'text-success' : dealerNet < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                            {dealerNet > 0 ? '+' : ''}{formatContracts(dealerNet)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center mt-0.5">
+                          <span className="text-xs text-muted-foreground">L / S</span>
+                          <span className="font-mono text-xs text-foreground">{formatContracts(curr.dealerLong)} / {formatContracts(curr.dealerShort)}</span>
+                        </div>
+                        <div className="flex justify-between items-center mt-0.5">
+                          <span className="text-xs text-muted-foreground">Weekly Δ</span>
+                          <span className={`font-mono text-xs ${curr.dealerWeeklyChange > 0 ? 'text-success' : 'text-destructive'}`}>
+                            {curr.dealerWeeklyChange > 0 ? '+' : ''}{formatContracts(curr.dealerWeeklyChange)}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Asset Manager */}
+                      <div className="p-2.5 rounded-lg bg-background/50 border border-border/10">
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <BarChart3 className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-xs font-medium text-muted-foreground">Asset Managers</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-muted-foreground">Net</span>
+                          <span className={`font-mono font-bold text-sm ${amNet > 0 ? 'text-success' : amNet < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                            {amNet > 0 ? '+' : ''}{formatContracts(amNet)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center mt-0.5">
+                          <span className="text-xs text-muted-foreground">L / S</span>
+                          <span className="font-mono text-xs text-foreground">{formatContracts(curr.assetManagerLong)} / {formatContracts(curr.assetManagerShort)}</span>
+                        </div>
+                        <div className="flex justify-between items-center mt-0.5">
+                          <span className="text-xs text-muted-foreground">Weekly Δ</span>
+                          <span className={`font-mono text-xs ${curr.assetManagerWeeklyChange > 0 ? 'text-success' : 'text-destructive'}`}>
+                            {curr.assetManagerWeeklyChange > 0 ? '+' : ''}{formatContracts(curr.assetManagerWeeklyChange)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Smart Money Insight */}
             <div className="rounded-xl bg-primary/5 p-4 border border-primary/20">
               <div className="flex items-center gap-2 mb-2">
