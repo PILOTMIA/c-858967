@@ -331,17 +331,36 @@ const COTPairAnalyzer = () => {
                     ? `adding ${formatContracts(Math.abs(quoteChg))} net long contracts` 
                     : `adding ${formatContracts(Math.abs(quoteChg))} net short contracts`;
 
+                  // Dealer & AM alignment check
+                  const baseDealerNet = analysis.base.dealerLong - analysis.base.dealerShort;
+                  const quoteDealerNet = analysis.quote.dealerLong - analysis.quote.dealerShort;
+                  const baseAMNet = analysis.base.assetManagerLong - analysis.base.assetManagerShort;
+                  const quoteAMNet = analysis.quote.assetManagerLong - analysis.quote.assetManagerShort;
+                  
+                  const dealerFavorsBase = baseDealerNet - quoteDealerNet > 0;
+                  const amFavorsBase = baseAMNet - quoteAMNet > 0;
+                  const leveragedFavorsBase = analysis.isBullish;
+                  
+                  const allAligned = (dealerFavorsBase === amFavorsBase) && (amFavorsBase === leveragedFavorsBase);
+                  const twoOfThree = (dealerFavorsBase === amFavorsBase) || (amFavorsBase === leveragedFavorsBase) || (dealerFavorsBase === leveragedFavorsBase);
+
+                  const alignmentNote = allAligned 
+                    ? <> <strong className="text-primary">All three institutional categories (Dealers, Asset Managers, Leveraged Funds) are aligned</strong> — high conviction signal.</>
+                    : twoOfThree 
+                    ? <> Two of three institutional categories agree on direction — moderate conviction.</>
+                    : <> Institutional categories are divergent — exercise caution.</>;
+
                   if (analysis.isBullish) {
                     return (
                       <>Leveraged funds are {baseDesc} and {quoteDesc}. 
                       This week, {baseCurrency} positioning shifted with funds {baseChgDesc}, while {quoteCurrency} saw funds {quoteChgDesc}. 
-                      The net differential favors <strong className="text-success">{baseCurrency}</strong> strength, creating a <strong className="text-success">{analysis.verdict.toLowerCase()}</strong> institutional bias for {baseCurrency}/{quoteCurrency}.</>
+                      The net differential favors <strong className="text-success">{baseCurrency}</strong> strength, creating a <strong className="text-success">{analysis.verdict.toLowerCase()}</strong> institutional bias for {baseCurrency}/{quoteCurrency}.{alignmentNote}</>
                     );
                   } else {
                     return (
                       <>Leveraged funds are {baseDesc} and {quoteDesc}. 
                       This week, {baseCurrency} positioning shifted with funds {baseChgDesc}, while {quoteCurrency} saw funds {quoteChgDesc}. 
-                      The net differential favors <strong className="text-success">{quoteCurrency}</strong> strength, creating a <strong className="text-destructive">{analysis.verdict.toLowerCase()}</strong> institutional bias for {baseCurrency}/{quoteCurrency}.</>
+                      The net differential favors <strong className="text-success">{quoteCurrency}</strong> strength, creating a <strong className="text-destructive">{analysis.verdict.toLowerCase()}</strong> institutional bias for {baseCurrency}/{quoteCurrency}.{alignmentNote}</>
                     );
                   }
                 })()}
