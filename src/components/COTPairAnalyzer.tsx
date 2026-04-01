@@ -2,25 +2,34 @@ import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, ArrowRight, Zap, Shield } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowRight, Zap, Shield, Building2, BarChart3 } from "lucide-react";
 
-// COT net positions from March 29, 2026 CFTC report (leveraged funds, data as of March 24, 2026)
-const COT_POSITIONS: Record<string, {
+// COT positions from March 29, 2026 CFTC report (data as of March 24, 2026)
+// All categories: Leveraged Funds, Dealer/Intermediary, Asset Manager/Institutional
+interface CurrencyPositioning {
   netPosition: number;
   long: number;
   short: number;
   sentiment: string;
   weeklyChange: number;
-}> = {
-  EUR: { netPosition: -13538, long: 97985, short: 111523, sentiment: 'BEARISH', weeklyChange: -6586 },
-  GBP: { netPosition: 15716, long: 47450, short: 31734, sentiment: 'BULLISH', weeklyChange: 3948 },
-  JPY: { netPosition: -54852, long: 67921, short: 122773, sentiment: 'BEARISH', weeklyChange: 10577 },
-  CHF: { netPosition: 235, long: 7950, short: 7715, sentiment: 'NEUTRAL', weeklyChange: -278 },
-  AUD: { netPosition: 49145, long: 68577, short: 19432, sentiment: 'BULLISH', weeklyChange: 3786 },
-  CAD: { netPosition: -31700, long: 26751, short: 58451, sentiment: 'BEARISH', weeklyChange: 6152 },
-  MXN: { netPosition: 54787, long: 75059, short: 20272, sentiment: 'BULLISH', weeklyChange: 7841 },
-  NZD: { netPosition: -16730, long: 7461, short: 24191, sentiment: 'BEARISH', weeklyChange: -813 },
-  USD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0 },
+  dealerLong: number;
+  dealerShort: number;
+  dealerWeeklyChange: number;
+  assetManagerLong: number;
+  assetManagerShort: number;
+  assetManagerWeeklyChange: number;
+}
+
+const COT_POSITIONS: Record<string, CurrencyPositioning> = {
+  EUR: { netPosition: -13538, long: 97985, short: 111523, sentiment: 'BEARISH', weeklyChange: -6586, dealerLong: 39995, dealerShort: 357133, dealerWeeklyChange: 13278, assetManagerLong: 446373, assetManagerShort: 158433, assetManagerWeeklyChange: -6598 },
+  GBP: { netPosition: 15716, long: 47450, short: 31734, sentiment: 'BULLISH', weeklyChange: 3948, dealerLong: 128153, dealerShort: 46144, dealerWeeklyChange: -7493, assetManagerLong: 28499, assetManagerShort: 122962, assetManagerWeeklyChange: 1495 },
+  JPY: { netPosition: -54852, long: 67921, short: 122773, sentiment: 'BEARISH', weeklyChange: 10577, dealerLong: 60117, dealerShort: 42836, dealerWeeklyChange: -12818, assetManagerLong: 58266, assetManagerShort: 64516, assetManagerWeeklyChange: -5811 },
+  CHF: { netPosition: 235, long: 7950, short: 7715, sentiment: 'NEUTRAL', weeklyChange: -278, dealerLong: 47188, dealerShort: 6284, dealerWeeklyChange: 2473, assetManagerLong: 5541, assetManagerShort: 42537, assetManagerWeeklyChange: -2349 },
+  AUD: { netPosition: 49145, long: 68577, short: 19432, sentiment: 'BULLISH', weeklyChange: 3786, dealerLong: 32930, dealerShort: 152299, dealerWeeklyChange: 1326, assetManagerLong: 103155, assetManagerShort: 59229, assetManagerWeeklyChange: 1997 },
+  CAD: { netPosition: -31700, long: 26751, short: 58451, sentiment: 'BEARISH', weeklyChange: 6152, dealerLong: 30119, dealerShort: 37684, dealerWeeklyChange: 2254, assetManagerLong: 67647, assetManagerShort: 41518, assetManagerWeeklyChange: -3939 },
+  MXN: { netPosition: 54787, long: 75059, short: 20272, sentiment: 'BULLISH', weeklyChange: 7841, dealerLong: 8722, dealerShort: 44498, dealerWeeklyChange: -542, assetManagerLong: 72526, assetManagerShort: 23942, assetManagerWeeklyChange: -3524 },
+  NZD: { netPosition: -16730, long: 7461, short: 24191, sentiment: 'BEARISH', weeklyChange: -813, dealerLong: 43769, dealerShort: 4053, dealerWeeklyChange: 3672, assetManagerLong: 6572, assetManagerShort: 31584, assetManagerWeeklyChange: -2910 },
+  USD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 0, dealerShort: 0, dealerWeeklyChange: 0, assetManagerLong: 0, assetManagerShort: 0, assetManagerWeeklyChange: 0 },
 };
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'NZD', 'MXN'];
