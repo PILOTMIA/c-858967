@@ -1,154 +1,146 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, Send, MessageCircle, BookOpen } from 'lucide-react';
+import { Bot, Send, BookOpen, Loader2, Trash2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
-  id: number;
-  text: string;
-  isBot: boolean;
-  timestamp: Date;
+  role: 'user' | 'assistant';
+  content: string;
 }
+
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trading-chat`;
 
 const TradingBot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: 1,
-      text: "Hello! I'm your AI trading mentor based on 'Trading for a Living' principles. Ask me about the Triple Screen system, risk management, or market psychology.",
-      isBot: true,
-      timestamp: new Date()
-    }
+      role: 'assistant',
+      content: "Hey there! I'm your AI trading mentor, grounded in Dr. Elder's *Trading for a Living* principles. Ask me about the Triple Screen system, risk management, trading psychology, or institutional positioning — I'm here to help you level up your trading game.",
+    },
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
-  const elderTradingKnowledge = {
-    'triple screen': `The Triple Screen Trading System by Dr. Elder:
-    
-Screen 1: Market Tide (Weekly) - Use trend-following indicators like MACD-Histogram
-Screen 2: Market Wave (Daily) - Use oscillators like Force Index when trend is established  
-Screen 3: Market Ripple (Intraday) - Enter in direction of weekly trend when daily gives signal
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
 
-Never trade against the weekly trend!`,
+  const streamChat = useCallback(async (allMessages: Message[]) => {
+    setIsLoading(true);
+    let assistantSoFar = '';
 
-    'risk management': `Dr. Elder's Risk Management Rules:
-    
-• 2% Rule: Never risk more than 2% of account on any single trade
-• 6% Rule: Never have more than 6% of account at risk across all open positions
-• Account Equity Rule: Risk only 25% of previous month's profit on aggressive trades
-• The goal is to stay in the game long enough to win
-
-"Good traders manage risk. Great traders manage risk religiously."`,
-
-    'psychology': `Trading Psychology from Elder:
-    
-• Fear and Greed are your enemies
-• Keep a trading diary - track both wins AND emotional state
-• Never add to losing positions (averaging down kills accounts)
-• Take partial profits to stay rational
-• The market doesn't care about your mortgage payment
-
-"The market is a huge crowd of people. Every tick represents the balance of fear and greed."`,
-
-    'force index': `Force Index by Dr. Elder:
-    
-Formula: (Close - Previous Close) × Volume
-• Confirms breakouts when volume surges
-• Divergences signal trend weakness
-• Use 2-period for timing, 13-period for trend
-• Best used with Triple Screen system
-
-Rising Force Index = Bulls in control
-Falling Force Index = Bears in control`,
-
-    'macd': `MACD-Histogram (Elder's preferred indicator):
-    
-• Shows momentum of momentum
-• Buy when histogram stops falling and starts rising
-• Sell when histogram stops rising and starts falling
-• Divergences between price and histogram are powerful signals
-• Use on weekly charts for Triple Screen System
-
-"MACD-Histogram is like a speedometer for trends."`,
-
-    'money management': `Money Management Principles:
-    
-• Optimal F: Never risk your full optimal percentage
-• Compounding: Increase position size as account grows
-• Drawdown Control: Reduce size after losses
-• Profit Taking: Bank some profits regularly
-• Emergency Fund: Keep cash reserves
-
-"Money management separates winners from losers more than any other factor."`,
-
-    'default': `I can help you with Dr. Elder's concepts:
-    
-📊 Triple Screen Trading System
-💰 Risk & Money Management 
-🧠 Trading Psychology
-📈 Force Index & MACD
-⚡ Market Entry/Exit Timing
-📚 Trading Discipline
-
-Ask me about any of these topics or specific trading situations!`
-  };
-
-  const generateBotResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
-    
-    // Check for Elder's specific concepts
-    if (lowerMessage.includes('triple screen') || lowerMessage.includes('three screen')) 
-      return elderTradingKnowledge['triple screen'];
-    
-    if (lowerMessage.includes('risk') || lowerMessage.includes('management') || lowerMessage.includes('2%')) 
-      return elderTradingKnowledge['risk management'];
-    
-    if (lowerMessage.includes('psychology') || lowerMessage.includes('emotion') || lowerMessage.includes('fear') || lowerMessage.includes('greed')) 
-      return elderTradingKnowledge['psychology'];
-    
-    if (lowerMessage.includes('force index') || lowerMessage.includes('force')) 
-      return elderTradingKnowledge['force index'];
-    
-    if (lowerMessage.includes('macd') || lowerMessage.includes('histogram')) 
-      return elderTradingKnowledge['macd'];
-    
-    if (lowerMessage.includes('money') || lowerMessage.includes('position size') || lowerMessage.includes('compounding')) 
-      return elderTradingKnowledge['money management'];
-    
-    // Market-specific responses (keeping some original ones)
-    if (lowerMessage.includes('eur') || lowerMessage.includes('euro')) 
-      return 'For EUR/USD: Apply Triple Screen - check weekly trend first, then daily signals. Never trade against the weekly direction. Current resistance around 1.0880.';
-    
-    if (lowerMessage.includes('gold') || lowerMessage.includes('xau')) 
-      return 'Gold analysis: Use Force Index to confirm volume behind moves. Check for divergences between price and MACD-Histogram. Key support at $2,050.';
-    
-    return elderTradingKnowledge['default'];
-  };
-
-  const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
-
-    const userMessage: Message = {
-      id: Date.now(),
-      text: inputMessage,
-      isBot: false,
-      timestamp: new Date()
+    const upsertAssistant = (chunk: string) => {
+      assistantSoFar += chunk;
+      setMessages((prev) => {
+        const last = prev[prev.length - 1];
+        if (last?.role === 'assistant' && prev.length > allMessages.length) {
+          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantSoFar } : m));
+        }
+        return [...prev, { role: 'assistant', content: assistantSoFar }];
+      });
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    try {
+      const resp = await fetch(CHAT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ messages: allMessages }),
+      });
 
-    setTimeout(() => {
-      const botResponse: Message = {
-        id: Date.now() + 1,
-        text: generateBotResponse(inputMessage),
-        isBot: true,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, botResponse]);
-    }, 1000);
+      if (resp.status === 429) {
+        toast({ title: 'Rate limited', description: 'Please wait a moment and try again.', variant: 'destructive' });
+        setIsLoading(false);
+        return;
+      }
+      if (resp.status === 402) {
+        toast({ title: 'Service unavailable', description: 'AI credits exhausted. Please try again later.', variant: 'destructive' });
+        setIsLoading(false);
+        return;
+      }
+      if (!resp.ok || !resp.body) throw new Error('Failed to connect');
 
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = '';
+      let streamDone = false;
+
+      while (!streamDone) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (line.startsWith(':') || line.trim() === '') continue;
+          if (!line.startsWith('data: ')) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') { streamDone = true; break; }
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) upsertAssistant(content);
+          } catch {
+            textBuffer = line + '\n' + textBuffer;
+            break;
+          }
+        }
+      }
+
+      // flush remaining
+      if (textBuffer.trim()) {
+        for (let raw of textBuffer.split('\n')) {
+          if (!raw) continue;
+          if (raw.endsWith('\r')) raw = raw.slice(0, -1);
+          if (raw.startsWith(':') || raw.trim() === '') continue;
+          if (!raw.startsWith('data: ')) continue;
+          const jsonStr = raw.slice(6).trim();
+          if (jsonStr === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) upsertAssistant(content);
+          } catch { /* ignore partial */ }
+        }
+      }
+    } catch (e) {
+      console.error('Chat error:', e);
+      toast({ title: 'Connection error', description: 'Could not reach the AI assistant. Please try again.', variant: 'destructive' });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast]);
+
+  const handleSendMessage = useCallback(() => {
+    if (!inputMessage.trim() || isLoading) return;
+    const userMsg: Message = { role: 'user', content: inputMessage.trim() };
+    const updated = [...messages, userMsg];
+    setMessages(updated);
     setInputMessage('');
+    streamChat(updated);
+  }, [inputMessage, isLoading, messages, streamChat]);
+
+  const handleClearChat = () => {
+    setMessages([
+      {
+        role: 'assistant',
+        content: "Chat cleared! What trading topic would you like to explore?",
+      },
+    ]);
   };
 
   if (!isOpen) {
@@ -165,48 +157,61 @@ Ask me about any of these topics or specific trading situations!`
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-80">
+    <div className="fixed bottom-4 right-4 z-50 w-96 max-w-[calc(100vw-2rem)]">
       <Card className="bg-gray-900 border-gray-700">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-white flex items-center gap-2 text-base">
               <Bot className="w-5 h-5 text-blue-400" />
-              Trading Mentor
+              Trading Mentor AI
             </CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-white"
-            >
-              ×
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" onClick={handleClearChat} className="text-gray-400 hover:text-white h-7 w-7 p-0">
+                <Trash2 className="w-3.5 h-3.5" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white h-7 w-7 p-0">
+                ×
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="h-64 overflow-y-auto mb-4 space-y-2">
-            {messages.map((message) => (
+          <div ref={scrollRef} className="h-72 overflow-y-auto mb-3 space-y-3 pr-1 scrollbar-thin">
+            {messages.map((message, idx) => (
               <div
-                key={message.id}
-                className={`p-2 rounded text-sm ${
-                  message.isBot
+                key={idx}
+                className={`p-2.5 rounded-lg text-sm ${
+                  message.role === 'assistant'
                     ? 'bg-blue-900/30 text-blue-100'
-                    : 'bg-gray-700 text-white ml-4'
+                    : 'bg-gray-700 text-white ml-6'
                 }`}
               >
-                {message.text}
+                {message.role === 'assistant' ? (
+                  <div className="prose prose-sm prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0.5">
+                    <ReactMarkdown>{message.content}</ReactMarkdown>
+                  </div>
+                ) : (
+                  message.content
+                )}
               </div>
             ))}
+            {isLoading && messages[messages.length - 1]?.role === 'user' && (
+              <div className="flex items-center gap-2 text-blue-300 text-sm p-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Thinking...
+              </div>
+            )}
           </div>
           <div className="flex gap-2">
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              placeholder="Ask about Elder's methods..."
+              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+              placeholder="Ask about trading..."
               className="bg-gray-800 border-gray-600 text-white"
+              disabled={isLoading}
             />
-            <Button onClick={handleSendMessage} size="sm">
+            <Button onClick={handleSendMessage} size="sm" disabled={isLoading || !inputMessage.trim()}>
               <Send className="w-4 h-4" />
             </Button>
           </div>
