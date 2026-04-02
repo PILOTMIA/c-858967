@@ -1,11 +1,11 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { HeadphonesIcon, Send, X, Phone, Mail } from 'lucide-react';
+import { HeadphonesIcon, Send, X, Phone, Mail, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const CustomerServiceChat = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,11 +14,12 @@ const CustomerServiceChat = () => {
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!name || !email || !message) {
       toast({
         title: "Required fields missing",
@@ -31,41 +32,29 @@ const CustomerServiceChat = () => {
     setIsSubmitting(true);
 
     try {
-      // Create mailto link with the form data
-      const subject = `Customer Service Request from ${name}`;
-      const body = `
-Name: ${name}
-Email: ${email}
-Phone: ${phone || 'Not provided'}
-
-Message:
-${message}
-
----
-Sent from Men In Action LLC website
-      `;
-      
-      const mailtoLink = `mailto:opmeninactionllc@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      
-      // Open the user's email client
-      window.location.href = mailtoLink;
-      
-      toast({
-        title: "Email client opened",
-        description: "Your default email client should open with your message ready to send.",
+      const { error } = await supabase.functions.invoke('contact-form', {
+        body: { name, email, phone, message },
       });
 
-      // Reset form
+      if (error) throw error;
+
+      setIsSubmitted(true);
       setName('');
       setEmail('');
       setPhone('');
       setMessage('');
-      
+
+      toast({
+        title: "Message sent!",
+        description: "We'll get back to you within 24 hours.",
+      });
+
+      setTimeout(() => setIsSubmitted(false), 5000);
     } catch (error) {
-      console.error('Error opening email client:', error);
+      console.error('Error submitting form:', error);
       toast({
         title: "Error",
-        description: "Unable to open email client. Please contact us directly.",
+        description: "Failed to send your message. Please try again or contact us directly.",
         variant: "destructive",
       });
     } finally {
@@ -108,9 +97,8 @@ Sent from Men In Action LLC website
             Need help? We're here for you!
           </div>
         </CardHeader>
-        
+
         <CardContent className="space-y-4">
-          {/* Contact Information */}
           <div className="bg-gray-800 p-3 rounded-lg space-y-2">
             <h3 className="text-white font-semibold text-sm">Direct Contact</h3>
             <div className="flex items-center gap-2 text-sm text-gray-300">
@@ -123,59 +111,59 @@ Sent from Men In Action LLC website
             </div>
           </div>
 
-          {/* Contact Form */}
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="text-white text-sm font-medium">Send us a message:</div>
-            
-            <Input
-              placeholder="Your Name *"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-              required
-            />
-            
-            <Input
-              type="email"
-              placeholder="Your Email *"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-              required
-            />
-            
-            <Input
-              type="tel"
-              placeholder="Your Phone (optional)"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-            />
-            
-            <Textarea
-              placeholder="How can we help you? *"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 min-h-[80px]"
-              required
-            />
-            
-            <Button
-              type="submit"
-              disabled={isSubmitting || !name || !email || !message}
-              className="w-full bg-green-600 hover:bg-green-700 text-white"
-            >
-              {isSubmitting ? (
-                "Opening Email..."
-              ) : (
-                <>
-                  <Send className="w-4 h-4 mr-2" />
-                  Send Message
-                </>
-              )}
-            </Button>
-          </form>
-          
+          {isSubmitted ? (
+            <div className="text-center py-6 space-y-2">
+              <CheckCircle className="w-12 h-12 text-green-400 mx-auto" />
+              <p className="text-white font-medium">Message Received!</p>
+              <p className="text-gray-400 text-sm">We'll respond within 24 hours.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="text-white text-sm font-medium">Send us a message:</div>
+              <Input
+                placeholder="Your Name *"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                required
+              />
+              <Input
+                type="email"
+                placeholder="Your Email *"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                required
+              />
+              <Input
+                type="tel"
+                placeholder="Your Phone (optional)"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+              />
+              <Textarea
+                placeholder="How can we help you? *"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 min-h-[80px]"
+                required
+              />
+              <Button
+                type="submit"
+                disabled={isSubmitting || !name || !email || !message}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+              >
+                {isSubmitting ? "Sending..." : (
+                  <>
+                    <Send className="w-4 h-4 mr-2" />
+                    Send Message
+                  </>
+                )}
+              </Button>
+            </form>
+          )}
+
           <div className="text-xs text-gray-400 text-center">
             We typically respond within 24 hours
           </div>
