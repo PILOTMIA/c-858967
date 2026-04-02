@@ -21,7 +21,6 @@ const TradingBot = () => {
     startNewConversation,
     saveMessages,
     deleteConversation,
-    DEFAULT_MSG,
   } = useChatHistory();
 
   const [inputMessage, setInputMessage] = useState('');
