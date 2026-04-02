@@ -32,7 +32,7 @@ const CustomerServiceChat = () => {
     setIsSubmitting(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('contact-form', {
+      const { error } = await supabase.functions.invoke('contact-form', {
         body: { name, email, phone, message },
       });
 
