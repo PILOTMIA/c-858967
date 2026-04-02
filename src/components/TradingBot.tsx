@@ -2,27 +2,31 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, Send, BookOpen, Loader2, Trash2 } from 'lucide-react';
+import { Bot, Send, BookOpen, Loader2, Trash2, History, Plus, ChevronLeft } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useToast } from '@/hooks/use-toast';
-
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
+import { useChatHistory, type Message } from '@/hooks/useChatHistory';
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trading-chat`;
 
 const TradingBot = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: "Hey there! I'm your AI trading mentor, grounded in Dr. Elder's *Trading for a Living* principles. Ask me about the Triple Screen system, risk management, trading psychology, or institutional positioning — I'm here to help you level up your trading game.",
-    },
-  ]);
+  const {
+    userId,
+    conversations,
+    activeConversationId,
+    messages,
+    setMessages,
+    loading: historyLoading,
+    loadMessages,
+    startNewConversation,
+    saveMessages,
+    deleteConversation,
+  } = useChatHistory();
+
   const [inputMessage, setInputMessage] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -123,7 +127,17 @@ const TradingBot = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, setMessages]);
+
+  // Auto-save after assistant finishes responding
+  useEffect(() => {
+    if (!isLoading && userId && messages.length > 1) {
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg?.role === 'assistant') {
+        saveMessages(messages);
+      }
+    }
+  }, [isLoading]);
 
   const handleSendMessage = useCallback(() => {
     if (!inputMessage.trim() || isLoading) return;
@@ -132,15 +146,15 @@ const TradingBot = () => {
     setMessages(updated);
     setInputMessage('');
     streamChat(updated);
-  }, [inputMessage, isLoading, messages, streamChat]);
+  }, [inputMessage, isLoading, messages, streamChat, setMessages]);
 
   const handleClearChat = () => {
-    setMessages([
-      {
-        role: 'assistant',
-        content: "Chat cleared! What trading topic would you like to explore?",
-      },
-    ]);
+    startNewConversation();
+  };
+
+  const handleSelectConversation = (convId: string) => {
+    loadMessages(convId);
+    setShowHistory(false);
   };
 
   if (!isOpen) {
@@ -162,13 +176,33 @@ const TradingBot = () => {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-white flex items-center gap-2 text-base">
-              <Bot className="w-5 h-5 text-blue-400" />
-              Trading Mentor AI
+              {showHistory ? (
+                <>
+                  <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)} className="text-gray-400 hover:text-white h-7 w-7 p-0">
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  Chat History
+                </>
+              ) : (
+                <>
+                  <Bot className="w-5 h-5 text-blue-400" />
+                  Trading Mentor AI
+                </>
+              )}
             </CardTitle>
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="sm" onClick={handleClearChat} className="text-gray-400 hover:text-white h-7 w-7 p-0">
-                <Trash2 className="w-3.5 h-3.5" />
-              </Button>
+              {!showHistory && userId && (
+                <Button variant="ghost" size="sm" onClick={() => setShowHistory(true)} className="text-gray-400 hover:text-white h-7 w-7 p-0" title="Chat history">
+                  <History className="w-3.5 h-3.5" />
+                </Button>
+              )}
+              {!showHistory && (
+                <>
+                  <Button variant="ghost" size="sm" onClick={handleClearChat} className="text-gray-400 hover:text-white h-7 w-7 p-0" title="New chat">
+                    <Plus className="w-3.5 h-3.5" />
+                  </Button>
+                </>
+              )}
               <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white h-7 w-7 p-0">
                 ×
               </Button>
@@ -176,45 +210,86 @@ const TradingBot = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div ref={scrollRef} className="h-72 overflow-y-auto mb-3 space-y-3 pr-1 scrollbar-thin">
-            {messages.map((message, idx) => (
-              <div
-                key={idx}
-                className={`p-2.5 rounded-lg text-sm ${
-                  message.role === 'assistant'
-                    ? 'bg-blue-900/30 text-blue-100'
-                    : 'bg-gray-700 text-white ml-6'
-                }`}
-              >
-                {message.role === 'assistant' ? (
-                  <div className="prose prose-sm prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0.5">
-                    <ReactMarkdown>{message.content}</ReactMarkdown>
+          {showHistory ? (
+            <div className="h-72 overflow-y-auto space-y-2 pr-1 scrollbar-thin">
+              {conversations.length === 0 ? (
+                <p className="text-gray-500 text-sm text-center py-8">No saved conversations yet</p>
+              ) : (
+                conversations.map((conv) => (
+                  <div
+                    key={conv.id}
+                    className={`flex items-center justify-between p-2.5 rounded-lg cursor-pointer text-sm transition-colors ${
+                      conv.id === activeConversationId
+                        ? 'bg-blue-900/40 text-blue-100'
+                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                    }`}
+                    onClick={() => handleSelectConversation(conv.id)}
+                  >
+                    <span className="truncate flex-1 mr-2">{conv.title}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-gray-500 hover:text-red-400 h-6 w-6 p-0 shrink-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteConversation(conv.id);
+                      }}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : (
+            <>
+              <div ref={scrollRef} className="h-72 overflow-y-auto mb-3 space-y-3 pr-1 scrollbar-thin">
+                {historyLoading ? (
+                  <div className="flex items-center justify-center h-full text-gray-400">
+                    <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading...
                   </div>
                 ) : (
-                  message.content
+                  messages.map((message, idx) => (
+                    <div
+                      key={idx}
+                      className={`p-2.5 rounded-lg text-sm ${
+                        message.role === 'assistant'
+                          ? 'bg-blue-900/30 text-blue-100'
+                          : 'bg-gray-700 text-white ml-6'
+                      }`}
+                    >
+                      {message.role === 'assistant' ? (
+                        <div className="prose prose-sm prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0.5">
+                          <ReactMarkdown>{message.content}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        message.content
+                      )}
+                    </div>
+                  ))
+                )}
+                {isLoading && messages[messages.length - 1]?.role === 'user' && (
+                  <div className="flex items-center gap-2 text-blue-300 text-sm p-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Thinking...
+                  </div>
                 )}
               </div>
-            ))}
-            {isLoading && messages[messages.length - 1]?.role === 'user' && (
-              <div className="flex items-center gap-2 text-blue-300 text-sm p-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Thinking...
+              <div className="flex gap-2">
+                <Input
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                  placeholder="Ask about trading..."
+                  className="bg-gray-800 border-gray-600 text-white"
+                  disabled={isLoading}
+                />
+                <Button onClick={handleSendMessage} size="sm" disabled={isLoading || !inputMessage.trim()}>
+                  <Send className="w-4 h-4" />
+                </Button>
               </div>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Input
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-              placeholder="Ask about trading..."
-              className="bg-gray-800 border-gray-600 text-white"
-              disabled={isLoading}
-            />
-            <Button onClick={handleSendMessage} size="sm" disabled={isLoading || !inputMessage.trim()}>
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
