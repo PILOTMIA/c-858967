@@ -54,6 +54,7 @@ const COTAnalysisContent = () => {
             })}
           </div>
 
+          <COTPairScorecard />
           <COTPairAnalyzer />
           <COTData />
           <COTCommodityData />
