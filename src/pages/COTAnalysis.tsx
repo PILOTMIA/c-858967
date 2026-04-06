@@ -2,6 +2,7 @@ import COTData from "@/components/COTData";
 import COTCommodityData from "@/components/COTCommodityData";
 import COTDetailModal from "@/components/COTDetailModal";
 import COTPairAnalyzer from "@/components/COTPairAnalyzer";
+import COTPairScorecard from "@/components/COTPairScorecard";
 import { COTDataProvider, useCOTData } from "@/components/COTDataContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Users, Building2 } from "lucide-react";
@@ -53,6 +54,7 @@ const COTAnalysisContent = () => {
             })}
           </div>
 
+          <COTPairScorecard />
           <COTPairAnalyzer />
           <COTData />
           <COTCommodityData />
