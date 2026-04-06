@@ -1,8 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, ArrowRight, BarChart3, Activity, Globe, Landmark, Users, DollarSign } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowRight, BarChart3, Activity, Globe, Landmark, Users, DollarSign, RefreshCw } from "lucide-react";
 import { fetchForexPrice } from "@/services/ForexPriceService";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
 
@@ -31,8 +31,8 @@ const COT_POSITIONS: Record<string, CurrencyPositioning> = {
   USD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 0, dealerShort: 0, assetManagerLong: 0, assetManagerShort: 0 },
 };
 
-// ── Macro Fundamentals (latest official data, updated quarterly) ──────────
-const FUNDAMENTALS: Record<string, { gdp: number; cpi: number; unemployment: number; interestRate: number }> = {
+// ── Fallback Macro Fundamentals ──────────────────────────────────────────────
+const FALLBACK_FUNDAMENTALS: Record<string, { gdp: number; cpi: number; unemployment: number; interestRate: number }> = {
   USD: { gdp: 2.4, cpi: 2.8, unemployment: 4.1, interestRate: 4.50 },
   EUR: { gdp: 0.9, cpi: 2.4, unemployment: 6.4, interestRate: 3.65 },
   GBP: { gdp: 1.1, cpi: 2.8, unemployment: 4.4, interestRate: 4.50 },
@@ -44,7 +44,7 @@ const FUNDAMENTALS: Record<string, { gdp: number; cpi: number; unemployment: num
   MXN: { gdp: 3.1, cpi: 4.2, unemployment: 2.8, interestRate: 9.50 },
 };
 
-// ── Seasonality (10-year historical monthly tendency, base currency perspective) ──
+// ── Seasonality (10-year historical monthly tendency) ──
 const SEASONALITY: Record<string, number[]> = {
   EUR: [0.3, -0.5, -1.2, 0.8, 1.1, -0.3, -0.7, 0.2, 0.6, -0.4, 0.9, -0.5],
   GBP: [0.5, -0.3, -0.8, 0.6, 0.9, -0.1, -0.5, 0.3, 0.4, -0.6, 0.7, -0.2],
@@ -61,35 +61,30 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'NZD', 'MXN'];
 
 // ── Scoring Engine ──────────────────────────────────────────────────────────
-function computeScores(base: string, quote: string) {
+function computeScores(base: string, quote: string, fundamentals: Record<string, typeof FALLBACK_FUNDAMENTALS['USD']>) {
   const bp = COT_POSITIONS[base];
   const qp = COT_POSITIONS[quote];
-  const bf = FUNDAMENTALS[base];
-  const qf = FUNDAMENTALS[quote];
+  const bf = fundamentals[base] || FALLBACK_FUNDAMENTALS[base];
+  const qf = fundamentals[quote] || FALLBACK_FUNDAMENTALS[quote];
   const bSeas = SEASONALITY[base];
   const qSeas = SEASONALITY[quote];
   const month = new Date().getMonth();
 
-  // 1. COT Score (-3 to +3): net position differential
   const maxNet = 100000;
   const cotRaw = ((bp.netPosition - qp.netPosition) / maxNet) * 3;
   const cotScore = Math.max(-3, Math.min(3, parseFloat(cotRaw.toFixed(2))));
 
-  // 2. Seasonality Score (-2 to +2): current month historical tendency
   const seasRaw = (bSeas[month] - qSeas[month]);
   const seasScore = Math.max(-2, Math.min(2, parseFloat(seasRaw.toFixed(2))));
 
-  // 3. Trend Score (-2 to +2): weekly change momentum as proxy
   const trendRaw = ((bp.weeklyChange - qp.weeklyChange) / 15000) * 2;
   const trendScore = Math.max(-2, Math.min(2, parseFloat(trendRaw.toFixed(2))));
 
-  // 4. Momentum Score (-2 to +2): asset manager flow direction
   const baseAMNet = bp.assetManagerLong - bp.assetManagerShort;
   const quoteAMNet = qp.assetManagerLong - qp.assetManagerShort;
   const momRaw = ((baseAMNet - quoteAMNet) / 300000) * 2;
   const momentumScore = Math.max(-2, Math.min(2, parseFloat(momRaw.toFixed(2))));
 
-  // 5. Economic Score (-2 to +2): composite of GDP, rates, inflation spread
   const gdpDiff = bf.gdp - qf.gdp;
   const rateDiff = bf.interestRate - qf.interestRate;
   const econRaw = (gdpDiff * 0.3 + rateDiff * 0.15);
@@ -110,16 +105,132 @@ function getVerdict(score: number): { label: string; color: string; bgClass: str
   return { label: 'Strong Bearish', color: 'text-destructive', bgClass: 'bg-destructive/15 border-destructive/30' };
 }
 
+// ── TradingView Symbol Mapper ───────────────────────────────────────────────
+function getTradingViewSymbol(base: string, quote: string): string {
+  if (base === 'USD') return `FX:USD${quote}`;
+  if (quote === 'USD') return `FX:${base}USD`;
+  return `FX:${base}${quote}`;
+}
+
+// ── Correct forex pair code for price fetching ──────────────────────────────
+function getPricePairKey(base: string, quote: string): string {
+  const pair = `${base}${quote}`;
+  // Known cross pairs supported by ForexPriceService
+  const crossPairs = ['EURJPY', 'GBPJPY', 'EURGBP', 'GBPCAD', 'AUDJPY', 'EURAUD', 'GBPAUD', 'EURCAD', 'NZDJPY', 'CADJPY'];
+  if (crossPairs.includes(pair)) return pair;
+  // USD pairs — ForexPriceService expects the non-USD currency
+  if (base === 'USD') return quote;
+  if (quote === 'USD') return base;
+  // For cross pairs not in the list, use the pair directly and hope fallback works
+  return pair;
+}
+
+// ── TradingView Embed Component ─────────────────────────────────────────────
+const TradingViewEmbed = ({ base, quote }: { base: string; quote: string }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const widgetId = `tv_chart_${base}${quote}`;
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    // Clear old widget
+    containerRef.current.innerHTML = '';
+
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      autosize: true,
+      symbol: getTradingViewSymbol(base, quote),
+      interval: 'D',
+      timezone: 'Etc/UTC',
+      theme: 'dark',
+      style: '1',
+      locale: 'en',
+      backgroundColor: 'rgba(0, 0, 0, 0)',
+      gridColor: 'rgba(255, 255, 255, 0.03)',
+      hide_top_toolbar: false,
+      hide_legend: false,
+      allow_symbol_change: false,
+      save_image: false,
+      calendar: false,
+      hide_volume: true,
+      support_host: 'https://www.tradingview.com',
+    });
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'tradingview-widget-container';
+    wrapper.style.height = '100%';
+    wrapper.style.width = '100%';
+
+    const innerDiv = document.createElement('div');
+    innerDiv.className = 'tradingview-widget-container__widget';
+    innerDiv.style.height = '100%';
+    innerDiv.style.width = '100%';
+
+    wrapper.appendChild(innerDiv);
+    wrapper.appendChild(script);
+    containerRef.current.appendChild(wrapper);
+
+    return () => {
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
+    };
+  }, [base, quote]);
+
+  return <div ref={containerRef} id={widgetId} className="h-full w-full" />;
+};
+
 // ── Component ───────────────────────────────────────────────────────────────
 const COTPairScorecard = () => {
   const [baseCurrency, setBaseCurrency] = useState('AUD');
   const [quoteCurrency, setQuoteCurrency] = useState('NZD');
   const [livePrice, setLivePrice] = useState<number | null>(null);
   const [priceLoading, setPriceLoading] = useState(false);
+  const [fundamentals, setFundamentals] = useState<Record<string, typeof FALLBACK_FUNDAMENTALS['USD']>>(FALLBACK_FUNDAMENTALS);
+  const [fundSource, setFundSource] = useState<string>('fallback');
+  const [fundLoading, setFundLoading] = useState(false);
 
   const pair = `${baseCurrency}${quoteCurrency}`;
 
-  // Fetch live price
+  // Fetch live fundamentals from FRED edge function
+  useEffect(() => {
+    const fetchMacroData = async () => {
+      setFundLoading(true);
+      try {
+        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'xkgsugennbdatwmetnxx';
+        const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
+        const currencies = [baseCurrency, quoteCurrency].filter((v, i, a) => a.indexOf(v) === i).join(',');
+        const res = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/macro-data?currencies=${currencies}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${anonKey}`,
+              'apikey': anonKey,
+              'Content-Type': 'application/json',
+            },
+            signal: AbortSignal.timeout(15000),
+          }
+        );
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data) {
+            setFundamentals(prev => ({ ...prev, ...json.data }));
+            // Check source of first entry
+            const firstKey = Object.keys(json.data)[0];
+            setFundSource(json.data[firstKey]?.source || 'fallback');
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch macro data:', e);
+      } finally {
+        setFundLoading(false);
+      }
+    };
+    fetchMacroData();
+  }, [baseCurrency, quoteCurrency]);
+
+  // Fetch live price — fixed pair code logic
   useEffect(() => {
     let cancelled = false;
     setPriceLoading(true);
@@ -127,10 +238,7 @@ const COTPairScorecard = () => {
 
     const load = async () => {
       try {
-        // For cross pairs, try direct; for USD pairs ForexPriceService handles it
-        const pairKey = baseCurrency === 'USD' || quoteCurrency === 'USD'
-          ? (baseCurrency === 'USD' ? quoteCurrency : baseCurrency)
-          : pair;
+        const pairKey = getPricePairKey(baseCurrency, quoteCurrency);
         const price = await fetchForexPrice(pairKey);
         if (!cancelled) setLivePrice(price);
       } catch {
@@ -140,17 +248,17 @@ const COTPairScorecard = () => {
       }
     };
     load();
-    const interval = setInterval(load, 60000); // refresh every minute
+    const interval = setInterval(load, 60000);
     return () => { cancelled = true; clearInterval(interval); };
-  }, [baseCurrency, quoteCurrency, pair]);
+  }, [baseCurrency, quoteCurrency]);
 
-  const scores = useMemo(() => computeScores(baseCurrency, quoteCurrency), [baseCurrency, quoteCurrency]);
+  const scores = useMemo(() => computeScores(baseCurrency, quoteCurrency, fundamentals), [baseCurrency, quoteCurrency, fundamentals]);
   const verdict = useMemo(() => getVerdict(scores.totalScore), [scores.totalScore]);
 
   const bp = COT_POSITIONS[baseCurrency];
   const qp = COT_POSITIONS[quoteCurrency];
-  const bf = FUNDAMENTALS[baseCurrency];
-  const qf = FUNDAMENTALS[quoteCurrency];
+  const bf = fundamentals[baseCurrency] || FALLBACK_FUNDAMENTALS[baseCurrency];
+  const qf = fundamentals[quoteCurrency] || FALLBACK_FUNDAMENTALS[quoteCurrency];
 
   // Seasonality chart data
   const seasonalityData = useMemo(() => {
@@ -159,26 +267,21 @@ const COTPairScorecard = () => {
     return MONTHS.map((m, i) => ({ month: m, value: parseFloat((bSeas[i] - qSeas[i]).toFixed(2)) }));
   }, [baseCurrency, quoteCurrency]);
 
-  // Institutional breakdown
   const baseLongPct = bp.long + bp.short > 0 ? ((bp.long / (bp.long + bp.short)) * 100).toFixed(1) : '0';
   const quoteLongPct = qp.long + qp.short > 0 ? ((qp.long / (qp.long + qp.short)) * 100).toFixed(1) : '0';
 
-  // Fundamentals bias
   const getFundBias = (bVal: number, qVal: number, metric: string) => {
     const diff = bVal - qVal;
     if (metric === 'unemployment') {
-      // Lower unemployment is better
       if (diff < -0.5) return { label: 'Bullish', color: 'text-success' };
       if (diff > 0.5) return { label: 'Bearish', color: 'text-destructive' };
       return { label: 'Neutral', color: 'text-muted-foreground' };
     }
     if (metric === 'cpi') {
-      // Lower inflation generally positive for currency strength
       if (diff < -0.3) return { label: 'Bullish', color: 'text-success' };
       if (diff > 0.3) return { label: 'Bearish', color: 'text-destructive' };
       return { label: 'Neutral', color: 'text-muted-foreground' };
     }
-    // GDP and interest rate — higher is bullish for base
     if (diff > 0.3) return { label: 'Bullish', color: 'text-success' };
     if (diff < -0.3) return { label: 'Bearish', color: 'text-destructive' };
     return { label: 'Neutral', color: 'text-muted-foreground' };
@@ -204,7 +307,6 @@ const COTPairScorecard = () => {
       {/* Header Bar */}
       <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-5">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          {/* Pair selector */}
           <div className="flex items-center gap-3">
             <Select value={baseCurrency} onValueChange={setBaseCurrency}>
               <SelectTrigger className="w-24 bg-background/50 border-border/30 rounded-xl">
@@ -229,7 +331,6 @@ const COTPairScorecard = () => {
             </Select>
           </div>
 
-          {/* Pair name + verdict badges */}
           <div className="flex items-center gap-3">
             <span className="text-2xl font-display-hero font-bold text-foreground">{pair}</span>
             <Badge className={`${verdict.bgClass} ${verdict.color} border font-semibold text-xs`}>
@@ -237,7 +338,6 @@ const COTPairScorecard = () => {
             </Badge>
           </div>
 
-          {/* Price + score */}
           <div className="flex items-center gap-4">
             <div className="text-right">
               <div className="text-xs text-muted-foreground uppercase tracking-wider">Price</div>
@@ -255,6 +355,13 @@ const COTPairScorecard = () => {
         </div>
       </div>
 
+      {/* TradingView Chart */}
+      <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm overflow-hidden">
+        <div className="h-[400px]">
+          <TradingViewEmbed base={baseCurrency} quote={quoteCurrency} />
+        </div>
+      </div>
+
       {/* Main Grid — 2 columns */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* LEFT: Fundamentals + Score Breakdown */}
@@ -262,9 +369,17 @@ const COTPairScorecard = () => {
           {/* Fundamentals Table */}
           <Card className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm">
             <CardContent className="p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <DollarSign className="w-4 h-4 text-primary" />
-                <h3 className="font-semibold text-foreground text-sm">Fundamentals</h3>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-primary" />
+                  <h3 className="font-semibold text-foreground text-sm">Fundamentals</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  {fundLoading && <RefreshCw className="w-3 h-3 text-muted-foreground animate-spin" />}
+                  <Badge variant="outline" className="text-[10px] border-border/30">
+                    {fundSource === 'fred' ? '🟢 FRED Live' : '⚪ Fallback'}
+                  </Badge>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -293,7 +408,7 @@ const COTPairScorecard = () => {
                 </table>
               </div>
               <p className="text-xs text-muted-foreground mt-3">
-                Comparing {baseCurrency} vs {quoteCurrency}
+                Source: {fundSource === 'fred' ? 'Federal Reserve Economic Data (FRED)' : 'Cached data'} • Comparing {baseCurrency} vs {quoteCurrency}
               </p>
             </CardContent>
           </Card>
@@ -372,7 +487,7 @@ const COTPairScorecard = () => {
               </CardContent>
             </Card>
 
-            {/* Retail Sentiment (inverse of institutional as proxy) */}
+            {/* Retail */}
             <Card className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm">
               <CardContent className="p-5">
                 <div className="flex items-center gap-2 mb-3">
@@ -381,7 +496,6 @@ const COTPairScorecard = () => {
                 </div>
                 <div className="space-y-3">
                   {(() => {
-                    // Retail sentiment is typically inverse of institutional
                     const retailLongPct = (100 - parseFloat(baseLongPct)).toFixed(1);
                     const retailShortPct = baseLongPct;
                     const retailBias = parseFloat(retailLongPct) > 55 ? 'Long' : parseFloat(retailLongPct) < 45 ? 'Short' : 'Mixed';
@@ -467,7 +581,7 @@ const COTPairScorecard = () => {
                 )}
               </p>
               <div className="mt-3 text-xs text-muted-foreground">
-                Updated: {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • CFTC data as of Mar 24, 2026
+                Updated: {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • CFTC data as of Mar 29, 2026
               </div>
             </CardContent>
           </Card>
