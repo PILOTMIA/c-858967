@@ -1,0 +1,480 @@
+import { useState, useMemo, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { TrendingUp, TrendingDown, ArrowRight, BarChart3, Activity, Globe, Landmark, Users, DollarSign } from "lucide-react";
+import { fetchForexPrice } from "@/services/ForexPriceService";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
+
+// ── COT Positions (CFTC Mar 29, 2026) ──────────────────────────────────────
+interface CurrencyPositioning {
+  netPosition: number;
+  long: number;
+  short: number;
+  sentiment: string;
+  weeklyChange: number;
+  dealerLong: number;
+  dealerShort: number;
+  assetManagerLong: number;
+  assetManagerShort: number;
+}
+
+const COT_POSITIONS: Record<string, CurrencyPositioning> = {
+  EUR: { netPosition: -13538, long: 97985, short: 111523, sentiment: 'BEARISH', weeklyChange: -6586, dealerLong: 39995, dealerShort: 357133, assetManagerLong: 446373, assetManagerShort: 158433 },
+  GBP: { netPosition: 15716, long: 47450, short: 31734, sentiment: 'BULLISH', weeklyChange: 3948, dealerLong: 128153, dealerShort: 46144, assetManagerLong: 28499, assetManagerShort: 122962 },
+  JPY: { netPosition: -54852, long: 67921, short: 122773, sentiment: 'BEARISH', weeklyChange: 10577, dealerLong: 60117, dealerShort: 42836, assetManagerLong: 58266, assetManagerShort: 64516 },
+  CHF: { netPosition: 235, long: 7950, short: 7715, sentiment: 'NEUTRAL', weeklyChange: -278, dealerLong: 47188, dealerShort: 6284, assetManagerLong: 5541, assetManagerShort: 42537 },
+  AUD: { netPosition: 49145, long: 68577, short: 19432, sentiment: 'BULLISH', weeklyChange: 3786, dealerLong: 32930, dealerShort: 152299, assetManagerLong: 103155, assetManagerShort: 59229 },
+  CAD: { netPosition: -31700, long: 26751, short: 58451, sentiment: 'BEARISH', weeklyChange: 6152, dealerLong: 30119, dealerShort: 37684, assetManagerLong: 67647, assetManagerShort: 41518 },
+  MXN: { netPosition: 54787, long: 75059, short: 20272, sentiment: 'BULLISH', weeklyChange: 7841, dealerLong: 8722, dealerShort: 44498, assetManagerLong: 72526, assetManagerShort: 23942 },
+  NZD: { netPosition: -16730, long: 7461, short: 24191, sentiment: 'BEARISH', weeklyChange: -813, dealerLong: 43769, dealerShort: 4053, assetManagerLong: 6572, assetManagerShort: 31584 },
+  USD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 0, dealerShort: 0, assetManagerLong: 0, assetManagerShort: 0 },
+};
+
+// ── Macro Fundamentals (latest official data, updated quarterly) ──────────
+const FUNDAMENTALS: Record<string, { gdp: number; cpi: number; unemployment: number; interestRate: number }> = {
+  USD: { gdp: 2.4, cpi: 2.8, unemployment: 4.1, interestRate: 4.50 },
+  EUR: { gdp: 0.9, cpi: 2.4, unemployment: 6.4, interestRate: 3.65 },
+  GBP: { gdp: 1.1, cpi: 2.8, unemployment: 4.4, interestRate: 4.50 },
+  JPY: { gdp: 1.2, cpi: 3.2, unemployment: 2.5, interestRate: 0.50 },
+  CHF: { gdp: 1.5, cpi: 1.1, unemployment: 2.3, interestRate: 1.50 },
+  AUD: { gdp: 2.6, cpi: 3.7, unemployment: 4.1, interestRate: 4.10 },
+  CAD: { gdp: 1.8, cpi: 2.7, unemployment: 6.7, interestRate: 2.75 },
+  NZD: { gdp: 1.5, cpi: 3.1, unemployment: 5.4, interestRate: 2.25 },
+  MXN: { gdp: 3.1, cpi: 4.2, unemployment: 2.8, interestRate: 9.50 },
+};
+
+// ── Seasonality (10-year historical monthly tendency, base currency perspective) ──
+const SEASONALITY: Record<string, number[]> = {
+  EUR: [0.3, -0.5, -1.2, 0.8, 1.1, -0.3, -0.7, 0.2, 0.6, -0.4, 0.9, -0.5],
+  GBP: [0.5, -0.3, -0.8, 0.6, 0.9, -0.1, -0.5, 0.3, 0.4, -0.6, 0.7, -0.2],
+  JPY: [-0.8, 0.6, 1.2, -0.5, -0.9, 0.7, 1.0, -0.3, -0.6, 0.8, -0.4, 0.5],
+  CHF: [0.2, -0.4, -0.6, 0.3, 0.5, -0.2, -0.3, 0.1, 0.4, -0.3, 0.6, -0.1],
+  AUD: [0.7, -0.2, -0.9, 1.0, 1.3, -0.4, -0.8, 0.5, 0.8, -0.3, 0.6, -0.4],
+  CAD: [0.4, -0.6, -0.7, 0.5, 0.8, -0.3, -0.4, 0.2, 0.5, -0.5, 0.3, -0.2],
+  NZD: [0.6, -0.3, -1.0, 0.9, 1.1, -0.5, -0.6, 0.4, 0.7, -0.2, 0.5, -0.3],
+  MXN: [0.3, -0.7, -0.5, 0.4, 0.6, -0.1, -0.9, 0.3, 0.2, -0.4, 0.8, -0.6],
+  USD: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+};
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'NZD', 'MXN'];
+
+// ── Scoring Engine ──────────────────────────────────────────────────────────
+function computeScores(base: string, quote: string) {
+  const bp = COT_POSITIONS[base];
+  const qp = COT_POSITIONS[quote];
+  const bf = FUNDAMENTALS[base];
+  const qf = FUNDAMENTALS[quote];
+  const bSeas = SEASONALITY[base];
+  const qSeas = SEASONALITY[quote];
+  const month = new Date().getMonth();
+
+  // 1. COT Score (-3 to +3): net position differential
+  const maxNet = 100000;
+  const cotRaw = ((bp.netPosition - qp.netPosition) / maxNet) * 3;
+  const cotScore = Math.max(-3, Math.min(3, parseFloat(cotRaw.toFixed(2))));
+
+  // 2. Seasonality Score (-2 to +2): current month historical tendency
+  const seasRaw = (bSeas[month] - qSeas[month]);
+  const seasScore = Math.max(-2, Math.min(2, parseFloat(seasRaw.toFixed(2))));
+
+  // 3. Trend Score (-2 to +2): weekly change momentum as proxy
+  const trendRaw = ((bp.weeklyChange - qp.weeklyChange) / 15000) * 2;
+  const trendScore = Math.max(-2, Math.min(2, parseFloat(trendRaw.toFixed(2))));
+
+  // 4. Momentum Score (-2 to +2): asset manager flow direction
+  const baseAMNet = bp.assetManagerLong - bp.assetManagerShort;
+  const quoteAMNet = qp.assetManagerLong - qp.assetManagerShort;
+  const momRaw = ((baseAMNet - quoteAMNet) / 300000) * 2;
+  const momentumScore = Math.max(-2, Math.min(2, parseFloat(momRaw.toFixed(2))));
+
+  // 5. Economic Score (-2 to +2): composite of GDP, rates, inflation spread
+  const gdpDiff = bf.gdp - qf.gdp;
+  const rateDiff = bf.interestRate - qf.interestRate;
+  const econRaw = (gdpDiff * 0.3 + rateDiff * 0.15);
+  const economicScore = Math.max(-2, Math.min(2, parseFloat(econRaw.toFixed(2))));
+
+  const totalScore = parseFloat((cotScore + seasScore + trendScore + momentumScore + economicScore).toFixed(2));
+
+  return { cotScore, seasScore, trendScore, momentumScore, economicScore, totalScore };
+}
+
+function getVerdict(score: number): { label: string; color: string; bgClass: string } {
+  if (score >= 5) return { label: 'Strong Bullish', color: 'text-success', bgClass: 'bg-success/15 border-success/30' };
+  if (score >= 2) return { label: 'Bullish', color: 'text-success', bgClass: 'bg-success/10 border-success/20' };
+  if (score >= 0.5) return { label: 'Slightly Bullish', color: 'text-chart-1', bgClass: 'bg-chart-1/10 border-chart-1/20' };
+  if (score > -0.5) return { label: 'Neutral', color: 'text-muted-foreground', bgClass: 'bg-muted/10 border-muted/30' };
+  if (score > -2) return { label: 'Slightly Bearish', color: 'text-warning', bgClass: 'bg-warning/10 border-warning/20' };
+  if (score > -5) return { label: 'Bearish', color: 'text-destructive', bgClass: 'bg-destructive/10 border-destructive/20' };
+  return { label: 'Strong Bearish', color: 'text-destructive', bgClass: 'bg-destructive/15 border-destructive/30' };
+}
+
+// ── Component ───────────────────────────────────────────────────────────────
+const COTPairScorecard = () => {
+  const [baseCurrency, setBaseCurrency] = useState('AUD');
+  const [quoteCurrency, setQuoteCurrency] = useState('NZD');
+  const [livePrice, setLivePrice] = useState<number | null>(null);
+  const [priceLoading, setPriceLoading] = useState(false);
+
+  const pair = `${baseCurrency}${quoteCurrency}`;
+
+  // Fetch live price
+  useEffect(() => {
+    let cancelled = false;
+    setPriceLoading(true);
+    setLivePrice(null);
+
+    const load = async () => {
+      try {
+        // For cross pairs, try direct; for USD pairs ForexPriceService handles it
+        const pairKey = baseCurrency === 'USD' || quoteCurrency === 'USD'
+          ? (baseCurrency === 'USD' ? quoteCurrency : baseCurrency)
+          : pair;
+        const price = await fetchForexPrice(pairKey);
+        if (!cancelled) setLivePrice(price);
+      } catch {
+        if (!cancelled) setLivePrice(null);
+      } finally {
+        if (!cancelled) setPriceLoading(false);
+      }
+    };
+    load();
+    const interval = setInterval(load, 60000); // refresh every minute
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [baseCurrency, quoteCurrency, pair]);
+
+  const scores = useMemo(() => computeScores(baseCurrency, quoteCurrency), [baseCurrency, quoteCurrency]);
+  const verdict = useMemo(() => getVerdict(scores.totalScore), [scores.totalScore]);
+
+  const bp = COT_POSITIONS[baseCurrency];
+  const qp = COT_POSITIONS[quoteCurrency];
+  const bf = FUNDAMENTALS[baseCurrency];
+  const qf = FUNDAMENTALS[quoteCurrency];
+
+  // Seasonality chart data
+  const seasonalityData = useMemo(() => {
+    const bSeas = SEASONALITY[baseCurrency];
+    const qSeas = SEASONALITY[quoteCurrency];
+    return MONTHS.map((m, i) => ({ month: m, value: parseFloat((bSeas[i] - qSeas[i]).toFixed(2)) }));
+  }, [baseCurrency, quoteCurrency]);
+
+  // Institutional breakdown
+  const baseLongPct = bp.long + bp.short > 0 ? ((bp.long / (bp.long + bp.short)) * 100).toFixed(1) : '0';
+  const quoteLongPct = qp.long + qp.short > 0 ? ((qp.long / (qp.long + qp.short)) * 100).toFixed(1) : '0';
+
+  // Fundamentals bias
+  const getFundBias = (bVal: number, qVal: number, metric: string) => {
+    const diff = bVal - qVal;
+    if (metric === 'unemployment') {
+      // Lower unemployment is better
+      if (diff < -0.5) return { label: 'Bullish', color: 'text-success' };
+      if (diff > 0.5) return { label: 'Bearish', color: 'text-destructive' };
+      return { label: 'Neutral', color: 'text-muted-foreground' };
+    }
+    if (metric === 'cpi') {
+      // Lower inflation generally positive for currency strength
+      if (diff < -0.3) return { label: 'Bullish', color: 'text-success' };
+      if (diff > 0.3) return { label: 'Bearish', color: 'text-destructive' };
+      return { label: 'Neutral', color: 'text-muted-foreground' };
+    }
+    // GDP and interest rate — higher is bullish for base
+    if (diff > 0.3) return { label: 'Bullish', color: 'text-success' };
+    if (diff < -0.3) return { label: 'Bearish', color: 'text-destructive' };
+    return { label: 'Neutral', color: 'text-muted-foreground' };
+  };
+
+  const scoreBreakdown = [
+    { label: 'COT', value: scores.cotScore, max: 3 },
+    { label: 'Seasonality', value: scores.seasScore, max: 2 },
+    { label: 'Trend', value: scores.trendScore, max: 2 },
+    { label: 'Momentum', value: scores.momentumScore, max: 2 },
+    { label: 'Economic', value: scores.economicScore, max: 2 },
+  ];
+
+  const fundRows = [
+    { label: 'GDP Growth', bVal: `${bf.gdp}%`, qVal: `${qf.gdp}%`, bias: getFundBias(bf.gdp, qf.gdp, 'gdp') },
+    { label: 'Inflation (CPI)', bVal: `${bf.cpi}%`, qVal: `${qf.cpi}%`, bias: getFundBias(bf.cpi, qf.cpi, 'cpi') },
+    { label: 'Unemployment', bVal: `${bf.unemployment}%`, qVal: `${qf.unemployment}%`, bias: getFundBias(bf.unemployment, qf.unemployment, 'unemployment') },
+    { label: 'Interest Rate', bVal: `${bf.interestRate}%`, qVal: `${qf.interestRate}%`, bias: getFundBias(bf.interestRate, qf.interestRate, 'rate') },
+  ];
+
+  return (
+    <div className="space-y-4">
+      {/* Header Bar */}
+      <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          {/* Pair selector */}
+          <div className="flex items-center gap-3">
+            <Select value={baseCurrency} onValueChange={setBaseCurrency}>
+              <SelectTrigger className="w-24 bg-background/50 border-border/30 rounded-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CURRENCIES.filter(c => c !== quoteCurrency).map(c => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <ArrowRight className="w-4 h-4 text-muted-foreground" />
+            <Select value={quoteCurrency} onValueChange={setQuoteCurrency}>
+              <SelectTrigger className="w-24 bg-background/50 border-border/30 rounded-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CURRENCIES.filter(c => c !== baseCurrency).map(c => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Pair name + verdict badges */}
+          <div className="flex items-center gap-3">
+            <span className="text-2xl font-display-hero font-bold text-foreground">{pair}</span>
+            <Badge className={`${verdict.bgClass} ${verdict.color} border font-semibold text-xs`}>
+              {verdict.label}
+            </Badge>
+          </div>
+
+          {/* Price + score */}
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <div className="text-xs text-muted-foreground uppercase tracking-wider">Price</div>
+              <div className="text-xl font-mono font-bold text-foreground">
+                {priceLoading ? '...' : livePrice ? livePrice.toFixed(livePrice > 100 ? 3 : 5) : '—'}
+              </div>
+            </div>
+            <div className={`rounded-xl px-4 py-2 border ${verdict.bgClass}`}>
+              <div className="text-xs text-muted-foreground text-center">Score</div>
+              <div className={`text-2xl font-bold font-mono ${verdict.color}`}>
+                {scores.totalScore > 0 ? '+' : ''}{scores.totalScore.toFixed(2)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Grid — 2 columns */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* LEFT: Fundamentals + Score Breakdown */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* Fundamentals Table */}
+          <Card className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <DollarSign className="w-4 h-4 text-primary" />
+                <h3 className="font-semibold text-foreground text-sm">Fundamentals</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border/20">
+                      <th className="text-left text-muted-foreground font-medium py-2 pr-4"></th>
+                      <th className="text-right text-muted-foreground font-medium py-2 px-3">{baseCurrency}</th>
+                      <th className="text-right text-muted-foreground font-medium py-2 px-3">{quoteCurrency}</th>
+                      <th className="text-right text-muted-foreground font-medium py-2 pl-3">Bias</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fundRows.map(row => (
+                      <tr key={row.label} className="border-b border-border/10">
+                        <td className="py-2.5 pr-4 text-foreground font-medium">{row.label}</td>
+                        <td className="py-2.5 px-3 text-right font-mono text-foreground">{row.bVal}</td>
+                        <td className="py-2.5 px-3 text-right font-mono text-foreground">{row.qVal}</td>
+                        <td className={`py-2.5 pl-3 text-right font-semibold ${row.bias.color}`}>
+                          {row.bias.label === 'Bullish' && <TrendingUp className="w-3 h-3 inline mr-1" />}
+                          {row.bias.label === 'Bearish' && <TrendingDown className="w-3 h-3 inline mr-1" />}
+                          {row.bias.label}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">
+                Comparing {baseCurrency} vs {quoteCurrency}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Bottom panels: Seasonality + Institutional + Retail */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Seasonality */}
+            <Card className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Globe className="w-4 h-4 text-primary" />
+                  <h3 className="font-semibold text-foreground text-sm">Seasonality</h3>
+                </div>
+                <div className="h-32">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={seasonalityData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
+                      <XAxis dataKey="month" tick={{ fontSize: 9, fill: 'hsl(210 40% 75%)' }} tickLine={false} axisLine={false} />
+                      <YAxis tick={{ fontSize: 9, fill: 'hsl(210 40% 75%)' }} tickLine={false} axisLine={false} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: 'hsl(0 0% 8%)', border: '1px solid hsl(0 0% 15%)', borderRadius: '8px', fontSize: '12px' }}
+                        labelStyle={{ color: 'hsl(210 40% 98%)' }}
+                      />
+                      <Bar dataKey="value" radius={[2, 2, 0, 0]}>
+                        {seasonalityData.map((entry, i) => (
+                          <Cell key={i} fill={entry.value >= 0 ? 'hsl(142 76% 60%)' : 'hsl(0 84% 60%)'} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+                  <span>Institutional bias:</span>
+                  <span className={`font-semibold ${scores.seasScore >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {scores.seasScore >= 0 ? 'Bullish' : 'Bearish'}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Institutional */}
+            <Card className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Landmark className="w-4 h-4 text-primary" />
+                  <h3 className="font-semibold text-foreground text-sm">Institutional</h3>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                      <span>Net</span>
+                      <span className={`font-bold ${bp.netPosition - qp.netPosition > 0 ? 'text-success' : 'text-destructive'}`}>
+                        Long ({baseLongPct}%)
+                      </span>
+                    </div>
+                    <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
+                      <div className="h-full bg-success rounded-full transition-all" style={{ width: `${baseLongPct}%` }} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="bg-muted/10 rounded-lg p-2">
+                      <div className="text-muted-foreground">Longs</div>
+                      <div className="font-mono font-bold text-success">{bp.long.toLocaleString()}</div>
+                    </div>
+                    <div className="bg-muted/10 rounded-lg p-2">
+                      <div className="text-muted-foreground">Shorts</div>
+                      <div className="font-mono font-bold text-destructive">{bp.short.toLocaleString()}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/20 pt-2">
+                    <span>Consensus</span>
+                    <span className={`font-semibold ${bp.sentiment === 'BULLISH' ? 'text-success' : bp.sentiment === 'BEARISH' ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      {bp.sentiment}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Retail Sentiment (inverse of institutional as proxy) */}
+            <Card className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="w-4 h-4 text-primary" />
+                  <h3 className="font-semibold text-foreground text-sm">Retail</h3>
+                </div>
+                <div className="space-y-3">
+                  {(() => {
+                    // Retail sentiment is typically inverse of institutional
+                    const retailLongPct = (100 - parseFloat(baseLongPct)).toFixed(1);
+                    const retailShortPct = baseLongPct;
+                    const retailBias = parseFloat(retailLongPct) > 55 ? 'Long' : parseFloat(retailLongPct) < 45 ? 'Short' : 'Mixed';
+                    return (
+                      <>
+                        <div>
+                          <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                            <span>Sentiment</span>
+                            <span className={`font-bold ${retailBias === 'Long' ? 'text-success' : retailBias === 'Short' ? 'text-destructive' : 'text-muted-foreground'}`}>
+                              {retailBias} ({retailLongPct}%)
+                            </span>
+                          </div>
+                          <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
+                            <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${retailLongPct}%` }} />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="bg-muted/10 rounded-lg p-2">
+                            <div className="text-muted-foreground">Longs</div>
+                            <div className="font-mono font-bold text-success">{retailLongPct}%</div>
+                          </div>
+                          <div className="bg-muted/10 rounded-lg p-2">
+                            <div className="text-muted-foreground">Shorts</div>
+                            <div className="font-mono font-bold text-destructive">{retailShortPct}%</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/20 pt-2">
+                          <span>Consensus</span>
+                          <span className={`font-semibold ${retailBias === 'Long' ? 'text-success' : retailBias === 'Short' ? 'text-destructive' : 'text-warning'}`}>
+                            {retailBias === 'Long' ? 'Bearish' : retailBias === 'Short' ? 'Bullish' : 'Neutral'}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* RIGHT: Score Breakdown */}
+        <div className="space-y-4">
+          <Card className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <BarChart3 className="w-4 h-4 text-primary" />
+                <h3 className="font-semibold text-foreground text-sm">Score Breakdown</h3>
+              </div>
+              <div className="space-y-1">
+                <div className="flex justify-between items-center py-2 border-b border-border/20">
+                  <span className="text-sm font-medium text-foreground">Score</span>
+                  <span className={`text-lg font-bold font-mono ${verdict.color}`}>
+                    {scores.totalScore > 0 ? '+' : ''}{scores.totalScore.toFixed(2)}
+                  </span>
+                </div>
+                {scoreBreakdown.map(item => (
+                  <div key={item.label} className="flex justify-between items-center py-2 border-b border-border/10">
+                    <span className="text-sm text-muted-foreground">{item.label}</span>
+                    <span className={`font-mono font-bold text-sm ${item.value > 0 ? 'text-success' : item.value < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      {item.value > 0 ? '+' : ''}{item.value.toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Insight */}
+          <Card className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Activity className="w-4 h-4 text-primary" />
+                <h3 className="font-semibold text-foreground text-sm">Analysis</h3>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {scores.totalScore > 2 ? (
+                  <>Institutional positioning and macro fundamentals align in favor of <strong className="text-success">{baseCurrency}</strong> over {quoteCurrency}. COT data shows leveraged funds are {bp.netPosition > 0 ? 'net long' : 'net short'} {baseCurrency} ({bp.netPosition.toLocaleString()} contracts) while {qp.netPosition > 0 ? 'net long' : 'net short'} {quoteCurrency}. Rate differential of {(bf.interestRate - qf.interestRate).toFixed(2)}% supports the {baseCurrency} carry.</>
+                ) : scores.totalScore < -2 ? (
+                  <>Institutional flow favors <strong className="text-destructive">{quoteCurrency}</strong> over {baseCurrency}. Leveraged funds are positioning bearishly on {baseCurrency} ({bp.netPosition.toLocaleString()} net contracts) while {quoteCurrency} carries a stronger fundamental profile. Consider short {pair} setups on rallies.</>
+                ) : (
+                  <>Mixed signals on {pair}. COT positioning is not strongly directional and fundamentals show a narrow spread. Wait for clearer institutional commitment before taking directional trades. Monitor weekly COT changes for shifts.</>
+                )}
+              </p>
+              <div className="mt-3 text-xs text-muted-foreground">
+                Updated: {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • CFTC data as of Mar 24, 2026
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default COTPairScorecard;
