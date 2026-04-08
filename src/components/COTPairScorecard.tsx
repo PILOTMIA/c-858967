@@ -19,7 +19,7 @@ interface CurrencyPositioning {
   assetManagerShort: number;
 }
 
-const COT_POSITIONS: Record<string, CurrencyPositioning> = {
+const FALLBACK_COT_POSITIONS: Record<string, CurrencyPositioning> = {
   EUR: { netPosition: -13538, long: 97985, short: 111523, sentiment: 'BEARISH', weeklyChange: -6586, dealerLong: 39995, dealerShort: 357133, assetManagerLong: 446373, assetManagerShort: 158433 },
   GBP: { netPosition: 15716, long: 47450, short: 31734, sentiment: 'BULLISH', weeklyChange: 3948, dealerLong: 128153, dealerShort: 46144, assetManagerLong: 28499, assetManagerShort: 122962 },
   JPY: { netPosition: -54852, long: 67921, short: 122773, sentiment: 'BEARISH', weeklyChange: 10577, dealerLong: 60117, dealerShort: 42836, assetManagerLong: 58266, assetManagerShort: 64516 },
@@ -61,9 +61,9 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'NZD', 'MXN'];
 
 // ── Scoring Engine ──────────────────────────────────────────────────────────
-function computeScores(base: string, quote: string, fundamentals: Record<string, typeof FALLBACK_FUNDAMENTALS['USD']>) {
-  const bp = COT_POSITIONS[base];
-  const qp = COT_POSITIONS[quote];
+function computeScores(base: string, quote: string, fundamentals: Record<string, typeof FALLBACK_FUNDAMENTALS['USD']>, cotPositions: Record<string, CurrencyPositioning>) {
+  const bp = cotPositions[base] || FALLBACK_COT_POSITIONS[base];
+  const qp = cotPositions[quote] || FALLBACK_COT_POSITIONS[quote];
   const bf = fundamentals[base] || FALLBACK_FUNDAMENTALS[base];
   const qf = fundamentals[quote] || FALLBACK_FUNDAMENTALS[quote];
   const bSeas = SEASONALITY[base];
@@ -190,6 +190,45 @@ const COTPairScorecard = () => {
   const [fundamentals, setFundamentals] = useState<Record<string, typeof FALLBACK_FUNDAMENTALS['USD']>>(FALLBACK_FUNDAMENTALS);
   const [fundSource, setFundSource] = useState<string>('fallback');
   const [fundLoading, setFundLoading] = useState(false);
+  const [cotPositions, setCotPositions] = useState<Record<string, CurrencyPositioning>>(FALLBACK_COT_POSITIONS);
+  const [cotSource, setCotSource] = useState<string>('fallback');
+
+  // Fetch live COT data from CFTC edge function
+  useEffect(() => {
+    const fetchCOT = async () => {
+      try {
+        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'xkgsugennbdatwmetnxx';
+        const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
+        const res = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/cftc-cot?currencies=${CURRENCIES.filter(c => c !== 'USD').join(',')}`,
+          {
+            headers: { 'Authorization': `Bearer ${anonKey}`, 'apikey': anonKey, 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(20000),
+          }
+        );
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data) {
+            const merged: Record<string, CurrencyPositioning> = { ...FALLBACK_COT_POSITIONS };
+            for (const [key, val] of Object.entries(json.data as Record<string, any>)) {
+              merged[key] = {
+                netPosition: val.netPosition, long: val.long, short: val.short,
+                sentiment: val.netPosition > 10000 ? 'BULLISH' : val.netPosition < -10000 ? 'BEARISH' : 'NEUTRAL',
+                weeklyChange: val.weeklyChange, dealerLong: val.dealerLong, dealerShort: val.dealerShort,
+                assetManagerLong: val.assetManagerLong, assetManagerShort: val.assetManagerShort,
+              };
+            }
+            setCotPositions(merged);
+            const firstKey = Object.keys(json.data)[0];
+            setCotSource(json.data[firstKey]?.source || 'fallback');
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch CFTC COT:', e);
+      }
+    };
+    fetchCOT();
+  }, []);
 
   const pair = `${baseCurrency}${quoteCurrency}`;
 
@@ -252,11 +291,11 @@ const COTPairScorecard = () => {
     return () => { cancelled = true; clearInterval(interval); };
   }, [baseCurrency, quoteCurrency]);
 
-  const scores = useMemo(() => computeScores(baseCurrency, quoteCurrency, fundamentals), [baseCurrency, quoteCurrency, fundamentals]);
+  const scores = useMemo(() => computeScores(baseCurrency, quoteCurrency, fundamentals, cotPositions), [baseCurrency, quoteCurrency, fundamentals, cotPositions]);
   const verdict = useMemo(() => getVerdict(scores.totalScore), [scores.totalScore]);
 
-  const bp = COT_POSITIONS[baseCurrency];
-  const qp = COT_POSITIONS[quoteCurrency];
+  const bp = cotPositions[baseCurrency] || FALLBACK_COT_POSITIONS[baseCurrency];
+  const qp = cotPositions[quoteCurrency] || FALLBACK_COT_POSITIONS[quoteCurrency];
   const bf = fundamentals[baseCurrency] || FALLBACK_FUNDAMENTALS[baseCurrency];
   const qf = fundamentals[quoteCurrency] || FALLBACK_FUNDAMENTALS[quoteCurrency];
 
