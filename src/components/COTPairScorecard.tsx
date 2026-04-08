@@ -291,11 +291,11 @@ const COTPairScorecard = () => {
     return () => { cancelled = true; clearInterval(interval); };
   }, [baseCurrency, quoteCurrency]);
 
-  const scores = useMemo(() => computeScores(baseCurrency, quoteCurrency, fundamentals), [baseCurrency, quoteCurrency, fundamentals]);
+  const scores = useMemo(() => computeScores(baseCurrency, quoteCurrency, fundamentals, cotPositions), [baseCurrency, quoteCurrency, fundamentals, cotPositions]);
   const verdict = useMemo(() => getVerdict(scores.totalScore), [scores.totalScore]);
 
-  const bp = COT_POSITIONS[baseCurrency];
-  const qp = COT_POSITIONS[quoteCurrency];
+  const bp = cotPositions[baseCurrency] || FALLBACK_COT_POSITIONS[baseCurrency];
+  const qp = cotPositions[quoteCurrency] || FALLBACK_COT_POSITIONS[quoteCurrency];
   const bf = fundamentals[baseCurrency] || FALLBACK_FUNDAMENTALS[baseCurrency];
   const qf = fundamentals[quoteCurrency] || FALLBACK_FUNDAMENTALS[quoteCurrency];
 
