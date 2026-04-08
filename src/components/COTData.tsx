@@ -198,6 +198,7 @@ const COTData = () => {
         { date: '2026-01-13', netPosition: 25392 },
         { date: '2026-03-10', netPosition: 5231 },
         { date: '2026-03-24', netPosition: -13538 },
+        { date: '2026-03-31', netPosition: 3947 },
       ],
       GBP: [
         { date: '2025-11-05', netPosition: 28500 },
@@ -205,6 +206,7 @@ const COTData = () => {
         { date: '2026-01-13', netPosition: 38090 },
         { date: '2026-03-10', netPosition: 20102 },
         { date: '2026-03-24', netPosition: 15716 },
+        { date: '2026-03-31', netPosition: 29932 },
       ],
       JPY: [
         { date: '2025-11-05', netPosition: -72300 },
@@ -212,6 +214,7 @@ const COTData = () => {
         { date: '2026-01-13', netPosition: -98650 },
         { date: '2026-03-10', netPosition: -49219 },
         { date: '2026-03-24', netPosition: -54852 },
+        { date: '2026-03-31', netPosition: -46182 },
       ],
       CHF: [
         { date: '2025-11-05', netPosition: -3200 },
@@ -219,6 +222,7 @@ const COTData = () => {
         { date: '2026-01-13', netPosition: -571 },
         { date: '2026-03-10', netPosition: 4280 },
         { date: '2026-03-24', netPosition: 235 },
+        { date: '2026-03-31', netPosition: 1490 },
       ],
       AUD: [
         { date: '2025-11-05', netPosition: -15600 },
@@ -226,6 +230,7 @@ const COTData = () => {
         { date: '2026-01-13', netPosition: 30217 },
         { date: '2026-03-10', netPosition: 46568 },
         { date: '2026-03-24', netPosition: 49145 },
+        { date: '2026-03-31', netPosition: 52569 },
       ],
       CAD: [
         { date: '2025-11-05', netPosition: -48200 },
@@ -233,6 +238,7 @@ const COTData = () => {
         { date: '2026-01-13', netPosition: -55699 },
         { date: '2026-03-10', netPosition: -37159 },
         { date: '2026-03-24', netPosition: -31700 },
+        { date: '2026-03-31', netPosition: -42910 },
       ],
       MXN: [
         { date: '2025-11-05', netPosition: 55800 },
@@ -240,6 +246,7 @@ const COTData = () => {
         { date: '2026-01-13', netPosition: 61419 },
         { date: '2026-03-10', netPosition: 52885 },
         { date: '2026-03-24', netPosition: 54787 },
+        { date: '2026-03-31', netPosition: 52803 },
       ],
       NZD: [
         { date: '2025-11-05', netPosition: -18900 },
@@ -247,6 +254,7 @@ const COTData = () => {
         { date: '2026-01-13', netPosition: -10133 },
         { date: '2026-03-10', netPosition: -4166 },
         { date: '2026-03-24', netPosition: -16730 },
+        { date: '2026-03-31', netPosition: -17798 },
       ],
     };
 
