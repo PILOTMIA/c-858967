@@ -19,7 +19,7 @@ interface CurrencyPositioning {
   assetManagerShort: number;
 }
 
-const COT_POSITIONS: Record<string, CurrencyPositioning> = {
+const FALLBACK_COT_POSITIONS: Record<string, CurrencyPositioning> = {
   EUR: { netPosition: -13538, long: 97985, short: 111523, sentiment: 'BEARISH', weeklyChange: -6586, dealerLong: 39995, dealerShort: 357133, assetManagerLong: 446373, assetManagerShort: 158433 },
   GBP: { netPosition: 15716, long: 47450, short: 31734, sentiment: 'BULLISH', weeklyChange: 3948, dealerLong: 128153, dealerShort: 46144, assetManagerLong: 28499, assetManagerShort: 122962 },
   JPY: { netPosition: -54852, long: 67921, short: 122773, sentiment: 'BEARISH', weeklyChange: 10577, dealerLong: 60117, dealerShort: 42836, assetManagerLong: 58266, assetManagerShort: 64516 },
@@ -61,9 +61,9 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'NZD', 'MXN'];
 
 // ── Scoring Engine ──────────────────────────────────────────────────────────
-function computeScores(base: string, quote: string, fundamentals: Record<string, typeof FALLBACK_FUNDAMENTALS['USD']>) {
-  const bp = COT_POSITIONS[base];
-  const qp = COT_POSITIONS[quote];
+function computeScores(base: string, quote: string, fundamentals: Record<string, typeof FALLBACK_FUNDAMENTALS['USD']>, cotPositions: Record<string, CurrencyPositioning>) {
+  const bp = cotPositions[base] || FALLBACK_COT_POSITIONS[base];
+  const qp = cotPositions[quote] || FALLBACK_COT_POSITIONS[quote];
   const bf = fundamentals[base] || FALLBACK_FUNDAMENTALS[base];
   const qf = fundamentals[quote] || FALLBACK_FUNDAMENTALS[quote];
   const bSeas = SEASONALITY[base];
