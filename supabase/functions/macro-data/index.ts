@@ -16,6 +16,9 @@ const FRED_SERIES: Record<string, { gdp: string; cpi: string; unemployment: stri
   MXN: { gdp: 'NAEXKP01MXQ189S', cpi: 'MEXCPIALLMINMEI', unemployment: 'LMUNRRTTMXM156S', interestRate: 'IRSTCB01MXM156N' },
 };
 
+// US 10-Year Treasury Note FRED series
+const US10Y_SERIES = 'DGS10';
+
 // Fallback data
 const FALLBACK: Record<string, { gdp: number; cpi: number; unemployment: number; interestRate: number }> = {
   USD: { gdp: 2.4, cpi: 2.8, unemployment: 4.1, interestRate: 4.50 },
@@ -28,6 +31,8 @@ const FALLBACK: Record<string, { gdp: number; cpi: number; unemployment: number;
   NZD: { gdp: 1.5, cpi: 3.1, unemployment: 5.4, interestRate: 2.25 },
   MXN: { gdp: 3.1, cpi: 4.2, unemployment: 2.8, interestRate: 9.50 },
 };
+
+const US10Y_FALLBACK = { yield: 4.32, previousYield: 4.40, source: 'fallback' as const };
 
 async function fetchFredSeries(seriesId: string, apiKey: string): Promise<number | null> {
   try {
@@ -58,6 +63,25 @@ async function fetchCpiYoY(seriesId: string, apiKey: string): Promise<number | n
   }
 }
 
+// Fetch last 2 observations for US10Y to compute weekly change
+async function fetchUS10Y(apiKey: string): Promise<{ yield: number; previousYield: number; source: 'fred' | 'fallback' }> {
+  try {
+    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${US10Y_SERIES}&api_key=${apiKey}&file_type=json&sort_order=desc&limit=10`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return US10Y_FALLBACK;
+    const data = await res.json();
+    const observations = data?.observations?.filter((o: any) => o.value && o.value !== '.');
+    if (!observations || observations.length < 2) return US10Y_FALLBACK;
+    return {
+      yield: parseFloat(observations[0].value),
+      previousYield: parseFloat(observations[1].value),
+      source: 'fred',
+    };
+  } catch {
+    return US10Y_FALLBACK;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -65,6 +89,7 @@ Deno.serve(async (req) => {
 
   const url = new URL(req.url);
   const currencies = url.searchParams.get('currencies')?.split(',') || ['USD', 'EUR', 'GBP', 'JPY'];
+  const includeUS10Y = url.searchParams.get('us10y') === 'true';
 
   const apiKey = Deno.env.get('FRED_API_KEY');
   if (!apiKey) {
@@ -73,14 +98,16 @@ Deno.serve(async (req) => {
     for (const c of currencies) {
       result[c] = { ...FALLBACK[c], source: 'fallback' };
     }
-    return new Response(JSON.stringify({ data: result, source: 'fallback' }), {
+    const response: any = { data: result, source: 'fallback' };
+    if (includeUS10Y) response.us10y = US10Y_FALLBACK;
+    return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
   const result: Record<string, any> = {};
 
-  await Promise.all(currencies.map(async (currency) => {
+  const macroPromise = Promise.all(currencies.map(async (currency) => {
     const series = FRED_SERIES[currency];
     if (!series) {
       result[currency] = { ...FALLBACK[currency], source: 'fallback' };
@@ -104,7 +131,14 @@ Deno.serve(async (req) => {
     };
   }));
 
-  return new Response(JSON.stringify({ data: result, timestamp: Date.now() }), {
+  const us10yPromise = includeUS10Y ? fetchUS10Y(apiKey) : Promise.resolve(null);
+
+  const [, us10yData] = await Promise.all([macroPromise, us10yPromise]);
+
+  const response: any = { data: result, timestamp: Date.now() };
+  if (us10yData) response.us10y = us10yData;
+
+  return new Response(JSON.stringify(response), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
 });
