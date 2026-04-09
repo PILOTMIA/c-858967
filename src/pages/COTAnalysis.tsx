@@ -3,8 +3,19 @@ import COTPairAnalyzer from "@/components/COTPairAnalyzer";
 import COTPairScorecard from "@/components/COTPairScorecard";
 import SyntheticCurrencyIndex from "@/components/SyntheticCurrencyIndex";
 import { COTDataProvider, useCOTData } from "@/components/COTDataContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Users, Building2 } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, Building2, ArrowUpRight, ArrowDownRight } from "lucide-react";
+
+// Week-over-week COT changes from CFTC report April 7, 2026 (as of March 31)
+const WOW_CHANGES = [
+  { currency: 'EUR', flag: '🇪🇺', change: 17485, netPosition: 3947, note: 'Flipped to net long' },
+  { currency: 'GBP', flag: '🇬🇧', change: 14216, netPosition: 29932, note: 'Surging bullish' },
+  { currency: 'JPY', flag: '🇯🇵', change: 8670, netPosition: -46182, note: 'Shorts reducing' },
+  { currency: 'AUD', flag: '🇦🇺', change: 3424, netPosition: 52569, note: 'Steady longs' },
+  { currency: 'CHF', flag: '🇨🇭', change: 1255, netPosition: 1490, note: 'Neutral' },
+  { currency: 'NZD', flag: '🇳🇿', change: -1068, netPosition: -17798, note: 'Adding shorts' },
+  { currency: 'MXN', flag: '🇲🇽', change: -1984, netPosition: 52803, note: 'Profit-taking' },
+  { currency: 'CAD', flag: '🇨🇦', change: -11210, netPosition: -42910, note: 'Deepening bearish' },
+].sort((a, b) => b.change - a.change);
 
 const COTAnalysisContent = () => {
   const { selectedCurrency, isDetailModalOpen, setIsDetailModalOpen } = useCOTData();
@@ -36,6 +47,44 @@ const COTAnalysisContent = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 pb-16 space-y-10">
+
+          {/* Week-over-Week Changes Card */}
+          <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="font-display-hero text-lg font-bold text-foreground flex items-center gap-2">
+                  📊 Week-over-Week COT Changes
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">CFTC report April 7, 2026 • Biggest movers in leveraged fund positioning</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+              {WOW_CHANGES.map((item) => {
+                const isPositive = item.change > 0;
+                return (
+                  <div
+                    key={item.currency}
+                    className={`rounded-xl p-3 border text-center transition-all hover:scale-[1.02] ${
+                      isPositive
+                        ? 'bg-success/5 border-success/20'
+                        : 'bg-destructive/5 border-destructive/20'
+                    }`}
+                  >
+                    <div className="text-lg mb-0.5">{item.flag}</div>
+                    <div className="font-bold text-foreground text-sm">{item.currency}</div>
+                    <div className={`flex items-center justify-center gap-0.5 font-mono font-bold text-sm mt-1 ${
+                      isPositive ? 'text-success' : 'text-destructive'
+                    }`}>
+                      {isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                      {isPositive ? '+' : ''}{(item.change / 1000).toFixed(1)}K
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-1 leading-tight">{item.note}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Info Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {infoCards.map((card) => {
