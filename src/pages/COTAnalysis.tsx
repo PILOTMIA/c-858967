@@ -1,5 +1,3 @@
-import COTData from "@/components/COTData";
-import COTCommodityData from "@/components/COTCommodityData";
 import COTDetailModal from "@/components/COTDetailModal";
 import COTPairAnalyzer from "@/components/COTPairAnalyzer";
 import COTPairScorecard from "@/components/COTPairScorecard";
@@ -58,8 +56,6 @@ const COTAnalysisContent = () => {
           <COTPairScorecard />
           <SyntheticCurrencyIndex />
           <COTPairAnalyzer />
-          <COTData />
-          <COTCommodityData />
 
           {/* Educational Section */}
           <div className="rounded-3xl border border-border/30 bg-card/20 backdrop-blur-sm p-8 sm:p-10">
