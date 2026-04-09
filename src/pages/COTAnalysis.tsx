@@ -3,7 +3,7 @@ import COTPairAnalyzer from "@/components/COTPairAnalyzer";
 import COTPairScorecard from "@/components/COTPairScorecard";
 import SyntheticCurrencyIndex from "@/components/SyntheticCurrencyIndex";
 import { COTDataProvider, useCOTData } from "@/components/COTDataContext";
-import { TrendingUp, TrendingDown, Users, Building2, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { TrendingUp, Users, Building2, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 // Week-over-week COT changes from CFTC report April 7, 2026 (as of March 31)
 const WOW_CHANGES = [
