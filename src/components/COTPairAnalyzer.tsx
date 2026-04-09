@@ -35,7 +35,7 @@ const COT_POSITIONS: Record<string, CurrencyPositioning> = {
 const US10Y_DATA = {
   yield: 4.32,
   weeklyChange: -0.08,
-  trend: 'falling' as const,
+  trend: 'falling' as 'falling' | 'rising' | 'stable',
   interpretation: {
     falling: 'Falling yields signal risk-off sentiment and weaker USD demand. Traders move capital out of US bonds, reducing dollar buying pressure.',
     rising: 'Rising yields attract global capital into US bonds, increasing USD demand. Higher yields = stronger dollar as investors seek safe returns.',
