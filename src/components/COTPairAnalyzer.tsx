@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -31,16 +31,17 @@ const COT_POSITIONS: Record<string, CurrencyPositioning> = {
   USD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 0, dealerShort: 0, dealerWeeklyChange: 0, assetManagerLong: 0, assetManagerShort: 0, assetManagerWeeklyChange: 0 },
 };
 
-// US 10-Year Treasury Note data
-const US10Y_DATA = {
+// US 10-Year Treasury Note fallback
+const US10Y_FALLBACK = {
   yield: 4.32,
   weeklyChange: -0.08,
   trend: 'falling' as 'falling' | 'rising' | 'stable',
-  interpretation: {
-    falling: 'Falling yields signal risk-off sentiment and weaker USD demand. Traders move capital out of US bonds, reducing dollar buying pressure.',
-    rising: 'Rising yields attract global capital into US bonds, increasing USD demand. Higher yields = stronger dollar as investors seek safe returns.',
-    stable: 'Stable yields suggest consolidation. Watch for breakout direction for the next USD move.',
-  },
+};
+
+const US10Y_INTERPRETATIONS = {
+  falling: 'Falling yields signal risk-off sentiment and weaker USD demand. Traders move capital out of US bonds, reducing dollar buying pressure.',
+  rising: 'Rising yields attract global capital into US bonds, increasing USD demand. Higher yields = stronger dollar as investors seek safe returns.',
+  stable: 'Stable yields suggest consolidation. Watch for breakout direction for the next USD move.',
 };
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'NZD', 'MXN'];
@@ -53,8 +54,42 @@ const FLAG_EMOJIS: Record<string, string> = {
 const COTPairAnalyzer = () => {
   const [baseCurrency, setBaseCurrency] = useState('GBP');
   const [quoteCurrency, setQuoteCurrency] = useState('JPY');
+  const [us10yData, setUs10yData] = useState(US10Y_FALLBACK);
+  const [us10ySource, setUs10ySource] = useState<'fallback' | 'fred'>('fallback');
 
   const isUSDPair = baseCurrency === 'USD' || quoteCurrency === 'USD';
+
+  // Fetch live US10Y data when USD pair is selected
+  useEffect(() => {
+    if (!isUSDPair) return;
+    const fetchUS10Y = async () => {
+      try {
+        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'xkgsugennbdatwmetnxx';
+        const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
+        const res = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/macro-data?currencies=USD&us10y=true`,
+          {
+            headers: { 'Authorization': `Bearer ${anonKey}`, 'apikey': anonKey, 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(15000),
+          }
+        );
+        if (res.ok) {
+          const json = await res.json();
+          if (json.us10y) {
+            const yld = json.us10y.yield;
+            const prev = json.us10y.previousYield;
+            const change = parseFloat((yld - prev).toFixed(2));
+            const trend: 'rising' | 'falling' | 'stable' = change > 0.02 ? 'rising' : change < -0.02 ? 'falling' : 'stable';
+            setUs10yData({ yield: yld, weeklyChange: change, trend });
+            setUs10ySource(json.us10y.source || 'fallback');
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch US10Y:', e);
+      }
+    };
+    fetchUS10Y();
+  }, [isUSDPair]);
 
   const analysis = useMemo(() => {
     const base = COT_POSITIONS[baseCurrency];
@@ -362,41 +397,43 @@ const COTPairAnalyzer = () => {
                 <div className="flex items-center gap-2 mb-3">
                   <Landmark className="w-5 h-5 text-chart-1" />
                   <span className="font-semibold text-foreground text-sm">US 10-Year Treasury Note (US10Y)</span>
-                  <Badge variant="outline" className="text-[10px] border-chart-1/30 text-chart-1">Bond Market</Badge>
+                  <Badge variant="outline" className={`text-[10px] border-chart-1/30 ${us10ySource === 'fred' ? 'text-success' : 'text-chart-1'}`}>
+                    {us10ySource === 'fred' ? '🟢 FRED Live' : '⚪ Fallback'}
+                  </Badge>
                 </div>
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   <div className="bg-background/50 rounded-lg p-3 border border-border/10 text-center">
                     <div className="text-xs text-muted-foreground mb-1">Current Yield</div>
-                    <div className="text-xl font-mono font-bold text-foreground">{US10Y_DATA.yield}%</div>
+                    <div className="text-xl font-mono font-bold text-foreground">{us10yData.yield}%</div>
                   </div>
                   <div className="bg-background/50 rounded-lg p-3 border border-border/10 text-center">
                     <div className="text-xs text-muted-foreground mb-1">Weekly Change</div>
-                    <div className={`text-xl font-mono font-bold ${US10Y_DATA.weeklyChange > 0 ? 'text-success' : 'text-destructive'}`}>
-                      {US10Y_DATA.weeklyChange > 0 ? '+' : ''}{US10Y_DATA.weeklyChange}%
+                    <div className={`text-xl font-mono font-bold ${us10yData.weeklyChange > 0 ? 'text-success' : 'text-destructive'}`}>
+                      {us10yData.weeklyChange > 0 ? '+' : ''}{us10yData.weeklyChange}%
                     </div>
                   </div>
                   <div className="bg-background/50 rounded-lg p-3 border border-border/10 text-center">
                     <div className="text-xs text-muted-foreground mb-1">Trend</div>
                     <div className={`text-sm font-bold flex items-center justify-center gap-1 ${
-                      US10Y_DATA.trend === 'rising' ? 'text-success' : US10Y_DATA.trend === 'falling' ? 'text-destructive' : 'text-muted-foreground'
+                      us10yData.trend === 'rising' ? 'text-success' : us10yData.trend === 'falling' ? 'text-destructive' : 'text-muted-foreground'
                     }`}>
-                      {US10Y_DATA.trend === 'rising' ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                      {US10Y_DATA.trend.charAt(0).toUpperCase() + US10Y_DATA.trend.slice(1)}
+                      {us10yData.trend === 'rising' ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                      {us10yData.trend.charAt(0).toUpperCase() + us10yData.trend.slice(1)}
                     </div>
                   </div>
                 </div>
                 <div className="bg-background/30 rounded-lg p-3 border border-border/10">
                   <p className="text-sm text-foreground leading-relaxed">
                     <strong className="text-chart-1">Impact on USD:</strong>{' '}
-                    {US10Y_DATA.interpretation[US10Y_DATA.trend]}
+                    {US10Y_INTERPRETATIONS[us10yData.trend]}
                   </p>
                   <p className="text-xs text-muted-foreground mt-2">
-                    💡 The 10Y yield is a key driver for {baseCurrency === 'USD' ? `${baseCurrency}/${quoteCurrency}` : `${baseCurrency}/${quoteCurrency}`}. 
-                    {US10Y_DATA.trend === 'falling' 
+                    💡 The 10Y yield is a key driver for {baseCurrency}/{quoteCurrency}. 
+                    {us10yData.trend === 'falling' 
                       ? baseCurrency === 'USD' 
                         ? ` Falling yields are bearish for USD — watch for ${quoteCurrency} strength.`
                         : ` Falling yields weaken USD — this supports ${baseCurrency} upside.`
-                      : US10Y_DATA.trend === 'rising'
+                      : us10yData.trend === 'rising'
                         ? baseCurrency === 'USD'
                           ? ` Rising yields support USD — expect ${baseCurrency} strength against ${quoteCurrency}.`
                           : ` Rising yields strengthen USD — this creates headwinds for ${baseCurrency}.`

@@ -114,15 +114,11 @@ function getTradingViewSymbol(base: string, quote: string): string {
 
 // ── Correct forex pair code for price fetching ──────────────────────────────
 function getPricePairKey(base: string, quote: string): string {
-  const pair = `${base}${quote}`;
-  // Known cross pairs supported by ForexPriceService
-  const crossPairs = ['EURJPY', 'GBPJPY', 'EURGBP', 'GBPCAD', 'AUDJPY', 'EURAUD', 'GBPAUD', 'EURCAD', 'NZDJPY', 'CADJPY'];
-  if (crossPairs.includes(pair)) return pair;
-  // USD pairs — ForexPriceService expects the non-USD currency
+  // If either side is USD, the ForexPriceService expects just the non-USD code
   if (base === 'USD') return quote;
   if (quote === 'USD') return base;
-  // For cross pairs not in the list, use the pair directly and hope fallback works
-  return pair;
+  // Cross pair — pass as combined code (ForexPriceService has fallbacks for all)
+  return `${base}${quote}`;
 }
 
 // ── TradingView Embed Component ─────────────────────────────────────────────

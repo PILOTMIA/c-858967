@@ -19,9 +19,8 @@ const CACHE_DURATION = 60000; // 1 minute cache
 
 // Convert internal currency codes to forex pair format
 const getPairCode = (currency: string): string => {
-  // Cross pairs - return as-is
-  const crossPairs = ['EURJPY', 'GBPJPY', 'EURGBP', 'GBPCAD', 'AUDJPY', 'EURAUD', 'GBPAUD', 'EURCAD', 'NZDJPY', 'CADJPY'];
-  if (crossPairs.includes(currency)) return currency;
+  // If it's already a 6-char pair code, use it directly
+  if (currency.length === 6) return currency;
   
   // USD pairs - determine base/quote order
   const usdBasePairs = ['JPY', 'CAD', 'MXN', 'CHF'];
@@ -31,27 +30,20 @@ const getPairCode = (currency: string): string => {
   return `${currency}USD`;
 };
 
-// Fallback prices - Updated March 19, 2026 (accurate market levels)
+// Fallback prices - Updated April 2026 (accurate market levels)
 const fallbackPrices: Record<string, number> = {
-  EURUSD: 1.0340,
-  GBPUSD: 1.2260,
-  USDJPY: 149.80,
-  USDCHF: 0.8985,
-  AUDUSD: 0.6310,
-  USDCAD: 1.4380,
-  USDMXN: 20.35,
-  NZDUSD: 0.5680,
-  USDBRL: 5.8450,
-  EURJPY: 154.90,
-  GBPJPY: 183.65,
-  EURGBP: 0.8435,
-  GBPCAD: 1.7630,
-  AUDJPY: 94.50,
-  EURAUD: 1.6390,
-  GBPAUD: 1.9430,
-  EURCAD: 1.4870,
-  NZDJPY: 85.10,
-  CADJPY: 104.20,
+  // USD majors
+  EURUSD: 1.0340, GBPUSD: 1.2260, USDJPY: 149.80, USDCHF: 0.8985,
+  AUDUSD: 0.6310, USDCAD: 1.4380, USDMXN: 20.35, NZDUSD: 0.5680, USDBRL: 5.8450,
+  // Common crosses
+  EURJPY: 154.90, GBPJPY: 183.65, EURGBP: 0.8435, GBPCAD: 1.7630,
+  AUDJPY: 94.50, EURAUD: 1.6390, GBPAUD: 1.9430, EURCAD: 1.4870,
+  NZDJPY: 85.10, CADJPY: 104.20,
+  // Additional crosses (all G10 combos)
+  AUDNZD: 1.1110, AUDCAD: 0.9070, AUDCHF: 0.5670,
+  NZDCAD: 0.8170, NZDCHF: 0.5105, CADCHF: 0.6245,
+  EURCHF: 0.9300, GBPCHF: 1.1015, GBPNZD: 2.1580,
+  EURNZD: 1.8200, MXNJPY: 7.36,
 };
 
 export const fetchForexPrice = async (currency: string): Promise<number> => {
