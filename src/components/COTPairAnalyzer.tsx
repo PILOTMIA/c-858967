@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -31,16 +31,17 @@ const COT_POSITIONS: Record<string, CurrencyPositioning> = {
   USD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 0, dealerShort: 0, dealerWeeklyChange: 0, assetManagerLong: 0, assetManagerShort: 0, assetManagerWeeklyChange: 0 },
 };
 
-// US 10-Year Treasury Note data
-const US10Y_DATA = {
+// US 10-Year Treasury Note fallback
+const US10Y_FALLBACK = {
   yield: 4.32,
   weeklyChange: -0.08,
   trend: 'falling' as 'falling' | 'rising' | 'stable',
-  interpretation: {
-    falling: 'Falling yields signal risk-off sentiment and weaker USD demand. Traders move capital out of US bonds, reducing dollar buying pressure.',
-    rising: 'Rising yields attract global capital into US bonds, increasing USD demand. Higher yields = stronger dollar as investors seek safe returns.',
-    stable: 'Stable yields suggest consolidation. Watch for breakout direction for the next USD move.',
-  },
+};
+
+const US10Y_INTERPRETATIONS = {
+  falling: 'Falling yields signal risk-off sentiment and weaker USD demand. Traders move capital out of US bonds, reducing dollar buying pressure.',
+  rising: 'Rising yields attract global capital into US bonds, increasing USD demand. Higher yields = stronger dollar as investors seek safe returns.',
+  stable: 'Stable yields suggest consolidation. Watch for breakout direction for the next USD move.',
 };
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'NZD', 'MXN'];
@@ -53,8 +54,42 @@ const FLAG_EMOJIS: Record<string, string> = {
 const COTPairAnalyzer = () => {
   const [baseCurrency, setBaseCurrency] = useState('GBP');
   const [quoteCurrency, setQuoteCurrency] = useState('JPY');
+  const [us10yData, setUs10yData] = useState(US10Y_FALLBACK);
+  const [us10ySource, setUs10ySource] = useState<'fallback' | 'fred'>('fallback');
 
   const isUSDPair = baseCurrency === 'USD' || quoteCurrency === 'USD';
+
+  // Fetch live US10Y data when USD pair is selected
+  useEffect(() => {
+    if (!isUSDPair) return;
+    const fetchUS10Y = async () => {
+      try {
+        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'xkgsugennbdatwmetnxx';
+        const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
+        const res = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/macro-data?currencies=USD&us10y=true`,
+          {
+            headers: { 'Authorization': `Bearer ${anonKey}`, 'apikey': anonKey, 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(15000),
+          }
+        );
+        if (res.ok) {
+          const json = await res.json();
+          if (json.us10y) {
+            const yld = json.us10y.yield;
+            const prev = json.us10y.previousYield;
+            const change = parseFloat((yld - prev).toFixed(2));
+            const trend: 'rising' | 'falling' | 'stable' = change > 0.02 ? 'rising' : change < -0.02 ? 'falling' : 'stable';
+            setUs10yData({ yield: yld, weeklyChange: change, trend });
+            setUs10ySource(json.us10y.source || 'fallback');
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch US10Y:', e);
+      }
+    };
+    fetchUS10Y();
+  }, [isUSDPair]);
 
   const analysis = useMemo(() => {
     const base = COT_POSITIONS[baseCurrency];
