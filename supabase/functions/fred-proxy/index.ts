@@ -33,8 +33,12 @@ Deno.serve(async (req) => {
     try {
       let fredUrl = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${apiKey}&file_type=json&limit=${limit}&sort_order=desc`;
       if (units && units !== 'lin') fredUrl += `&units=${units}`;
+      console.log(`Fetching FRED: ${seriesId}, key length: ${apiKey.length}`);
       const res = await fetch(fredUrl, { signal: AbortSignal.timeout(10000) });
+      console.log(`FRED ${seriesId} response: ${res.status}`);
       if (!res.ok) {
+        const body = await res.text();
+        console.error(`FRED ${seriesId} error: ${body}`);
         results[seriesId] = { error: `HTTP ${res.status}`, observations: [] };
         return;
       }
