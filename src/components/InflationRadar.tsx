@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { TrendingUp, TrendingDown, Minus, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +17,7 @@ interface IndicatorData {
   nextRelease: string;
   historicalData: CPIData[];
   yoyChange?: number;
+  source: string;
 }
 
 interface InflationData {
@@ -27,150 +27,72 @@ interface InflationData {
   exportPriceIndex: IndicatorData;
 }
 
+const FALLBACK: InflationData = {
+  cpi: { current: 2.8, trend: "Stable inflation trend", projectionLow: 2.6, projectionHigh: 3.0, nextRelease: "Apr 10, 2026", historicalData: [], yoyChange: 2.8, source: 'Fallback' },
+  coreCPI: { current: 3.0, trend: "Stable inflation trend", projectionLow: 2.8, projectionHigh: 3.2, nextRelease: "Apr 10, 2026", historicalData: [], yoyChange: 3.0, source: 'Fallback' },
+  ppi: { current: 2.4, trend: "Declining trend", projectionLow: 2.1, projectionHigh: 2.7, nextRelease: "Apr 11, 2026", historicalData: [], yoyChange: 2.4, source: 'Fallback' },
+  exportPriceIndex: { current: 1.5, trend: "Declining trend", projectionLow: 1.2, projectionHigh: 1.8, nextRelease: "Apr 14, 2026", historicalData: [], yoyChange: 1.5, source: 'Fallback' },
+};
+
 const fetchInflationData = async (): Promise<InflationData> => {
   try {
-    // Fetch all economic indicators in parallel
-    const [cpiResponse, coreCPIResponse, ppiResponse, exportPriceResponse] = await Promise.all([
-      fetch('https://api.stlouisfed.org/fred/series/observations?series_id=CPIAUCSL&api_key=demo&file_type=json&limit=24&sort_order=desc'),
-      fetch('https://api.stlouisfed.org/fred/series/observations?series_id=CPILFESL&api_key=demo&file_type=json&limit=24&sort_order=desc'),
-      fetch('https://api.stlouisfed.org/fred/series/observations?series_id=PPIACO&api_key=demo&file_type=json&limit=24&sort_order=desc'),
-      fetch('https://api.stlouisfed.org/fred/series/observations?series_id=IQ&api_key=demo&file_type=json&limit=24&sort_order=desc')
-    ]);
+    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+    const res = await fetch(
+      `https://${projectId}.supabase.co/functions/v1/fred-proxy?series=CPIAUCSL,CPILFESL,PPIACO,IQ&limit=24&units=pc1`,
+      {
+        headers: {
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    if (!res.ok) throw new Error('API error');
+    const result = await res.json();
+    const d = result.data;
 
-    if (!cpiResponse.ok || !coreCPIResponse.ok || !ppiResponse.ok || !exportPriceResponse.ok) {
-      throw new Error('Failed to fetch data');
-    }
+    const buildIndicator = (seriesId: string, fallback: IndicatorData): IndicatorData => {
+      const obs = d[seriesId]?.observations;
+      if (!obs || obs.length === 0) return fallback;
+      const current = parseFloat(parseFloat(obs[0].value).toFixed(1));
+      const prev = obs.length > 1 ? parseFloat(obs[1].value) : current;
+      const older = obs.length > 2 ? parseFloat(obs[2].value) : prev;
+      const recentChange = current - prev;
+      const priorChange = prev - older;
+      let trend = "Stable inflation trend with minimal change";
+      if (recentChange > 0.1 && priorChange > 0.1) trend = "Rising inflation trend, up recently";
+      else if (recentChange < -0.1 && priorChange < -0.1) trend = "Declining inflation trend, down recently";
 
-    const cpiData = await cpiResponse.json();
-    const coreCPIData = await coreCPIResponse.json();
-    const ppiData = await ppiResponse.json();
-    const exportPriceData = await exportPriceResponse.json();
+      const historicalData: CPIData[] = obs.slice().reverse().map((o: any) => ({
+        date: new Date(o.date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+        value: parseFloat(parseFloat(o.value).toFixed(2)),
+      }));
 
-    // Calculate year-over-year inflation rate
-    const calculateInflationRate = (observations: any[]) => {
-      if (observations.length < 13) return 2.9; // fallback
-      const current = parseFloat(observations[0].value);
-      const yearAgo = parseFloat(observations[12].value);
-      return ((current - yearAgo) / yearAgo) * 100;
-    };
-
-    const cpiRate = calculateInflationRate(cpiData.observations);
-    const coreCPIRate = calculateInflationRate(coreCPIData.observations);
-
-    // Determine trend based on recent data
-    const determineTrend = (observations: any[]) => {
-      if (observations.length < 3) return "Stable inflation trend with minimal change";
-      const current = parseFloat(observations[0].value);
-      const previous = parseFloat(observations[1].value);
-      const older = parseFloat(observations[2].value);
-      
-      const recentChange = current - previous;
-      const priorChange = previous - older;
-      
-      if (recentChange > 0.1 && priorChange > 0.1) return "Rising inflation trend, up 0.2 percentage points recently";
-      if (recentChange < -0.1 && priorChange < -0.1) return "Declining inflation trend, down 0.2 percentage points recently";
-      return "Stable inflation trend with minimal change";
-    };
-
-    // Format historical data for charts
-    const formatHistoricalData = (observations: any[]): CPIData[] => {
-      return observations
-        .reverse()
-        .map((obs: any) => ({
-          date: new Date(obs.date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-          value: parseFloat(obs.value)
-        }));
-    };
-
-    // Calculate next release date (typically 15th of each month)
-    const getNextReleaseDate = () => {
       const today = new Date();
       const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 15);
-      return nextMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const nextRelease = nextMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+      return {
+        current,
+        trend,
+        projectionLow: parseFloat((current - 0.2).toFixed(1)),
+        projectionHigh: parseFloat((current + 0.2).toFixed(1)),
+        nextRelease,
+        historicalData,
+        yoyChange: current,
+        source: 'FRED API 🟢',
+      };
     };
 
-    const ppiRate = calculateInflationRate(ppiData.observations);
-    const exportPriceRate = calculateInflationRate(exportPriceData.observations);
-
     return {
-      cpi: {
-        current: parseFloat(cpiRate.toFixed(1)),
-        trend: determineTrend(cpiData.observations),
-        projectionLow: parseFloat((cpiRate - 0.2).toFixed(1)),
-        projectionHigh: parseFloat((cpiRate + 0.2).toFixed(1)),
-        nextRelease: getNextReleaseDate(),
-        historicalData: formatHistoricalData(cpiData.observations),
-        yoyChange: parseFloat(cpiRate.toFixed(1))
-      },
-      coreCPI: {
-        current: parseFloat(coreCPIRate.toFixed(1)),
-        trend: determineTrend(coreCPIData.observations),
-        projectionLow: parseFloat((coreCPIRate - 0.2).toFixed(1)),
-        projectionHigh: parseFloat((coreCPIRate + 0.2).toFixed(1)),
-        nextRelease: getNextReleaseDate(),
-        historicalData: formatHistoricalData(coreCPIData.observations),
-        yoyChange: parseFloat(coreCPIRate.toFixed(1))
-      },
-      ppi: {
-        current: parseFloat(ppiRate.toFixed(1)),
-        trend: determineTrend(ppiData.observations),
-        projectionLow: parseFloat((ppiRate - 0.3).toFixed(1)),
-        projectionHigh: parseFloat((ppiRate + 0.3).toFixed(1)),
-        nextRelease: getNextReleaseDate(),
-        historicalData: formatHistoricalData(ppiData.observations),
-        yoyChange: parseFloat(ppiRate.toFixed(1))
-      },
-      exportPriceIndex: {
-        current: parseFloat(exportPriceRate.toFixed(1)),
-        trend: determineTrend(exportPriceData.observations),
-        projectionLow: parseFloat((exportPriceRate - 0.3).toFixed(1)),
-        projectionHigh: parseFloat((exportPriceRate + 0.3).toFixed(1)),
-        nextRelease: getNextReleaseDate(),
-        historicalData: formatHistoricalData(exportPriceData.observations),
-        yoyChange: parseFloat(exportPriceRate.toFixed(1))
-      }
+      cpi: buildIndicator('CPIAUCSL', FALLBACK.cpi),
+      coreCPI: buildIndicator('CPILFESL', FALLBACK.coreCPI),
+      ppi: buildIndicator('PPIACO', FALLBACK.ppi),
+      exportPriceIndex: buildIndicator('IQ', FALLBACK.exportPriceIndex),
     };
   } catch (error) {
     console.error('Error fetching inflation data:', error);
-    // Return fallback data
-    return {
-      cpi: {
-        current: 2.8,
-        trend: "Stable inflation trend with minimal change",
-        projectionLow: 2.6,
-        projectionHigh: 3.0,
-        nextRelease: "Apr 10, 2026",
-        historicalData: [],
-        yoyChange: 2.8
-      },
-      coreCPI: {
-        current: 3.0,
-        trend: "Stable inflation trend with minimal change",
-        projectionLow: 2.8,
-        projectionHigh: 3.2,
-        nextRelease: "Apr 10, 2026",
-        historicalData: [],
-        yoyChange: 3.0
-      },
-      ppi: {
-        current: 2.4,
-        trend: "Declining inflation trend, down 0.2 percentage points recently",
-        projectionLow: 2.1,
-        projectionHigh: 2.7,
-        nextRelease: "Apr 11, 2026",
-        historicalData: [],
-        yoyChange: 2.4
-      },
-      exportPriceIndex: {
-        current: 1.5,
-        trend: "Declining inflation trend, down 0.3 percentage points recently",
-        projectionLow: 1.2,
-        projectionHigh: 1.8,
-        nextRelease: "Apr 14, 2026",
-        historicalData: [],
-        yoyChange: 1.5
-      }
-    };
+    return FALLBACK;
   }
 };
 
@@ -178,19 +100,19 @@ const InflationRadar = () => {
   const { data, isLoading } = useQuery({
     queryKey: ['inflationData'],
     queryFn: fetchInflationData,
-    refetchInterval: 24 * 60 * 60 * 1000, // Refetch daily
+    refetchInterval: 6 * 60 * 60 * 1000,
   });
 
   const getTrendIcon = (trend: string) => {
-    if (trend.includes('Rising')) return <TrendingUp className="w-4 h-4 text-red-500" />;
-    if (trend.includes('Declining')) return <TrendingDown className="w-4 h-4 text-green-500" />;
-    return <Minus className="w-4 h-4 text-yellow-500" />;
+    if (trend.includes('Rising')) return <TrendingUp className="w-4 h-4 text-destructive" />;
+    if (trend.includes('Declining')) return <TrendingDown className="w-4 h-4 text-success" />;
+    return <Minus className="w-4 h-4 text-muted-foreground" />;
   };
 
   const getTrendColor = (trend: string) => {
-    if (trend.includes('Rising')) return "text-red-500";
-    if (trend.includes('Declining')) return "text-green-500";
-    return "text-yellow-500";
+    if (trend.includes('Rising')) return "text-destructive";
+    if (trend.includes('Declining')) return "text-success";
+    return "text-muted-foreground";
   };
 
   if (isLoading || !data) {
@@ -208,145 +130,104 @@ const InflationRadar = () => {
   const renderIndicatorCard = (
     title: string,
     description: string,
-    data: IndicatorData,
+    indicatorData: IndicatorData,
     color: string = "red"
   ) => (
-    <Card className="border-border">
-      <CardHeader className="p-3 sm:p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <CardTitle className="text-lg sm:text-xl">{title}</CardTitle>
-          <Badge variant="outline" className="text-xs sm:text-sm">
-            <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-            Latest
+    <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm overflow-hidden">
+      <div className="p-4 sm:p-5">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-1">
+          <h3 className="text-base sm:text-lg font-bold text-foreground">{title}</h3>
+          <Badge variant="outline" className="text-[10px]">
+            {indicatorData.source}
           </Badge>
         </div>
-        <CardDescription className="text-xs sm:text-sm">
-          {description}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-3 sm:p-6 space-y-4">
-        {/* Current Value */}
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </div>
+      <div className="px-4 sm:px-5 pb-5 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs sm:text-sm text-muted-foreground">Current Rate (YoY)</p>
-            <p className={`text-2xl sm:text-3xl font-bold text-${color}-500`}>{data.current}%</p>
+            <p className="text-xs text-muted-foreground">Current Rate (YoY)</p>
+            <p className="text-3xl font-bold text-foreground">{indicatorData.current}%</p>
           </div>
-          {getTrendIcon(data.trend)}
+          {getTrendIcon(indicatorData.trend)}
         </div>
 
-        {/* Trend */}
-        <div className="bg-muted/50 p-2 sm:p-3 rounded-lg">
-          <p className={`text-xs sm:text-sm font-medium ${getTrendColor(data.trend)}`}>
-            {data.trend}
+        <div className="bg-muted/30 p-3 rounded-xl">
+          <p className={`text-xs font-medium ${getTrendColor(indicatorData.trend)}`}>
+            {indicatorData.trend}
           </p>
         </div>
 
-        {/* Next Release Projection */}
-        <div className="border border-border rounded-lg p-3 sm:p-4">
+        <div className="border border-border/30 rounded-xl p-3">
           <div className="flex items-center gap-2 mb-2">
-            <Calendar className="w-4 h-4 text-muted-foreground" />
-            <p className="text-xs sm:text-sm font-semibold">Next Release Projection (±1σ)</p>
+            <Calendar className="w-3 h-3 text-muted-foreground" />
+            <p className="text-xs font-semibold text-foreground">Next Release Projection</p>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Implied Low</p>
-              <p className="text-base sm:text-lg font-bold text-green-500">{data.projectionLow}%</p>
+              <p className="text-[10px] text-muted-foreground">Low</p>
+              <p className="text-base font-bold text-success">{indicatorData.projectionLow}%</p>
             </div>
             <div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Implied High</p>
-              <p className={`text-base sm:text-lg font-bold text-${color}-500`}>{data.projectionHigh}%</p>
+              <p className="text-[10px] text-muted-foreground">High</p>
+              <p className="text-base font-bold text-destructive">{indicatorData.projectionHigh}%</p>
             </div>
           </div>
-          <p className="text-[10px] sm:text-xs text-muted-foreground mt-2">
-            Range based on 12-month volatility (σ = 0.1%)
-          </p>
-          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-            Next Release: {data.nextRelease}
-          </p>
+          <p className="text-[10px] text-muted-foreground mt-2">Next: {indicatorData.nextRelease}</p>
         </div>
 
-        {/* Historical Chart */}
-        {data.historicalData.length > 0 && (
-          <div className="h-48 sm:h-64">
+        {indicatorData.historicalData.length > 0 && (
+          <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data.historicalData}>
+              <LineChart data={indicatorData.historicalData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis 
-                  dataKey="date" 
-                  stroke="hsl(var(--muted-foreground))" 
-                  fontSize={10}
-                  interval="preserveStartEnd"
-                />
-                <YAxis 
-                  stroke="hsl(var(--muted-foreground))" 
-                  fontSize={10}
-                  domain={['dataMin - 0.5', 'dataMax + 0.5']}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))', 
+                <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={10} interval="preserveStartEnd" />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} domain={['dataMin - 0.5', 'dataMax + 0.5']} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                    fontSize: '12px'
+                    borderRadius: '12px',
+                    fontSize: '12px',
                   }}
                 />
-                <Legend wrapperStyle={{ fontSize: '12px' }} />
-                <Line 
-                  type="monotone" 
-                  dataKey="value" 
-                  stroke={color === "red" ? "#ef4444" : color === "blue" ? "#3b82f6" : "#10b981"}
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="hsl(var(--primary))"
                   strokeWidth={2}
-                  dot={{ fill: color === "red" ? "#ef4444" : color === "blue" ? "#3b82f6" : "#10b981", r: 3 }}
+                  dot={{ fill: 'hsl(var(--primary))', r: 3 }}
                   name={title}
-                />
-                <ReferenceLine 
-                  y={data.historicalData[data.historicalData.length - 1]?.value} 
-                  stroke="hsl(var(--muted-foreground))" 
-                  strokeDasharray="3 3" 
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 
   return (
     <div className="space-y-4 sm:space-y-6 p-3 sm:p-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {/* Consumer Price Index (CPI) */}
-        {renderIndicatorCard(
-          "Consumer Price Index (CPI)",
-          "Measures the average change in prices paid by urban consumers for a basket of consumer goods and services",
-          data.cpi,
-          "red"
-        )}
-
-        {/* Core CPI */}
-        {renderIndicatorCard(
-          "Core CPI",
-          "CPI excluding volatile food and energy prices. A key measure of underlying inflation.",
-          data.coreCPI,
-          "red"
-        )}
-
-        {/* Producer Price Index (PPI) */}
-        {renderIndicatorCard(
-          "Producer Price Index (PPI)",
-          "Measures the average change in prices received by domestic producers for their output",
-          data.ppi,
-          "blue"
-        )}
-
-        {/* Export Price Index */}
-        {renderIndicatorCard(
-          "Export Price Index",
-          "Measures the change in prices of goods and services exported from the US",
-          data.exportPriceIndex,
-          "blue"
-        )}
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <TrendingUp className="w-6 h-6 text-primary" /> Inflation Monitor
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            US inflation indicators from FRED — CPI, Core CPI, PPI, Export Price Index
+          </p>
+        </div>
       </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {renderIndicatorCard("Consumer Price Index (CPI)", "Average change in prices paid by urban consumers", data.cpi)}
+        {renderIndicatorCard("Core CPI", "CPI excluding volatile food and energy prices", data.coreCPI)}
+        {renderIndicatorCard("Producer Price Index (PPI)", "Average change in prices received by domestic producers", data.ppi)}
+        {renderIndicatorCard("Export Price Index", "Change in prices of goods exported from the US", data.exportPriceIndex)}
+      </div>
+      <p className="text-[10px] text-muted-foreground text-center">
+        Source: Federal Reserve Economic Data (FRED) — St. Louis Fed • Data refreshes every 6 hours
+      </p>
     </div>
   );
 };
