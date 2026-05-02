@@ -163,21 +163,21 @@ const FundamentalNewsAnalysis = () => {
   });
 
   const getDirectionIcon = (d: string) => {
-    if (d === 'Bullish') return <TrendingUp className="w-4 h-4 text-green-400" />;
-    if (d === 'Bearish') return <TrendingDown className="w-4 h-4 text-red-400" />;
-    return <Minus className="w-4 h-4 text-yellow-400" />;
+    if (d === 'Bullish') return <TrendingUp className="w-4 h-4 text-success" />;
+    if (d === 'Bearish') return <TrendingDown className="w-4 h-4 text-destructive" />;
+    return <Minus className="w-4 h-4 text-warning" />;
   };
 
   const getDirectionColor = (d: string) => {
-    if (d === 'Bullish') return 'text-green-400 border-green-400/20 bg-green-400/10';
-    if (d === 'Bearish') return 'text-red-400 border-red-400/20 bg-red-400/10';
-    return 'text-yellow-400 border-yellow-400/20 bg-yellow-400/10';
+    if (d === 'Bullish') return 'text-success border-success/20 bg-success/10';
+    if (d === 'Bearish') return 'text-destructive border-destructive/20 bg-destructive/10';
+    return 'text-warning border-warning/20 bg-warning/10';
   };
 
   const getImpactColor = (i: string) => {
-    if (i === 'High') return 'bg-red-500/20 text-red-400 border-red-500/30';
-    if (i === 'Medium') return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-    return 'bg-green-500/20 text-green-400 border-green-500/30';
+    if (i === 'High') return 'bg-destructive/15 text-destructive border-destructive/30/30';
+    if (i === 'Medium') return 'bg-warning/15 text-warning border-warning/30/30';
+    return 'bg-success/15 text-success border-success/30/30';
   };
 
   const filtered = articles?.filter(a => selectedCurrency === 'All' || a.currency === selectedCurrency) || [];

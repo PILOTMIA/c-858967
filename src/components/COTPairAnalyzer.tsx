@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, ArrowRight, Zap, Shield, Building2, BarChart3, Landmark } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, LineChart, Line, CartesianGrid, Legend } from "recharts";
 
-// COT positions from CFTC report April 7, 2026 (as of March 31, 2026)
+// COT positions from CFTC report May 5, 2026 (as of April 28, 2026)
 interface CurrencyPositioning {
   netPosition: number;
   long: number;
@@ -20,15 +21,67 @@ interface CurrencyPositioning {
 }
 
 const COT_POSITIONS: Record<string, CurrencyPositioning> = {
-  EUR: { netPosition: 3947, long: 106291, short: 102344, sentiment: 'NEUTRAL', weeklyChange: 17485, dealerLong: 48543, dealerShort: 357954, dealerWeeklyChange: 8548, assetManagerLong: 431246, assetManagerShort: 166829, assetManagerWeeklyChange: -6598 },
-  GBP: { netPosition: 29932, long: 58402, short: 28470, sentiment: 'BULLISH', weeklyChange: 14216, dealerLong: 132294, dealerShort: 51454, dealerWeeklyChange: -7493, assetManagerLong: 23458, assetManagerShort: 124990, assetManagerWeeklyChange: 1495 },
-  JPY: { netPosition: -46182, long: 77232, short: 123414, sentiment: 'BEARISH', weeklyChange: 8670, dealerLong: 65995, dealerShort: 52624, dealerWeeklyChange: -12818, assetManagerLong: 63211, assetManagerShort: 66856, assetManagerWeeklyChange: -5811 },
-  CHF: { netPosition: 1490, long: 10695, short: 9205, sentiment: 'NEUTRAL', weeklyChange: 1255, dealerLong: 48430, dealerShort: 4780, dealerWeeklyChange: 2473, assetManagerLong: 5758, assetManagerShort: 45566, assetManagerWeeklyChange: -2349 },
-  AUD: { netPosition: 52569, long: 76188, short: 23619, sentiment: 'BULLISH', weeklyChange: 3424, dealerLong: 30591, dealerShort: 158593, dealerWeeklyChange: 1326, assetManagerLong: 103136, assetManagerShort: 58503, assetManagerWeeklyChange: 1997 },
-  CAD: { netPosition: -42910, long: 28325, short: 71235, sentiment: 'BEARISH', weeklyChange: -11210, dealerLong: 64103, dealerShort: 36157, dealerWeeklyChange: 2254, assetManagerLong: 64749, assetManagerShort: 60401, assetManagerWeeklyChange: -3939 },
-  MXN: { netPosition: 52803, long: 76213, short: 23410, sentiment: 'BULLISH', weeklyChange: -1984, dealerLong: 24594, dealerShort: 41544, dealerWeeklyChange: -542, assetManagerLong: 73258, assetManagerShort: 39368, assetManagerWeeklyChange: -3524 },
-  NZD: { netPosition: -17798, long: 5752, short: 23550, sentiment: 'BEARISH', weeklyChange: -1068, dealerLong: 50305, dealerShort: 6700, dealerWeeklyChange: 3672, assetManagerLong: 6601, assetManagerShort: 34236, assetManagerWeeklyChange: -2910 },
+  EUR: { netPosition: 11594, long: 111857, short: 100263, sentiment: 'BULLISH', weeklyChange: -8723, dealerLong: 48682, dealerShort: 396571, dealerWeeklyChange: 6802, assetManagerLong: 439565, assetManagerShort: 148667, assetManagerWeeklyChange: 4507 },
+  GBP: { netPosition: 28882, long: 58489, short: 29607, sentiment: 'BULLISH', weeklyChange: -255, dealerLong: 131315, dealerShort: 63446, dealerWeeklyChange: 10058, assetManagerLong: 39695, assetManagerShort: 133448, assetManagerWeeklyChange: -10567 },
+  JPY: { netPosition: -75802, long: 81800, short: 157602, sentiment: 'BEARISH', weeklyChange: -7305, dealerLong: 84091, dealerShort: 25315, dealerWeeklyChange: 14383, assetManagerLong: 66512, assetManagerShort: 93062, assetManagerWeeklyChange: -12152 },
+  CHF: { netPosition: -5174, long: 7107, short: 12281, sentiment: 'BEARISH', weeklyChange: -1408, dealerLong: 62055, dealerShort: 12371, dealerWeeklyChange: -353, assetManagerLong: 6003, assetManagerShort: 43537, assetManagerWeeklyChange: -67 },
+  AUD: { netPosition: 47855, long: 73808, short: 25953, sentiment: 'BULLISH', weeklyChange: -470, dealerLong: 41534, dealerShort: 166752, dealerWeeklyChange: -6524, assetManagerLong: 102988, assetManagerShort: 57891, assetManagerWeeklyChange: 8589 },
+  CAD: { netPosition: -53828, long: 25239, short: 79067, sentiment: 'BEARISH', weeklyChange: 10387, dealerLong: 83444, dealerShort: 60192, dealerWeeklyChange: -32065, assetManagerLong: 88349, assetManagerShort: 72317, assetManagerWeeklyChange: 17819 },
+  MXN: { netPosition: 49189, long: 76797, short: 27608, sentiment: 'BULLISH', weeklyChange: 3969, dealerLong: 21503, dealerShort: 60570, dealerWeeklyChange: -5741, assetManagerLong: 91215, assetManagerShort: 35502, assetManagerWeeklyChange: 1194 },
+  NZD: { netPosition: -16833, long: 7160, short: 23993, sentiment: 'BEARISH', weeklyChange: 1229, dealerLong: 61264, dealerShort: 3960, dealerWeeklyChange: -1421, assetManagerLong: 7660, assetManagerShort: 49488, assetManagerWeeklyChange: 684 },
   USD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 0, dealerShort: 0, dealerWeeklyChange: 0, assetManagerLong: 0, assetManagerShort: 0, assetManagerWeeklyChange: 0 },
+};
+
+// Historical net positions for chart (Leveraged Funds)
+const HISTORICAL_NET: Record<string, { date: string; value: number }[]> = {
+  EUR: [
+    { date: 'Mar 24', value: -13538 },
+    { date: 'Mar 31', value: 3947 },
+    { date: 'Apr 7', value: 3947 }, // published report same data
+    { date: 'Apr 28', value: 11594 },
+  ],
+  GBP: [
+    { date: 'Mar 24', value: 15716 },
+    { date: 'Mar 31', value: 29932 },
+    { date: 'Apr 7', value: 29932 },
+    { date: 'Apr 28', value: 28882 },
+  ],
+  JPY: [
+    { date: 'Mar 24', value: -54852 },
+    { date: 'Mar 31', value: -46182 },
+    { date: 'Apr 7', value: -46182 },
+    { date: 'Apr 28', value: -75802 },
+  ],
+  CHF: [
+    { date: 'Mar 24', value: 235 },
+    { date: 'Mar 31', value: 1490 },
+    { date: 'Apr 7', value: 1490 },
+    { date: 'Apr 28', value: -5174 },
+  ],
+  AUD: [
+    { date: 'Mar 24', value: 49145 },
+    { date: 'Mar 31', value: 52569 },
+    { date: 'Apr 7', value: 52569 },
+    { date: 'Apr 28', value: 47855 },
+  ],
+  CAD: [
+    { date: 'Mar 24', value: -31700 },
+    { date: 'Mar 31', value: -42910 },
+    { date: 'Apr 7', value: -42910 },
+    { date: 'Apr 28', value: -53828 },
+  ],
+  NZD: [
+    { date: 'Mar 24', value: -16730 },
+    { date: 'Mar 31', value: -17798 },
+    { date: 'Apr 7', value: -17798 },
+    { date: 'Apr 28', value: -16833 },
+  ],
+  MXN: [
+    { date: 'Mar 24', value: 54787 },
+    { date: 'Mar 31', value: 52803 },
+    { date: 'Apr 7', value: 52803 },
+    { date: 'Apr 28', value: 49189 },
+  ],
 };
 
 // US 10-Year Treasury Note fallback
@@ -42,6 +95,14 @@ const US10Y_INTERPRETATIONS = {
   falling: 'Falling yields signal risk-off sentiment and weaker USD demand. Traders move capital out of US bonds, reducing dollar buying pressure.',
   rising: 'Rising yields attract global capital into US bonds, increasing USD demand. Higher yields = stronger dollar as investors seek safe returns.',
   stable: 'Stable yields suggest consolidation. Watch for breakout direction for the next USD move.',
+};
+
+// Gold correlation with USD
+const GOLD_USD_INSIGHT = {
+  correlation: -0.82,
+  goldTrend: 'rising' as const,
+  note: 'Gold (XAUUSD) has a strong inverse correlation with the US Dollar. When USD weakens (falling yields, dovish Fed), gold rises as a hedge. Currently, with the US 10Y yield trending lower and tariff uncertainty rising, gold is in a bullish trend. For USD pairs: a rising gold price confirms USD weakness — look to sell USD pairs when gold breaks new highs.',
+  tradingTip: 'Use gold as a confirmation filter: if XAUUSD is making higher highs while a USD pair (e.g., EUR/USD) is also rising, the trade has higher conviction. If gold and EUR/USD diverge, reduce size or wait.',
 };
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'NZD', 'MXN'];
@@ -154,6 +215,18 @@ const COTPairAnalyzer = () => {
     return 'bg-muted/10 border-muted/20';
   };
 
+  // Historical positioning chart data
+  const historicalChartData = useMemo(() => {
+    const baseHist = HISTORICAL_NET[baseCurrency];
+    const quoteHist = HISTORICAL_NET[quoteCurrency];
+    if (!baseHist || !quoteHist) return null;
+    return baseHist.map((item, i) => ({
+      date: item.date,
+      [baseCurrency]: item.value,
+      [quoteCurrency]: quoteHist[i]?.value ?? 0,
+    }));
+  }, [baseCurrency, quoteCurrency]);
+
   // Generate concise Smart Money Insight (≤150 words)
   const smartMoneyInsight = useMemo(() => {
     if (!analysis) return null;
@@ -166,7 +239,6 @@ const COTPairAnalyzer = () => {
     const baseDir = base.netPosition > 0 ? 'long' : 'short';
     const quoteDir = quote.netPosition > 0 ? 'long' : 'short';
 
-    // Alignment check
     const baseDealerNet = base.dealerLong - base.dealerShort;
     const quoteDealerNet = quote.dealerLong - quote.dealerShort;
     const baseAMNet = base.assetManagerLong - base.assetManagerShort;
@@ -185,7 +257,6 @@ const COTPairAnalyzer = () => {
     const favoredCurrency = analysis.isBullish ? baseName : quoteName;
     const direction = analysis.isBullish ? 'bullish' : 'bearish';
 
-    // Weekly flow
     const baseFlow = base.weeklyChange > 0 ? `+${formatContracts(base.weeklyChange)}` : formatContracts(base.weeklyChange);
     const quoteFlow = quote.weeklyChange > 0 ? `+${formatContracts(quote.weeklyChange)}` : formatContracts(quote.weeklyChange);
 
@@ -199,8 +270,8 @@ const COTPairAnalyzer = () => {
           <Zap className="w-5 h-5 text-primary" />
           COT Pair Analyzer
         </CardTitle>
-        <CardDescription>
-          Compare institutional positioning between any two currencies. CFTC report April 7, 2026 (as of March 31).
+        <CardDescription className="text-muted-foreground">
+          Compare institutional positioning between any two currencies. CFTC report May 5, 2026 (as of April 28).
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -217,7 +288,7 @@ const COTPairAnalyzer = () => {
                   <SelectItem key={c} value={c}>
                     <span className="flex items-center gap-2">
                       <span>{FLAG_EMOJIS[c]}</span>
-                      <span className="font-medium">{c}</span>
+                      <span className="font-medium text-foreground">{c}</span>
                     </span>
                   </SelectItem>
                 ))}
@@ -238,7 +309,7 @@ const COTPairAnalyzer = () => {
                   <SelectItem key={c} value={c}>
                     <span className="flex items-center gap-2">
                       <span>{FLAG_EMOJIS[c]}</span>
-                      <span className="font-medium">{c}</span>
+                      <span className="font-medium text-foreground">{c}</span>
                     </span>
                   </SelectItem>
                 ))}
@@ -253,7 +324,7 @@ const COTPairAnalyzer = () => {
             <div className={`rounded-xl p-5 border ${getVerdictBg(analysis.verdict)} text-center`}>
               <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Institutional Verdict</div>
               <div className="flex items-center justify-center gap-2">
-                <span className="text-3xl font-display-hero font-bold">
+                <span className="text-3xl font-display-hero font-bold text-foreground">
                   {baseCurrency}/{quoteCurrency}
                 </span>
               </div>
@@ -323,6 +394,31 @@ const COTPairAnalyzer = () => {
                 </div>
               ))}
             </div>
+
+            {/* Historical Positioning Chart */}
+            {historicalChartData && baseCurrency !== 'USD' && quoteCurrency !== 'USD' && (
+              <div className="rounded-xl bg-muted/10 p-5 border border-border/20">
+                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
+                  <BarChart3 className="w-4 h-4 text-primary" />
+                  Positioning Over Time (Net Contracts)
+                </h4>
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={historicalChartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                    <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
+                    <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} tickFormatter={(v: number) => `${(v/1000).toFixed(0)}K`} />
+                    <Tooltip
+                      contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, color: 'hsl(var(--foreground))' }}
+                      formatter={(value: number, name: string) => [`${value.toLocaleString()}`, name]}
+                    />
+                    <Legend wrapperStyle={{ color: 'hsl(var(--foreground))' }} />
+                    <Line type="monotone" dataKey={baseCurrency} stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ fill: 'hsl(var(--chart-1))' }} />
+                    <Line type="monotone" dataKey={quoteCurrency} stroke="hsl(var(--chart-5))" strokeWidth={2} dot={{ fill: 'hsl(var(--chart-5))' }} />
+                  </LineChart>
+                </ResponsiveContainer>
+                <p className="text-[10px] text-muted-foreground mt-2 text-center">CFTC Leveraged Funds net position • March 24 – April 28, 2026</p>
+              </div>
+            )}
 
             {/* Dealer & Asset Manager Positioning */}
             <div className="space-y-3">
@@ -443,6 +539,39 @@ const COTPairAnalyzer = () => {
               </div>
             )}
 
+            {/* Gold (XAUUSD) vs USD — only for USD pairs */}
+            {isUSDPair && (
+              <div className="rounded-xl bg-warning/5 p-5 border border-warning/20">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xl">🪙</span>
+                  <span className="font-semibold text-foreground text-sm">Gold (XAUUSD) — USD Correlation</span>
+                  <Badge variant="outline" className="text-[10px] border-warning/30 text-warning">
+                    Correlation: {GOLD_USD_INSIGHT.correlation}
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="bg-background/50 rounded-lg p-3 border border-border/10 text-center">
+                    <div className="text-xs text-muted-foreground mb-1">Gold Trend</div>
+                    <div className="text-sm font-bold text-success flex items-center justify-center gap-1">
+                      <TrendingUp className="w-4 h-4" /> Rising
+                    </div>
+                  </div>
+                  <div className="bg-background/50 rounded-lg p-3 border border-border/10 text-center">
+                    <div className="text-xs text-muted-foreground mb-1">USD Impact</div>
+                    <div className="text-sm font-bold text-destructive flex items-center justify-center gap-1">
+                      <TrendingDown className="w-4 h-4" /> Bearish
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-background/30 rounded-lg p-3 border border-border/10 space-y-2">
+                  <p className="text-sm text-foreground leading-relaxed">{GOLD_USD_INSIGHT.note}</p>
+                  <p className="text-xs text-warning font-medium">
+                    💡 Trading Tip: {GOLD_USD_INSIGHT.tradingTip}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Smart Money Insight — concise, ≤150 words */}
             <div className="rounded-xl bg-primary/5 p-4 border border-primary/20">
               <div className="flex items-center justify-between mb-2">
@@ -471,7 +600,7 @@ const COTPairAnalyzer = () => {
 
             <div className="text-center">
               <p className="text-xs text-muted-foreground">
-                Data: CFTC Financial Traders Report • Released April 7, 2026 • Positions as of March 31, 2026
+                Data: CFTC Financial Traders Report • Released May 5, 2026 • Positions as of April 28, 2026
               </p>
             </div>
           </>

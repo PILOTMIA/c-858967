@@ -4,26 +4,39 @@ import COTPairScorecard from "@/components/COTPairScorecard";
 import SyntheticCurrencyIndex from "@/components/SyntheticCurrencyIndex";
 import { COTDataProvider, useCOTData } from "@/components/COTDataContext";
 import { TrendingUp, Users, Building2, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, CartesianGrid } from "recharts";
 
-// Week-over-week COT changes from CFTC report April 7, 2026 (as of March 31)
+// Week-over-week COT changes from CFTC report May 5, 2026 (as of April 28)
 const WOW_CHANGES = [
-  { currency: 'EUR', flag: '🇪🇺', change: 17485, netPosition: 3947, note: 'Flipped to net long' },
-  { currency: 'GBP', flag: '🇬🇧', change: 14216, netPosition: 29932, note: 'Surging bullish' },
-  { currency: 'JPY', flag: '🇯🇵', change: 8670, netPosition: -46182, note: 'Shorts reducing' },
-  { currency: 'AUD', flag: '🇦🇺', change: 3424, netPosition: 52569, note: 'Steady longs' },
-  { currency: 'CHF', flag: '🇨🇭', change: 1255, netPosition: 1490, note: 'Neutral' },
-  { currency: 'NZD', flag: '🇳🇿', change: -1068, netPosition: -17798, note: 'Adding shorts' },
-  { currency: 'MXN', flag: '🇲🇽', change: -1984, netPosition: 52803, note: 'Profit-taking' },
-  { currency: 'CAD', flag: '🇨🇦', change: -11210, netPosition: -42910, note: 'Deepening bearish' },
+  { currency: 'CAD', flag: '🇨🇦', change: 10387, netPosition: -53828, note: 'Shorts covering' },
+  { currency: 'MXN', flag: '🇲🇽', change: 3969, netPosition: 49189, note: 'Adding longs' },
+  { currency: 'NZD', flag: '🇳🇿', change: 1229, netPosition: -16833, note: 'Shorts reducing' },
+  { currency: 'GBP', flag: '🇬🇧', change: -255, netPosition: 28882, note: 'Stable longs' },
+  { currency: 'AUD', flag: '🇦🇺', change: -470, netPosition: 47855, note: 'Steady longs' },
+  { currency: 'CHF', flag: '🇨🇭', change: -1408, netPosition: -5174, note: 'Flipped short' },
+  { currency: 'JPY', flag: '🇯🇵', change: -7305, netPosition: -75802, note: 'Deep bearish' },
+  { currency: 'EUR', flag: '🇪🇺', change: -8723, netPosition: 11594, note: 'Longs reducing' },
 ].sort((a, b) => b.change - a.change);
+
+// Historical data for bar chart (net position over 4 weeks)
+const HISTORICAL_BAR_DATA = [
+  { currency: 'EUR', mar24: -13538, mar31: 3947, apr28: 11594, flag: '🇪🇺' },
+  { currency: 'GBP', mar24: 15716, mar31: 29932, apr28: 28882, flag: '🇬🇧' },
+  { currency: 'AUD', mar24: 49145, mar31: 52569, apr28: 47855, flag: '🇦🇺' },
+  { currency: 'MXN', mar24: 54787, mar31: 52803, apr28: 49189, flag: '🇲🇽' },
+  { currency: 'CHF', mar24: 235, mar31: 1490, apr28: -5174, flag: '🇨🇭' },
+  { currency: 'NZD', mar24: -16730, mar31: -17798, apr28: -16833, flag: '🇳🇿' },
+  { currency: 'CAD', mar24: -31700, mar31: -42910, apr28: -53828, flag: '🇨🇦' },
+  { currency: 'JPY', mar24: -54852, mar31: -46182, apr28: -75802, flag: '🇯🇵' },
+];
 
 const COTAnalysisContent = () => {
   const { selectedCurrency, isDetailModalOpen, setIsDetailModalOpen } = useCOTData();
 
   const infoCards = [
     { icon: Building2, title: 'Commercial Traders', label: 'Institutions', desc: 'Banks, hedge funds, and large financial institutions', accent: 'text-primary' },
-    { icon: TrendingUp, title: 'Non-Commercial', label: 'Speculators', desc: 'Large speculators and investment funds', accent: 'text-emerald-400' },
-    { icon: Users, title: 'Retail Traders', label: 'Small Specs', desc: 'Individual and small institutional traders', accent: 'text-amber-400' },
+    { icon: TrendingUp, title: 'Non-Commercial', label: 'Speculators', desc: 'Large speculators and investment funds', accent: 'text-success' },
+    { icon: Users, title: 'Retail Traders', label: 'Small Specs', desc: 'Individual and small institutional traders', accent: 'text-warning' },
   ];
 
   const educationItems = [
@@ -55,7 +68,7 @@ const COTAnalysisContent = () => {
                 <h2 className="font-display-hero text-lg font-bold text-foreground flex items-center gap-2">
                   📊 Week-over-Week COT Changes
                 </h2>
-                <p className="text-xs text-muted-foreground mt-0.5">CFTC report April 7, 2026 • Biggest movers in leveraged fund positioning</p>
+                <p className="text-xs text-muted-foreground mt-0.5">CFTC report May 5, 2026 • Biggest movers in leveraged fund positioning</p>
               </div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
@@ -83,6 +96,33 @@ const COTAnalysisContent = () => {
                 );
               })}
             </div>
+          </div>
+
+          {/* Positioning Over Time Bar Chart */}
+          <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-5">
+            <h2 className="font-display-hero text-lg font-bold text-foreground flex items-center gap-2 mb-1">
+              📈 Positioning Changes Over Time
+            </h2>
+            <p className="text-xs text-muted-foreground mb-4">Leveraged fund net positions — March 24 vs April 28, 2026</p>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={HISTORICAL_BAR_DATA} barGap={2} barCategoryGap="15%">
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.2} />
+                <XAxis dataKey="currency" tick={{ fill: 'hsl(var(--foreground))', fontSize: 12, fontWeight: 600 }} />
+                <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickFormatter={(v: number) => `${(v/1000).toFixed(0)}K`} />
+                <Tooltip
+                  contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, color: 'hsl(var(--foreground))' }}
+                  formatter={(value: number, name: string) => [`${value.toLocaleString()}`, name === 'mar24' ? 'Mar 24' : name === 'mar31' ? 'Mar 31' : 'Apr 28']}
+                />
+                <Bar dataKey="mar24" name="Mar 24" fill="hsl(var(--muted-foreground))" radius={[2,2,0,0]} opacity={0.4} />
+                <Bar dataKey="mar31" name="Mar 31" fill="hsl(var(--chart-4))" radius={[2,2,0,0]} opacity={0.6} />
+                <Bar dataKey="apr28" name="Apr 28" radius={[3,3,0,0]}>
+                  {HISTORICAL_BAR_DATA.map((entry, index) => (
+                    <Cell key={index} fill={entry.apr28 >= 0 ? 'hsl(var(--chart-1))' : 'hsl(var(--chart-2))'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+            <p className="text-[10px] text-muted-foreground text-center mt-2">Source: CFTC Disaggregated Report — Leveraged Funds</p>
           </div>
 
           {/* Info Cards */}
