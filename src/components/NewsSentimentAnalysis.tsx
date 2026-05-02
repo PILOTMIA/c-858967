@@ -206,15 +206,15 @@ const NewsSentimentAnalysis = () => {
   });
 
   const getSentimentIcon = (sentiment: string) => {
-    if (sentiment === 'BULLISH' || sentiment === 'bullish') return <TrendingUp className="w-5 h-5 text-green-400" />;
-    if (sentiment === 'BEARISH' || sentiment === 'bearish') return <TrendingDown className="w-5 h-5 text-red-400" />;
-    return <AlertCircle className="w-5 h-5 text-yellow-400" />;
+    if (sentiment === 'BULLISH' || sentiment === 'bullish') return <TrendingUp className="w-5 h-5 text-success" />;
+    if (sentiment === 'BEARISH' || sentiment === 'bearish') return <TrendingDown className="w-5 h-5 text-destructive" />;
+    return <AlertCircle className="w-5 h-5 text-warning" />;
   };
 
   const getSentimentColor = (sentiment: string) => {
-    if (sentiment === 'BULLISH' || sentiment === 'bullish') return 'text-green-400 bg-green-900/20 border-green-500';
-    if (sentiment === 'BEARISH' || sentiment === 'bearish') return 'text-red-400 bg-red-900/20 border-red-500';
-    return 'text-yellow-400 bg-yellow-900/20 border-yellow-500';
+    if (sentiment === 'BULLISH' || sentiment === 'bullish') return 'text-success bg-success/10 border-success/30';
+    if (sentiment === 'BEARISH' || sentiment === 'bearish') return 'text-destructive bg-destructive/10 border-destructive/30';
+    return 'text-warning bg-warning/10 border-warning/30';
   };
 
   if (error) {
