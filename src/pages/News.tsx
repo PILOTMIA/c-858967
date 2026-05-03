@@ -12,7 +12,7 @@ const News = () => {
         </p>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 pb-16 space-y-10">
+      <div className="news-readable max-w-7xl mx-auto px-4 pb-16 space-y-10">
         <NewsSentimentAnalysis />
         <FundamentalNewsAnalysis />
 
