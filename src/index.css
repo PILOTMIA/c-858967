@@ -121,6 +121,24 @@
     backdrop-filter: blur(10px);
     border: 1px solid var(--glass-border);
   }
+
+  .cot-readable .text-xs,
+  .news-readable .text-xs {
+    font-size: 0.875rem;
+    line-height: 1.35rem;
+  }
+
+  .cot-readable .text-muted-foreground,
+  .news-readable .text-muted-foreground {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .cot-readable .bg-card\/30,
+  .cot-readable .bg-card\/20,
+  .news-readable .bg-card\/30,
+  .news-readable .bg-card\/20 {
+    background-color: hsl(var(--card));
+  }
 }
 
 @keyframes marquee {
