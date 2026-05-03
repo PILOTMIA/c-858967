@@ -1,6 +1,8 @@
 import COTDetailModal from "@/components/COTDetailModal";
 import COTPairAnalyzer from "@/components/COTPairAnalyzer";
 import COTPairScorecard from "@/components/COTPairScorecard";
+import COTGoldUsdComparison from "@/components/COTGoldUsdComparison";
+import COTTradeMap from "@/components/COTTradeMap";
 import SyntheticCurrencyIndex from "@/components/SyntheticCurrencyIndex";
 import { COTDataProvider, useCOTData } from "@/components/COTDataContext";
 import { TrendingUp, Users, Building2, ArrowUpRight, ArrowDownRight } from "lucide-react";
@@ -59,7 +61,7 @@ const COTAnalysisContent = () => {
           </p>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 pb-16 space-y-10">
+        <div className="cot-readable max-w-7xl mx-auto px-4 pb-16 space-y-10">
 
           {/* Week-over-Week Changes Card */}
           <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-5">
@@ -143,6 +145,8 @@ const COTAnalysisContent = () => {
           </div>
 
           <COTPairScorecard />
+          <COTTradeMap />
+          <COTGoldUsdComparison />
           <SyntheticCurrencyIndex />
           <COTPairAnalyzer />
 
