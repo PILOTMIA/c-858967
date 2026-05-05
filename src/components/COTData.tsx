@@ -510,18 +510,18 @@ const COTData = () => {
               </div>
             ) : (
               <div className="space-y-6">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-4 rounded-lg border border-blue-200/50 dark:border-blue-800/30">
+                <div className="bg-card p-4 rounded-lg border border-border">
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-blue-900 dark:text-blue-100">📊 Report Date:</span>
-                      <span className="text-blue-800 dark:text-blue-200 font-mono">{cotData?.reportDate}</span>
+                      <span className="font-semibold text-foreground">📊 Report Date:</span>
+                      <span className="text-muted-foreground font-mono">{cotData?.reportDate}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-blue-900 dark:text-blue-100">📈 Weekly Change:</span>
+                      <span className="font-semibold text-foreground">📈 Weekly Change:</span>
                       <span className={`font-mono font-bold ${
                         cotData?.weeklyChange && cotData.weeklyChange > 0 
-                          ? 'text-green-600 dark:text-green-400' 
-                          : 'text-red-600 dark:text-red-400'
+                          ? 'text-success' 
+                          : 'text-destructive'
                       }`}>
                         {cotData?.weeklyChange && cotData.weeklyChange > 0 ? '+' : ''}{cotData?.weeklyChange?.toLocaleString()} contracts
                       </span>
@@ -530,30 +530,30 @@ const COTData = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-5 rounded-xl border border-green-200/50 dark:border-green-800/30 hover:shadow-md transition-all duration-300">
+                  <div className="bg-card p-5 rounded-xl border border-success/30 hover:shadow-md transition-all duration-300">
                     <div className="flex items-center gap-2 mb-4">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      <h3 className="font-bold text-green-900 dark:text-green-100">Commercial Traders</h3>
-                      <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">Smart Money</span>
+                      <div className="w-3 h-3 bg-success rounded-full"></div>
+                      <h3 className="font-bold text-foreground">Commercial Traders</h3>
+                      <span className="text-xs bg-success/15 text-success px-2 py-1 rounded-full">Smart Money</span>
                     </div>
                     <div className="space-y-3">
-                      <div className="flex justify-between items-center p-3 bg-white/60 dark:bg-gray-800/40 rounded-lg">
-                        <span className="text-sm font-medium">Long Positions:</span>
-                        <span className="font-bold text-green-600 dark:text-green-400 font-mono">
+                      <div className="flex justify-between items-center p-3 bg-muted/40 rounded-lg">
+                        <span className="text-sm font-medium text-foreground">Long Positions:</span>
+                        <span className="font-bold text-success font-mono">
                           {cotData?.commercialLong.toLocaleString()}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center p-3 bg-white/60 dark:bg-gray-800/40 rounded-lg">
-                        <span className="text-sm font-medium">Short Positions:</span>
-                        <span className="font-bold text-red-600 dark:text-red-400 font-mono">
+                      <div className="flex justify-between items-center p-3 bg-muted/40 rounded-lg">
+                        <span className="text-sm font-medium text-foreground">Short Positions:</span>
+                        <span className="font-bold text-destructive font-mono">
                           {cotData?.commercialShort.toLocaleString()}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-lg border-t-2 border-gray-300 dark:border-gray-600">
-                        <span className="font-semibold">Net Position:</span>
+                      <div className="flex justify-between items-center p-3 bg-muted/60 rounded-lg border-t-2 border-border">
+                        <span className="font-semibold text-foreground">Net Position:</span>
                         <span className={`font-bold text-lg font-mono ${
                           getNetPosition(cotData?.commercialLong || 0, cotData?.commercialShort || 0) > 0 
-                            ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                            ? 'text-success' : 'text-destructive'
                         }`}>
                           {getNetPosition(cotData?.commercialLong || 0, cotData?.commercialShort || 0) > 0 ? '+' : ''}
                           {getNetPosition(cotData?.commercialLong || 0, cotData?.commercialShort || 0).toLocaleString()}
@@ -562,30 +562,30 @@ const COTData = () => {
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-5 rounded-xl border border-blue-200/50 dark:border-blue-800/30 hover:shadow-md transition-all duration-300">
+                  <div className="bg-card p-5 rounded-xl border border-primary/30 hover:shadow-md transition-all duration-300">
                     <div className="flex items-center gap-2 mb-4">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                      <h3 className="font-bold text-blue-900 dark:text-blue-100">Hedge Funds</h3>
-                      <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full">Leveraged Money</span>
+                      <div className="w-3 h-3 bg-primary rounded-full"></div>
+                      <h3 className="font-bold text-foreground">Hedge Funds</h3>
+                      <span className="text-xs bg-primary/15 text-primary px-2 py-1 rounded-full">Leveraged Money</span>
                     </div>
                     <div className="space-y-3">
-                      <div className="flex justify-between items-center p-3 bg-white/60 dark:bg-gray-800/40 rounded-lg">
-                        <span className="text-sm font-medium">Long Positions:</span>
-                        <span className="font-bold text-green-600 dark:text-green-400 font-mono">
+                      <div className="flex justify-between items-center p-3 bg-muted/40 rounded-lg">
+                        <span className="text-sm font-medium text-foreground">Long Positions:</span>
+                        <span className="font-bold text-success font-mono">
                           {cotData?.nonCommercialLong.toLocaleString()}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center p-3 bg-white/60 dark:bg-gray-800/40 rounded-lg">
-                        <span className="text-sm font-medium">Short Positions:</span>
-                        <span className="font-bold text-red-600 dark:text-red-400 font-mono">
+                      <div className="flex justify-between items-center p-3 bg-muted/40 rounded-lg">
+                        <span className="text-sm font-medium text-foreground">Short Positions:</span>
+                        <span className="font-bold text-destructive font-mono">
                           {cotData?.nonCommercialShort.toLocaleString()}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-lg border-t-2 border-gray-300 dark:border-gray-600">
-                        <span className="font-semibold">Net Position:</span>
+                      <div className="flex justify-between items-center p-3 bg-muted/60 rounded-lg border-t-2 border-border">
+                        <span className="font-semibold text-foreground">Net Position:</span>
                         <span className={`font-bold text-lg font-mono ${
                           getNetPosition(cotData?.nonCommercialLong || 0, cotData?.nonCommercialShort || 0) > 0 
-                            ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                            ? 'text-success' : 'text-destructive'
                         }`}>
                           {getNetPosition(cotData?.nonCommercialLong || 0, cotData?.nonCommercialShort || 0) > 0 ? '+' : ''}
                           {getNetPosition(cotData?.nonCommercialLong || 0, cotData?.nonCommercialShort || 0).toLocaleString()}
@@ -595,31 +595,31 @@ const COTData = () => {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-purple-50 via-pink-50 to-rose-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-rose-950/20 p-6 rounded-xl border border-purple-200/50 dark:border-purple-800/30">
+                <div className="bg-card p-6 rounded-xl border border-accent/30">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="flex items-center gap-2 bg-white/80 dark:bg-gray-800/80 px-3 py-2 rounded-full">
-                      <h3 className="font-bold text-purple-900 dark:text-purple-100">Market Sentiment:</h3>
+                    <div className="flex items-center gap-2 bg-muted/60 px-3 py-2 rounded-full">
+                      <h3 className="font-bold text-foreground">Market Sentiment:</h3>
                       {getSentimentIcon(cotData?.sentiment || '')}
                       <span className={`font-bold text-lg ${getSentimentColor(cotData?.sentiment || '')}`}>
                         {cotData?.sentiment}
                       </span>
                     </div>
                     {cotData?.sentiment === 'BULLISH' && (
-                      <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">
+                      <div className="flex items-center gap-1 text-xs text-success bg-success/15 px-2 py-1 rounded-full">
                         <TrendingUp className="w-3 h-3" />
                         Strong Buy Signal
                       </div>
                     )}
                     {cotData?.sentiment === 'BEARISH' && (
-                      <div className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded-full">
+                      <div className="flex items-center gap-1 text-xs text-destructive bg-destructive/15 px-2 py-1 rounded-full">
                         <TrendingDown className="w-3 h-3" />
                         Strong Sell Signal
                       </div>
                     )}
                   </div>
-                  <div className="bg-white/60 dark:bg-gray-800/60 p-4 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">💡 Trading Recommendation:</h4>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <div className="bg-muted/40 p-4 rounded-lg border border-border">
+                    <h4 className="font-semibold text-foreground mb-2">💡 Trading Recommendation:</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       {cotData?.recommendation}
                     </p>
                   </div>
