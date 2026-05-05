@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
+    darkModeContrastAudit(),
   ].filter(Boolean),
   resolve: {
     alias: {
