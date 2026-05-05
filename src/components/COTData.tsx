@@ -370,20 +370,20 @@ const COTData = () => {
   const getSentimentColor = (sentiment: string) => {
     switch (sentiment) {
       case 'BULLISH':
-        return 'text-green-500';
+        return 'text-success';
       case 'BEARISH':
-        return 'text-red-500';
+        return 'text-destructive';
       default:
-        return 'text-gray-500';
+        return 'text-muted-foreground';
     }
   };
 
   const getSentimentIcon = (sentiment: string) => {
     switch (sentiment) {
       case 'BULLISH':
-        return <TrendingUp className="w-5 h-5 text-green-500" />;
+        return <TrendingUp className="w-5 h-5 text-success" />;
       case 'BEARISH':
-        return <TrendingDown className="w-5 h-5 text-red-500" />;
+        return <TrendingDown className="w-5 h-5 text-destructive" />;
       default:
         return null;
     }
