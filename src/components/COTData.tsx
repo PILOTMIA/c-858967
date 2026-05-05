@@ -410,7 +410,7 @@ const COTData = () => {
                 Source: <a href="https://www.cftc.gov/dea/futures/financial_lf.htm" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-semibold transition-colors">CFTC Official Report</a>
               </span>
               <span className="text-xs text-muted-foreground hidden sm:inline">|</span>
-              <span className="text-[10px] sm:text-xs text-amber-500 font-medium hidden sm:inline">🎓 Master Trader Level Analysis</span>
+              <span className="text-[10px] sm:text-xs text-warning font-medium hidden sm:inline">🎓 Master Trader Level Analysis</span>
             </div>
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
