@@ -146,6 +146,7 @@ const COTAnalysisContent = () => {
           </div>
 
           <COTPairScorecard />
+          <COTTradeThisNotThat />
           <COTTradeMap />
           <COTGoldUsdComparison />
           <SyntheticCurrencyIndex />
