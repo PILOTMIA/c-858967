@@ -4,7 +4,6 @@ import COTPairScorecard from "@/components/COTPairScorecard";
 import COTTradeThisNotThat from "@/components/COTTradeThisNotThat";
 import SyntheticCurrencyIndex from "@/components/SyntheticCurrencyIndex";
 import { COTDataProvider, useCOTData } from "@/components/COTDataContext";
-import { COTDataProvider, useCOTData } from "@/components/COTDataContext";
 import { TrendingUp, Users, Building2, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, CartesianGrid } from "recharts";
 
