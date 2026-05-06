@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Globe, Minus, TrendingDown, TrendingUp } from 'lucide-react';
+import { Clock, Globe, Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -29,7 +29,7 @@ const getImpactColor = (impact: string) => {
 const FundamentalNewsAnalysis = () => {
   const [selectedCurrency, setSelectedCurrency] = useState<string>('All');
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, dataUpdatedAt } = useQuery({
     queryKey: ['marketNewsLive'],
     queryFn: fetchMarketNews,
     staleTime: 1000 * 60 * 15,
@@ -66,10 +66,18 @@ const FundamentalNewsAnalysis = () => {
   return (
     <Card className="border-border bg-card text-card-foreground">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xl text-foreground">
-          <Globe className="h-5 w-5 text-primary" />
-          Fundamental News — Live
-        </CardTitle>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <CardTitle className="flex items-center gap-2 text-xl text-foreground">
+            <Globe className="h-5 w-5 text-primary" />
+            Fundamental News — Live
+          </CardTitle>
+          {dataUpdatedAt > 0 && (
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              {new Date(dataUpdatedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" })}
+            </div>
+          )}
+        </div>
         <p className="text-sm leading-relaxed text-muted-foreground">
           Current economic, central bank, yield, currency, and gold headlines with direct source citations.
         </p>
