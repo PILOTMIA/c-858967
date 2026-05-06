@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, Home, TrendingUp, BookOpen, Users, BarChart3, Calendar, Settings, PieChart, Activity, Newspaper } from 'lucide-react';
+import { Menu, X, Home, TrendingUp, BookOpen, Users, BarChart3, Calendar, Settings, PieChart, Activity, Newspaper, Gem } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -13,6 +13,7 @@ const AppNavigation = () => {
     { path: '/cot-analysis', label: 'COT Analysis', icon: PieChart },
     { path: '/economic-radar', label: 'Economic Radar', icon: Activity },
     { path: '/news', label: 'Market News', icon: Newspaper },
+    { path: '/metals', label: 'Metals / Gold', icon: Gem },
     { path: '/education', label: 'Education', icon: BookOpen },
     { path: '/community', label: 'Community', icon: Users },
     { path: '/tools', label: 'Trading Tools', icon: BarChart3 },
