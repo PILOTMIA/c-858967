@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, Calendar, Globe, Newspaper, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
+import { AlertCircle, Calendar, Clock, Globe, Newspaper, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { fetchMarketNews, type MarketNewsArticle } from '@/services/MarketNewsService';
@@ -50,7 +50,7 @@ const NewsArticleRow = ({ article }: { article: MarketNewsArticle }) => (
 const NewsSentimentAnalysis = () => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const { data, isLoading, error, refetch, isFetching } = useQuery({
+  const { data, isLoading, error, refetch, isFetching, dataUpdatedAt } = useQuery({
     queryKey: ['marketNewsLive'],
     queryFn: fetchMarketNews,
     staleTime: 1000 * 60 * 15,
@@ -85,7 +85,13 @@ const NewsSentimentAnalysis = () => {
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               Live market headlines with source links, refreshed automatically and scheduled for 2:00 PM and 3:00 PM Arizona checks.
             </p>
-          </div>
+           </div>
+           {dataUpdatedAt > 0 && (
+             <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-1">
+               <Clock className="h-3 w-3" />
+               Last updated: {new Date(dataUpdatedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" })}
+             </div>
+           )}
           <button
             onClick={() => refetch()}
             className="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"

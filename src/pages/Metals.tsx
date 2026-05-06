@@ -3,6 +3,7 @@ import COTTradeMap from "@/components/COTTradeMap";
 import GoldRateCorrelation from "@/components/GoldRateCorrelation";
 import GoldLivePrice from "@/components/GoldLivePrice";
 import GoldCOTSummary from "@/components/GoldCOTSummary";
+import InterestRatesModule from "@/components/InterestRatesModule";
 
 const Metals = () => {
   return (
@@ -18,6 +19,7 @@ const Metals = () => {
 
       <div className="max-w-7xl mx-auto px-4 pb-16 space-y-10">
         <GoldLivePrice />
+        <InterestRatesModule />
         <GoldRateCorrelation />
         <GoldCOTSummary />
         <COTGoldUsdComparison />

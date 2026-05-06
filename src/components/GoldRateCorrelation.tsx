@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Fuel, TrendingDown, TrendingUp, ArrowRight } from "lucide-react";
+import { Fuel, TrendingDown, TrendingUp, ArrowRight, Clock } from "lucide-react";
 
 const fetchGoldYieldHistory = async () => {
   const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
@@ -27,10 +27,11 @@ const fetchGoldYieldHistory = async () => {
 };
 
 const GoldRateCorrelation = () => {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, dataUpdatedAt } = useQuery({
     queryKey: ["gold-rate-correlation"],
     queryFn: fetchGoldYieldHistory,
     staleTime: 1000 * 60 * 15,
+    refetchInterval: 1000 * 60 * 30,
   });
 
   const chartData = useMemo(() => {
@@ -61,9 +62,17 @@ const GoldRateCorrelation = () => {
   return (
     <Card className="rounded-2xl border border-border bg-card shadow-sm">
       <CardHeader>
-        <CardTitle className="text-xl text-foreground flex items-center gap-2">
-          Gold vs Interest Rates Correlation
-        </CardTitle>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <CardTitle className="text-xl text-foreground flex items-center gap-2">
+            Gold vs Interest Rates Correlation
+          </CardTitle>
+          {dataUpdatedAt > 0 && (
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              {new Date(dataUpdatedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" })}
+            </div>
+          )}
+        </div>
         <p className="text-sm text-muted-foreground">
           XAUUSD indexed against US 10Y Treasury yields — inverse correlation is the dominant driver.
         </p>
