@@ -2,34 +2,20 @@ import COTDetailModal from "@/components/COTDetailModal";
 import COTPairAnalyzer from "@/components/COTPairAnalyzer";
 import COTPairScorecard from "@/components/COTPairScorecard";
 import COTTradeThisNotThat from "@/components/COTTradeThisNotThat";
+import COTHistoryTrends from "@/components/COTHistoryTrends";
 import SyntheticCurrencyIndex from "@/components/SyntheticCurrencyIndex";
 import { COTDataProvider, useCOTData } from "@/components/COTDataContext";
 import { TrendingUp, Users, Building2, ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, CartesianGrid } from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-// Week-over-week COT changes from CFTC report May 5, 2026 (as of April 28)
-const WOW_CHANGES = [
-  { currency: 'CAD', flag: '🇨🇦', change: 10387, netPosition: -53828, note: 'Shorts covering' },
-  { currency: 'MXN', flag: '🇲🇽', change: 3969, netPosition: 49189, note: 'Adding longs' },
-  { currency: 'NZD', flag: '🇳🇿', change: 1229, netPosition: -16833, note: 'Shorts reducing' },
-  { currency: 'GBP', flag: '🇬🇧', change: -255, netPosition: 28882, note: 'Stable longs' },
-  { currency: 'AUD', flag: '🇦🇺', change: -470, netPosition: 47855, note: 'Steady longs' },
-  { currency: 'CHF', flag: '🇨🇭', change: -1408, netPosition: -5174, note: 'Flipped short' },
-  { currency: 'JPY', flag: '🇯🇵', change: -7305, netPosition: -75802, note: 'Deep bearish' },
-  { currency: 'EUR', flag: '🇪🇺', change: -8723, netPosition: 11594, note: 'Longs reducing' },
-].sort((a, b) => b.change - a.change);
-
-// Historical data for bar chart (net position over 4 weeks)
-const HISTORICAL_BAR_DATA = [
-  { currency: 'EUR', mar24: -13538, mar31: 3947, apr28: 11594, flag: '🇪🇺' },
-  { currency: 'GBP', mar24: 15716, mar31: 29932, apr28: 28882, flag: '🇬🇧' },
-  { currency: 'AUD', mar24: 49145, mar31: 52569, apr28: 47855, flag: '🇦🇺' },
-  { currency: 'MXN', mar24: 54787, mar31: 52803, apr28: 49189, flag: '🇲🇽' },
-  { currency: 'CHF', mar24: 235, mar31: 1490, apr28: -5174, flag: '🇨🇭' },
-  { currency: 'NZD', mar24: -16730, mar31: -17798, apr28: -16833, flag: '🇳🇿' },
-  { currency: 'CAD', mar24: -31700, mar31: -42910, apr28: -53828, flag: '🇨🇦' },
-  { currency: 'JPY', mar24: -54852, mar31: -46182, apr28: -75802, flag: '🇯🇵' },
-];
+// Helper to generate WOW notes
+const getNote = (net: number, change: number) => {
+  if (change > 5000) return net > 0 ? 'Adding longs' : 'Shorts covering';
+  if (change > 0) return net > 0 ? 'Steady longs' : 'Shorts reducing';
+  if (change < -5000) return net > 0 ? 'Longs reducing' : 'Deep bearish';
+  return net > 0 ? 'Stable longs' : 'Flipped short';
+};
 
 const COTAnalysisContent = () => {
   const { selectedCurrency, isDetailModalOpen, setIsDetailModalOpen } = useCOTData();
