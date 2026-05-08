@@ -97,6 +97,51 @@ export type Database = {
         }
         Relationships: []
       }
+      cot_history: {
+        Row: {
+          change_long: number | null
+          change_short: number | null
+          created_at: string
+          currency: string
+          id: string
+          long_positions: number
+          net_position: number
+          pct_long: number | null
+          pct_short: number | null
+          report_date: string
+          short_positions: number
+          source: string | null
+        }
+        Insert: {
+          change_long?: number | null
+          change_short?: number | null
+          created_at?: string
+          currency: string
+          id?: string
+          long_positions?: number
+          net_position?: number
+          pct_long?: number | null
+          pct_short?: number | null
+          report_date: string
+          short_positions?: number
+          source?: string | null
+        }
+        Update: {
+          change_long?: number | null
+          change_short?: number | null
+          created_at?: string
+          currency?: string
+          id?: string
+          long_positions?: number
+          net_position?: number
+          pct_long?: number | null
+          pct_short?: number | null
+          report_date?: string
+          short_positions?: number
+          source?: string | null
+        }
+        Relationships: []
+      }
       indicator_downloads: {
         Row: {
           downloaded_at: string
