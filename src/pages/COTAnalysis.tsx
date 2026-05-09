@@ -121,6 +121,9 @@ const COTAnalysisContent = () => {
             </div>
           )}
 
+          {/* What to Trade — recommendations from COT data */}
+          <COTTradeRecommendations />
+
           {/* COT History Trend Charts */}
           <COTHistoryTrends />
 
