@@ -253,8 +253,13 @@ const COTPairScorecard = () => {
         if (res.ok) {
           const json = await res.json();
           if (json.data) {
-            setFundamentals(prev => ({ ...prev, ...json.data }));
-            // Check source of first entry
+            setFundamentals(prev => {
+              const merged = { ...prev };
+              for (const [k, v] of Object.entries(json.data as Record<string, any>)) {
+                merged[k] = { ...FALLBACK_FUNDAMENTALS[k], ...prev[k], ...v };
+              }
+              return merged;
+            });
             const firstKey = Object.keys(json.data)[0];
             setFundSource(json.data[firstKey]?.source || 'fallback');
           }
