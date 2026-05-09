@@ -279,22 +279,29 @@ const COTHistoryTrends = () => {
         </CardContent>
       </Card>
 
-      {/* Single-currency Long vs Short Focus Chart */}
-      <Card className="border-border/30 bg-card/30 backdrop-blur-sm">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <CardTitle className="text-lg font-bold text-foreground">
-              Long vs Short Breakdown — <span style={{ color: COLOR_MAP[focusCurrency] }}>{focusCurrency}</span>
-            </CardTitle>
+      {/* Single-currency Long vs Short Focus Chart — premium visual */}
+      <Card className="relative border-border/30 bg-gradient-to-br from-card/40 via-card/20 to-card/40 backdrop-blur-md overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none opacity-30" style={{
+          background: `radial-gradient(circle at 20% 0%, ${COLOR_MAP[focusCurrency]}22, transparent 50%)`,
+        }} />
+        <CardHeader className="pb-3 relative">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: COLOR_MAP[focusCurrency] }} />
+                Long vs Short — <span style={{ color: COLOR_MAP[focusCurrency] }} className="font-display-hero tracking-tight">{focusCurrency}</span>
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">Institutional positioning split with net overlay</p>
+            </div>
             <div className="flex flex-wrap gap-1">
               {Object.values(CURRENCY_GROUPS).flat().map((c) => (
                 <button
                   key={c}
                   onClick={() => setFocusCurrency(c)}
-                  className={`px-2 py-1 rounded-md text-[11px] font-bold transition-all ${
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
                     focusCurrency === c
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted/30 text-muted-foreground hover:text-foreground"
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   }`}
                 >
                   {c}
@@ -303,38 +310,68 @@ const COTHistoryTrends = () => {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="h-[300px]">
+        <CardContent className="relative">
+          {(() => {
+            const latest = focusData[focusData.length - 1];
+            const first = focusData[0];
+            if (!latest) return null;
+            const longChange = latest.long != null && first?.long != null ? latest.long - first.long : 0;
+            const shortChange = latest.short != null && first?.short != null ? Math.abs(latest.short) - Math.abs(first.short) : 0;
+            const netNow = latest.net ?? 0;
+            return (
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="rounded-xl border border-success/25 bg-success/[0.06] p-3">
+                  <div className="text-[10px] uppercase tracking-wider text-foreground/70 font-semibold">Longs</div>
+                  <div className="text-xl font-bold font-mono text-success">{fmt(latest.long ?? 0)}</div>
+                  <div className={`text-[10px] font-mono ${longChange >= 0 ? "text-success" : "text-destructive"}`}>
+                    {longChange >= 0 ? "▲" : "▼"} {fmt(Math.abs(longChange))} period
+                  </div>
+                </div>
+                <div className="rounded-xl border border-destructive/25 bg-destructive/[0.06] p-3">
+                  <div className="text-[10px] uppercase tracking-wider text-foreground/70 font-semibold">Shorts</div>
+                  <div className="text-xl font-bold font-mono text-destructive">{fmt(Math.abs(latest.short ?? 0))}</div>
+                  <div className={`text-[10px] font-mono ${shortChange <= 0 ? "text-success" : "text-destructive"}`}>
+                    {shortChange >= 0 ? "▲" : "▼"} {fmt(Math.abs(shortChange))} period
+                  </div>
+                </div>
+                <div className={`rounded-xl border p-3 ${netNow >= 0 ? "border-success/30 bg-success/[0.08]" : "border-destructive/30 bg-destructive/[0.08]"}`}>
+                  <div className="text-[10px] uppercase tracking-wider text-foreground/70 font-semibold">Net Position</div>
+                  <div className={`text-xl font-bold font-mono ${netNow >= 0 ? "text-success" : "text-destructive"}`}>
+                    {netNow >= 0 ? "+" : ""}{fmt(netNow)}
+                  </div>
+                  <div className="text-[10px] text-foreground/60 font-mono">{netNow >= 0 ? "Net Long bias" : "Net Short bias"}</div>
+                </div>
+              </div>
+            );
+          })()}
+
+          <div className="h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={focusData} stackOffset="sign">
+              <ComposedChart data={focusData} stackOffset="sign" margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="longGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(var(--success))" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="hsl(var(--success))" stopOpacity={0.55} />
+                  </linearGradient>
+                  <linearGradient id="shortGrad" x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0%" stopColor="hsl(var(--destructive))" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="hsl(var(--destructive))" stopOpacity={0.55} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.2} />
-                <XAxis
-                  dataKey="label"
-                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
-                  interval="preserveStartEnd"
-                />
-                <YAxis
-                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
-                  tickFormatter={(v) => fmt(Math.abs(v))}
-                />
-                <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" />
+                <XAxis dataKey="label" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} interval="preserveStartEnd" />
+                <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} tickFormatter={(v) => fmt(Math.abs(v))} />
+                <ReferenceLine y={0} stroke="hsl(var(--foreground))" strokeOpacity={0.4} />
                 <Tooltip content={<DetailedTooltip history={history} focusCurrency={focusCurrency} />} />
-                <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
-                <Bar dataKey="long" stackId="pos" fill="hsl(var(--success))" fillOpacity={0.7} name="Long" />
-                <Bar dataKey="short" stackId="pos" fill="hsl(var(--destructive))" fillOpacity={0.7} name="Short" />
-                <Line
-                  type="monotone"
-                  dataKey="net"
-                  stroke={COLOR_MAP[focusCurrency]}
-                  strokeWidth={2.5}
-                  dot={{ r: 3, strokeWidth: 0 }}
-                  name="Net"
-                />
+                <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} iconType="circle" />
+                <Bar dataKey="long" stackId="pos" fill="url(#longGrad)" name="Long" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="short" stackId="pos" fill="url(#shortGrad)" name="Short" radius={[0, 0, 4, 4]} />
+                <Line type="monotone" dataKey="net" stroke={COLOR_MAP[focusCurrency]} strokeWidth={3} dot={{ r: 3.5, strokeWidth: 0, fill: COLOR_MAP[focusCurrency] }} activeDot={{ r: 6, strokeWidth: 2, stroke: "hsl(var(--background))" }} name="Net" />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
-          <p className="text-[10px] text-muted-foreground text-center mt-1">
-            Green bars = long positions, red bars = short positions (plotted negative), line = net.
+          <p className="text-[10px] text-muted-foreground text-center mt-2">
+            Green = long contracts, red = short contracts (negative axis), colored line = net position.
           </p>
         </CardContent>
       </Card>

@@ -3,6 +3,7 @@ import COTPairAnalyzer from "@/components/COTPairAnalyzer";
 import COTPairScorecard from "@/components/COTPairScorecard";
 import COTTradeThisNotThat from "@/components/COTTradeThisNotThat";
 import COTHistoryTrends from "@/components/COTHistoryTrends";
+import COTTradeRecommendations from "@/components/COTTradeRecommendations";
 import SyntheticCurrencyIndex from "@/components/SyntheticCurrencyIndex";
 import { COTDataProvider, useCOTData } from "@/components/COTDataContext";
 import { TrendingUp, Users, Building2, ArrowUpRight, ArrowDownRight } from "lucide-react";
@@ -119,6 +120,9 @@ const COTAnalysisContent = () => {
               </div>
             </div>
           )}
+
+          {/* What to Trade — recommendations from COT data */}
+          <COTTradeRecommendations />
 
           {/* COT History Trend Charts */}
           <COTHistoryTrends />

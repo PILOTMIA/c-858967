@@ -61,36 +61,39 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'NZD', 'MXN'];
 
 // ── Scoring Engine ──────────────────────────────────────────────────────────
+const safeNum = (v: any, fallback = 0): number => {
+  const n = typeof v === "number" ? v : parseFloat(v);
+  return Number.isFinite(n) ? n : fallback;
+};
+const clampScore = (raw: number, min: number, max: number) => {
+  const n = Number.isFinite(raw) ? raw : 0;
+  return Math.max(min, Math.min(max, parseFloat(n.toFixed(2))));
+};
+
 function computeScores(base: string, quote: string, fundamentals: Record<string, typeof FALLBACK_FUNDAMENTALS['USD']>, cotPositions: Record<string, CurrencyPositioning>) {
-  const bp = cotPositions[base] || FALLBACK_COT_POSITIONS[base];
-  const qp = cotPositions[quote] || FALLBACK_COT_POSITIONS[quote];
-  const bf = fundamentals[base] || FALLBACK_FUNDAMENTALS[base];
-  const qf = fundamentals[quote] || FALLBACK_FUNDAMENTALS[quote];
-  const bSeas = SEASONALITY[base];
-  const qSeas = SEASONALITY[quote];
+  const bp = { ...FALLBACK_COT_POSITIONS[base], ...(cotPositions[base] || {}) };
+  const qp = { ...FALLBACK_COT_POSITIONS[quote], ...(cotPositions[quote] || {}) };
+  const bf = { ...FALLBACK_FUNDAMENTALS[base], ...(fundamentals[base] || {}) };
+  const qf = { ...FALLBACK_FUNDAMENTALS[quote], ...(fundamentals[quote] || {}) };
+  const bSeas = SEASONALITY[base] ?? SEASONALITY.USD;
+  const qSeas = SEASONALITY[quote] ?? SEASONALITY.USD;
   const month = new Date().getMonth();
 
   const maxNet = 100000;
-  const cotRaw = ((bp.netPosition - qp.netPosition) / maxNet) * 3;
-  const cotScore = Math.max(-3, Math.min(3, parseFloat(cotRaw.toFixed(2))));
+  const cotScore = clampScore(((safeNum(bp.netPosition) - safeNum(qp.netPosition)) / maxNet) * 3, -3, 3);
+  const seasScore = clampScore(safeNum(bSeas[month]) - safeNum(qSeas[month]), -2, 2);
+  const trendScore = clampScore(((safeNum(bp.weeklyChange) - safeNum(qp.weeklyChange)) / 15000) * 2, -2, 2);
 
-  const seasRaw = (bSeas[month] - qSeas[month]);
-  const seasScore = Math.max(-2, Math.min(2, parseFloat(seasRaw.toFixed(2))));
+  const baseAMNet = safeNum(bp.assetManagerLong) - safeNum(bp.assetManagerShort);
+  const quoteAMNet = safeNum(qp.assetManagerLong) - safeNum(qp.assetManagerShort);
+  const momentumScore = clampScore(((baseAMNet - quoteAMNet) / 300000) * 2, -2, 2);
 
-  const trendRaw = ((bp.weeklyChange - qp.weeklyChange) / 15000) * 2;
-  const trendScore = Math.max(-2, Math.min(2, parseFloat(trendRaw.toFixed(2))));
+  const gdpDiff = safeNum(bf.gdp) - safeNum(qf.gdp);
+  const rateDiff = safeNum(bf.interestRate) - safeNum(qf.interestRate);
+  const economicScore = clampScore(gdpDiff * 0.3 + rateDiff * 0.15, -2, 2);
 
-  const baseAMNet = bp.assetManagerLong - bp.assetManagerShort;
-  const quoteAMNet = qp.assetManagerLong - qp.assetManagerShort;
-  const momRaw = ((baseAMNet - quoteAMNet) / 300000) * 2;
-  const momentumScore = Math.max(-2, Math.min(2, parseFloat(momRaw.toFixed(2))));
-
-  const gdpDiff = bf.gdp - qf.gdp;
-  const rateDiff = bf.interestRate - qf.interestRate;
-  const econRaw = (gdpDiff * 0.3 + rateDiff * 0.15);
-  const economicScore = Math.max(-2, Math.min(2, parseFloat(econRaw.toFixed(2))));
-
-  const totalScore = parseFloat((cotScore + seasScore + trendScore + momentumScore + economicScore).toFixed(2));
+  const totalRaw = cotScore + seasScore + trendScore + momentumScore + economicScore;
+  const totalScore = parseFloat((Number.isFinite(totalRaw) ? totalRaw : 0).toFixed(2));
 
   return { cotScore, seasScore, trendScore, momentumScore, economicScore, totalScore };
 }
@@ -250,8 +253,13 @@ const COTPairScorecard = () => {
         if (res.ok) {
           const json = await res.json();
           if (json.data) {
-            setFundamentals(prev => ({ ...prev, ...json.data }));
-            // Check source of first entry
+            setFundamentals(prev => {
+              const merged = { ...prev };
+              for (const [k, v] of Object.entries(json.data as Record<string, any>)) {
+                merged[k] = { ...FALLBACK_FUNDAMENTALS[k], ...prev[k], ...v };
+              }
+              return merged;
+            });
             const firstKey = Object.keys(json.data)[0];
             setFundSource(json.data[firstKey]?.source || 'fallback');
           }
@@ -381,9 +389,11 @@ const COTPairScorecard = () => {
               </div>
             </div>
             <div className={`rounded-xl px-4 py-2 border ${verdict.bgClass}`}>
-              <div className="text-xs text-muted-foreground text-center">Score</div>
+              <div className="text-xs text-foreground/70 text-center font-medium">Score</div>
               <div className={`text-2xl font-bold font-mono ${verdict.color}`}>
-                {scores.totalScore > 0 ? '+' : ''}{scores.totalScore.toFixed(2)}
+                {Number.isFinite(scores.totalScore)
+                  ? `${scores.totalScore > 0 ? '+' : ''}${scores.totalScore.toFixed(2)}`
+                  : '0.00'}
               </div>
             </div>
           </div>
