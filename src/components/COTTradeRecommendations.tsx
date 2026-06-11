@@ -65,7 +65,7 @@ const COTTradeRecommendations = () => {
     const byCurrencyLatest = new Map(history.filter((r) => r.report_date === latest).map((r) => [r.currency, r]));
     const byCurrencyPrior = new Map(history.filter((r) => r.report_date === prior).map((r) => [r.currency, r]));
 
-    const usd = { netPosition: 0, weeklyChange: 0 } as any;
+    const usd = { net_position: 0 } as any;
 
     return PAIR_UNIVERSE.map(({ base, quote }) => {
       const b = base === "USD" ? usd : byCurrencyLatest.get(base);
@@ -75,9 +75,9 @@ const COTTradeRecommendations = () => {
       const bPrior = base === "USD" ? usd : byCurrencyPrior.get(base);
       const qPrior = quote === "USD" ? usd : byCurrencyPrior.get(quote);
 
-      const netSpread = (b.netPosition ?? 0) - (q.netPosition ?? 0);
-      const baseFlow = bPrior ? (b.netPosition ?? 0) - (bPrior.netPosition ?? 0) : 0;
-      const quoteFlow = qPrior ? (q.netPosition ?? 0) - (qPrior.netPosition ?? 0) : 0;
+      const netSpread = (b.net_position ?? 0) - (q.net_position ?? 0);
+      const baseFlow = bPrior ? (b.net_position ?? 0) - (bPrior.net_position ?? 0) : 0;
+      const quoteFlow = qPrior ? (q.net_position ?? 0) - (qPrior.net_position ?? 0) : 0;
       const flowSpread = baseFlow - quoteFlow;
 
       // Conviction: pure positioning (60%) + recent flow alignment (40%), normalized
