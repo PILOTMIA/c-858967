@@ -5,6 +5,7 @@ import COTTradeThisNotThat from "@/components/COTTradeThisNotThat";
 import COTHistoryTrends from "@/components/COTHistoryTrends";
 import COTTradeRecommendations from "@/components/COTTradeRecommendations";
 import SyntheticCurrencyIndex from "@/components/SyntheticCurrencyIndex";
+import COTDataHealthBanner from "@/components/COTDataHealthBanner";
 import { COTDataProvider, useCOTData } from "@/components/COTDataContext";
 import { TrendingUp, Users, Building2, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
