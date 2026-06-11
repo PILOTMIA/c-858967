@@ -125,21 +125,47 @@
   .cot-readable .text-xs,
   .news-readable .text-xs,
   .cot-readable [class*="text-[10px]"],
-  .news-readable [class*="text-[10px]"] {
-    font-size: 0.875rem;
-    line-height: 1.35rem;
+  .news-readable [class*="text-[10px]"],
+  .cot-readable [class*="text-[9px]"],
+  .news-readable [class*="text-[9px]"] {
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
   }
 
+  /* Lift muted / low-opacity text for dark-mode readability */
   .cot-readable .text-muted-foreground,
   .news-readable .text-muted-foreground {
-    color: hsl(var(--muted-foreground));
+    color: hsl(210 40% 92%);
+  }
+  .cot-readable .text-foreground\/50,
+  .cot-readable .text-foreground\/60,
+  .news-readable .text-foreground\/50,
+  .news-readable .text-foreground\/60 {
+    color: hsl(var(--foreground) / 0.8);
+  }
+  .cot-readable .text-foreground\/70,
+  .news-readable .text-foreground\/70 {
+    color: hsl(var(--foreground) / 0.9);
+  }
+  .cot-readable .text-foreground\/80,
+  .news-readable .text-foreground\/80 {
+    color: hsl(var(--foreground) / 0.96);
   }
 
+  /* Solidify card backgrounds and borders for contrast */
   .cot-readable .bg-card\/30,
   .cot-readable .bg-card\/20,
+  .cot-readable .bg-card\/40,
   .news-readable .bg-card\/30,
   .news-readable .bg-card\/20 {
-    background-color: hsl(var(--card));
+    background-color: hsl(var(--card) / 0.9);
+  }
+  .cot-readable .bg-background\/50 {
+    background-color: hsl(0 0% 6% / 0.92);
+  }
+  .cot-readable .border-border\/30,
+  .cot-readable .border-border\/40 {
+    border-color: hsl(0 0% 24%);
   }
 }
 

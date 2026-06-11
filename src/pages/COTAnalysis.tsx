@@ -83,37 +83,41 @@ const COTAnalysisContent = () => {
 
           {/* Week-over-Week Changes Card */}
           {wowChanges.length > 0 && (
-            <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-5">
-              <div className="flex items-center justify-between mb-4">
+            <div className="rounded-2xl border border-border/40 bg-card/40 backdrop-blur-sm p-6 shadow-elegant">
+              <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
                 <div>
-                  <h2 className="font-display-hero text-lg font-bold text-foreground flex items-center gap-2">
+                  <h2 className="font-display-hero text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
                     Week-over-Week COT Changes
                   </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    CFTC report {latestDate ? new Date(latestDate + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : ""} — Biggest movers in speculator positioning
+                  <p className="text-sm text-muted-foreground mt-1">
+                    CFTC report {latestDate ? new Date(latestDate + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : ""} — biggest movers in speculator positioning
                   </p>
                 </div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1"><ArrowUpRight className="w-3 h-3 text-success" /> Building</span>
+                  <span className="inline-flex items-center gap-1"><ArrowDownRight className="w-3 h-3 text-destructive" /> Trimming</span>
+                </div>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10 gap-2.5">
                 {wowChanges.map((item) => {
                   const isPositive = item.change > 0;
                   return (
                     <div
                       key={item.currency}
-                      className={`rounded-xl p-3 border text-center transition-all hover:scale-[1.02] ${
+                      className={`rounded-xl p-3 border text-center transition-all hover:scale-[1.03] hover:shadow-md ${
                         isPositive
-                          ? 'bg-success/5 border-success/20'
-                          : 'bg-destructive/5 border-destructive/20'
+                          ? 'bg-gradient-to-br from-success/[0.12] to-success/[0.04] border-success/30 hover:border-success/50'
+                          : 'bg-gradient-to-br from-destructive/[0.12] to-destructive/[0.04] border-destructive/30 hover:border-destructive/50'
                       }`}
                     >
-                      <div className="font-bold text-foreground text-sm">{item.currency}</div>
-                      <div className={`flex items-center justify-center gap-0.5 font-mono font-bold text-sm mt-1 ${
+                      <div className="font-bold text-foreground text-sm tracking-tight">{item.currency}</div>
+                      <div className={`flex items-center justify-center gap-0.5 font-mono font-bold text-base mt-1 ${
                         isPositive ? 'text-success' : 'text-destructive'
                       }`}>
-                        {isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                        {isPositive ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
                         {isPositive ? '+' : ''}{(item.change / 1000).toFixed(1)}K
                       </div>
-                      <div className="text-[10px] text-muted-foreground mt-1 leading-tight">{item.note}</div>
+                      <div className="text-[11px] text-foreground/75 mt-1 leading-tight font-medium">{item.note}</div>
                     </div>
                   );
                 })}
