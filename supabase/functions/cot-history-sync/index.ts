@@ -148,7 +148,7 @@ serve(async (req) => {
       }
     } catch (e) {
       entry.status = "error";
-      entry.errors.push(String(e?.message ?? e));
+      entry.errors.push(e instanceof Error ? e.message : String(e));
     }
     results[currency] = entry;
   }
