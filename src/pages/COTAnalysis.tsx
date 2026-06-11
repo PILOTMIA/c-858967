@@ -5,6 +5,7 @@ import COTTradeThisNotThat from "@/components/COTTradeThisNotThat";
 import COTHistoryTrends from "@/components/COTHistoryTrends";
 import COTTradeRecommendations from "@/components/COTTradeRecommendations";
 import SyntheticCurrencyIndex from "@/components/SyntheticCurrencyIndex";
+import COTDataHealthBanner from "@/components/COTDataHealthBanner";
 import { COTDataProvider, useCOTData } from "@/components/COTDataContext";
 import { TrendingUp, Users, Building2, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -81,7 +82,11 @@ const COTAnalysisContent = () => {
 
         <div className="cot-readable max-w-7xl mx-auto px-4 pb-16 space-y-10">
 
+          {/* Data integrity & freshness banner */}
+          <COTDataHealthBanner />
+
           {/* Week-over-Week Changes Card */}
+
           {wowChanges.length > 0 && (
             <div className="rounded-2xl border border-border/40 bg-card/40 backdrop-blur-sm p-6 shadow-elegant">
               <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
