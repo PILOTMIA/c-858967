@@ -21,7 +21,72 @@ const CFTC_CODES: Record<string, string> = {
   BTC: "133741",
 };
 
-async function fetchLegacyCOT(code: string): Promise<any | null> {
+// Per-field validation — exported for tests
+export interface RawCotRow {
+  report_date_as_yyyy_mm_dd?: string;
+  noncomm_positions_long_all?: string | number;
+  noncomm_positions_short_all?: string | number;
+  change_in_noncomm_long_all?: string | number;
+  change_in_noncomm_short_all?: string | number;
+}
+
+export interface ValidatedRow {
+  currency: string;
+  report_date: string;
+  long_positions: number;
+  short_positions: number;
+  net_position: number;
+  change_long: number;
+  change_short: number;
+  source: string;
+}
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+export function validateRow(currency: string, row: RawCotRow): { ok: true; value: ValidatedRow } | { ok: false; error: string } {
+  if (!row || typeof row !== "object") return { ok: false, error: "row missing" };
+
+  const reportDate = String(row.report_date_as_yyyy_mm_dd ?? "");
+  if (!DATE_RE.test(reportDate)) return { ok: false, error: `invalid report_date: ${reportDate}` };
+  const d = new Date(reportDate + "T00:00:00Z");
+  if (Number.isNaN(d.getTime())) return { ok: false, error: `unparseable date: ${reportDate}` };
+  // Reject future dates beyond 1 day skew
+  if (d.getTime() > Date.now() + 24 * 3600_000) return { ok: false, error: `future date: ${reportDate}` };
+  // Reject ancient data older than 5 years (safety)
+  if (d.getTime() < Date.now() - 5 * 365 * 24 * 3600_000) return { ok: false, error: `too old: ${reportDate}` };
+
+  const long = Number(row.noncomm_positions_long_all);
+  const short = Number(row.noncomm_positions_short_all);
+  if (!Number.isFinite(long) || !Number.isFinite(short)) return { ok: false, error: "non-numeric long/short" };
+  if (long < 0 || short < 0) return { ok: false, error: "negative position" };
+  // Sanity cap — no real CFTC contract has >10M speculator positions
+  if (long > 10_000_000 || short > 10_000_000) return { ok: false, error: "position exceeds sanity cap" };
+
+  const cLong = Number(row.change_in_noncomm_long_all ?? 0);
+  const cShort = Number(row.change_in_noncomm_short_all ?? 0);
+  const changeLong = Number.isFinite(cLong) ? cLong : 0;
+  const changeShort = Number.isFinite(cShort) ? cShort : 0;
+
+  const net = long - short;
+  // Integrity invariant
+  if (net !== long - short) return { ok: false, error: "net invariant violated" };
+
+  return {
+    ok: true,
+    value: {
+      currency,
+      report_date: reportDate,
+      long_positions: Math.trunc(long),
+      short_positions: Math.trunc(short),
+      net_position: Math.trunc(net),
+      change_long: Math.trunc(changeLong),
+      change_short: Math.trunc(changeShort),
+      source: "cftc_auto",
+    },
+  };
+}
+
+async function fetchLegacyCOT(code: string): Promise<RawCotRow[] | null> {
   try {
     const url = `https://publicreporting.cftc.gov/resource/6dca-aqww.json?$limit=2&$order=report_date_as_yyyy_mm_dd DESC&cftc_contract_market_code=${code}`;
     const res = await fetch(url, {
@@ -30,7 +95,7 @@ async function fetchLegacyCOT(code: string): Promise<any | null> {
     });
     if (!res.ok) return null;
     const data = await res.json();
-    if (!data?.length) return null;
+    if (!Array.isArray(data) || data.length === 0) return null;
     return data;
   } catch {
     return null;
@@ -46,51 +111,55 @@ serve(async (req) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, serviceKey);
 
-  const results: Record<string, string> = {};
-  let inserted = 0;
-  let errors = 0;
+  const results: Record<string, { status: string; valid: number; rejected: number; errors: string[] }> = {};
+  let totalInserted = 0;
+  let totalRejected = 0;
 
   for (const [currency, code] of Object.entries(CFTC_CODES)) {
+    const entry = { status: "ok", valid: 0, rejected: 0, errors: [] as string[] };
     try {
       const data = await fetchLegacyCOT(code);
       if (!data) {
-        results[currency] = "no_data";
+        entry.status = "no_data";
+        results[currency] = entry;
         continue;
       }
 
       for (const row of data) {
-        const reportDate = row.report_date_as_yyyy_mm_dd;
-        const long = parseInt(row.noncomm_positions_long_all || "0");
-        const short = parseInt(row.noncomm_positions_short_all || "0");
-        const net = long - short;
-
-        const { error } = await supabase.from("cot_history").upsert({
-          currency,
-          report_date: reportDate,
-          long_positions: long,
-          short_positions: short,
-          net_position: net,
-          change_long: parseInt(row.change_in_noncomm_long_all || "0"),
-          change_short: parseInt(row.change_in_noncomm_short_all || "0"),
-          source: "cftc_auto",
-        }, { onConflict: "currency,report_date" });
+        const v = validateRow(currency, row);
+        if (!v.ok) {
+          entry.rejected++;
+          totalRejected++;
+          entry.errors.push(v.error);
+          continue;
+        }
+        const { error } = await supabase
+          .from("cot_history")
+          .upsert(v.value, { onConflict: "currency,report_date" });
 
         if (error) {
-          console.error(`Upsert error ${currency}:`, error.message);
-          errors++;
+          entry.rejected++;
+          totalRejected++;
+          entry.errors.push(`db: ${error.message}`);
         } else {
-          inserted++;
+          entry.valid++;
+          totalInserted++;
         }
       }
-      results[currency] = "ok";
     } catch (e) {
-      results[currency] = `error: ${e.message}`;
-      errors++;
+      entry.status = "error";
+      entry.errors.push(String(e?.message ?? e));
     }
+    results[currency] = entry;
   }
 
   return new Response(
-    JSON.stringify({ results, inserted, errors, timestamp: new Date().toISOString() }),
+    JSON.stringify({
+      results,
+      inserted: totalInserted,
+      rejected: totalRejected,
+      timestamp: new Date().toISOString(),
+    }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } }
   );
 });
