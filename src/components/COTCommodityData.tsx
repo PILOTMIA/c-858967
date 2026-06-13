@@ -4,67 +4,45 @@ import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 // Commodity COT Data from CFTC Reports - January 21, 2026
 // CMX Futures (Gold, Silver, Copper) and NYMEX Futures (Crude Oil, Natural Gas)
+// Source: CFTC Disaggregated Commitments of Traders – Futures Only, June 02, 2026
+// Speculator = Managed Money; Commercial = Producer/Merchant + Swap Dealers
 const commodityCOTData = [
-  {
-    name: "Crude Oil",
-    symbol: "CL",
-    nonCommercialLong: 428500,
-    nonCommercialShort: 160200,
-    commercialLong: 905300,
-    commercialShort: 1248700,
-    weeklyChangeLong: -4500,
-    weeklyChangeShort: 8900,
-    openInterest: 1835400,
-    reportDate: "January 21, 2026",
-    additionalInfo: "EIA: Inventories -2.3M barrels (Jan 2026) | OPEC+: Gradual unwind continues"
-  },
   {
     name: "Gold",
     symbol: "GC",
-    nonCommercialLong: 345200,
-    nonCommercialShort: 58300,
-    commercialLong: 78500,
-    commercialShort: 395800,
-    weeklyChangeLong: 8200,
-    weeklyChangeShort: -2100,
-    openInterest: 542000,
-    reportDate: "January 21, 2026"
+    nonCommercialLong: 129367,
+    nonCommercialShort: 17188,
+    commercialLong: 37780,
+    commercialShort: 244125,
+    weeklyChangeLong: 5090,
+    weeklyChangeShort: -9643,
+    openInterest: 326052,
+    reportDate: "June 02, 2026",
+    additionalInfo: "Managed Money net long expanded +14,733 WoW — strong institutional bid"
   },
   {
     name: "Silver",
     symbol: "SI",
-    nonCommercialLong: 75400,
-    nonCommercialShort: 18500,
-    commercialLong: 40100,
-    commercialShort: 118200,
-    weeklyChangeLong: 1200,
-    weeklyChangeShort: -850,
-    openInterest: 170500,
-    reportDate: "January 21, 2026"
+    nonCommercialLong: 17047,
+    nonCommercialShort: 6603,
+    commercialLong: 23080,
+    commercialShort: 65741,
+    weeklyChangeLong: 377,
+    weeklyChangeShort: -12,
+    openInterest: 102809,
+    reportDate: "June 02, 2026"
   },
   {
     name: "Copper",
     symbol: "HG",
-    nonCommercialLong: 74800,
-    nonCommercialShort: 40200,
-    commercialLong: 73500,
-    commercialShort: 112400,
-    weeklyChangeLong: 2100,
-    weeklyChangeShort: -1500,
-    openInterest: 231000,
-    reportDate: "January 21, 2026"
-  },
-  {
-    name: "Natural Gas",
-    symbol: "NG",
-    nonCommercialLong: 162300,
-    nonCommercialShort: 228400,
-    commercialLong: 548700,
-    commercialShort: 495200,
-    weeklyChangeLong: 7800,
-    weeklyChangeShort: -4500,
-    openInterest: 995600,
-    reportDate: "January 21, 2026"
+    nonCommercialLong: 91214,
+    nonCommercialShort: 15467,
+    commercialLong: 77033,
+    commercialShort: 165678,
+    weeklyChangeLong: 5614,
+    weeklyChangeShort: 367,
+    openInterest: 276892,
+    reportDate: "June 02, 2026"
   }
 ];
 
