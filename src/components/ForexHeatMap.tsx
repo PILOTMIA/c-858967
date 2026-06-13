@@ -59,7 +59,10 @@ const fetchHeatMapData = async (): Promise<HeatMapData[]> =>
   });
 
 const formatPair = (p: string) => p === "XAUUSD" ? "GOLD" : p === "XTIUSD" ? "OIL" : p.replace("/", "");
-const formatPrice = (p: string, n: number) => p === "XAUUSD" || p === "XTIUSD" ? n.toFixed(2) : n.toFixed(4);
+const formatPrice = (p: string, n: number | undefined | null) => {
+  if (n == null || isNaN(n as number)) return "—";
+  return p === "XAUUSD" || p === "XTIUSD" ? n.toFixed(2) : n.toFixed(4);
+};
 
 const ForexHeatMap = () => {
   const { data, isLoading } = useQuery({
