@@ -217,11 +217,10 @@ const COTCommodityData = () => {
             })}
           </div>
 
-          {/* Educational Info */}
-          <Card className="mt-6 bg-primary/5 border-primary/20">
+          <Card className="mt-6 bg-primary/5 border-primary/20 rounded-2xl">
             <CardContent className="p-4">
-              <h4 className="font-bold text-primary mb-2 flex items-center gap-2">
-                📊 Understanding Commodity COT Data
+              <h4 className="font-bold text-primary mb-2 font-display tracking-tight">
+                Understanding Commodity COT Data
               </h4>
               <div className="text-sm text-foreground space-y-2">
                 <p>
@@ -233,10 +232,10 @@ const COTCommodityData = () => {
                   They often position opposite to speculators and represent "smart money."
                 </p>
                 <p className="text-muted-foreground text-xs">
-                  💡 Extreme positioning by speculators often precedes price reversals, especially when commercials take the opposite side.
+                  Extreme positioning by speculators often precedes price reversals, especially when commercials take the opposite side.
                 </p>
                 <p className="text-muted-foreground text-xs mt-2">
-                  📌 Data sources: COMEX (metals) and NYMEX (energy) futures contracts
+                  Data sources: COMEX (metals) and NYMEX (energy) futures contracts.
                 </p>
               </div>
             </CardContent>
