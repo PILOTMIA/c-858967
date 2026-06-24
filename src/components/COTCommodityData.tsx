@@ -2,47 +2,45 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-// Commodity COT Data from CFTC Reports - January 21, 2026
-// CMX Futures (Gold, Silver, Copper) and NYMEX Futures (Crude Oil, Natural Gas)
-// Source: CFTC Disaggregated Commitments of Traders – Futures Only, June 02, 2026
+// Source: CFTC Disaggregated Commitments of Traders – Futures Only, June 16, 2026
 // Speculator = Managed Money; Commercial = Producer/Merchant + Swap Dealers
 const commodityCOTData = [
   {
     name: "Gold",
     symbol: "GC",
-    nonCommercialLong: 129367,
-    nonCommercialShort: 17188,
-    commercialLong: 37780,
-    commercialShort: 244125,
-    weeklyChangeLong: 5090,
-    weeklyChangeShort: -9643,
-    openInterest: 326052,
-    reportDate: "June 02, 2026",
-    additionalInfo: "Managed Money net long expanded +14,733 WoW — strong institutional bid"
+    nonCommercialLong: 128043,
+    nonCommercialShort: 14322,
+    commercialLong: 41646,
+    commercialShort: 249209,
+    weeklyChangeLong: 1763,
+    weeklyChangeShort: -6095,
+    openInterest: 339330,
+    reportDate: "June 16, 2026",
+    additionalInfo: "Managed Money net long expanded +7,858 WoW — institutional bid intact"
   },
   {
     name: "Silver",
     symbol: "SI",
-    nonCommercialLong: 17047,
-    nonCommercialShort: 6603,
-    commercialLong: 23080,
-    commercialShort: 65741,
-    weeklyChangeLong: 377,
-    weeklyChangeShort: -12,
-    openInterest: 102809,
-    reportDate: "June 02, 2026"
+    nonCommercialLong: 18739,
+    nonCommercialShort: 5854,
+    commercialLong: 23903,
+    commercialShort: 66221,
+    weeklyChangeLong: 2403,
+    weeklyChangeShort: -79,
+    openInterest: 107721,
+    reportDate: "June 16, 2026"
   },
   {
     name: "Copper",
     symbol: "HG",
-    nonCommercialLong: 91214,
-    nonCommercialShort: 15467,
-    commercialLong: 77033,
-    commercialShort: 165678,
-    weeklyChangeLong: 5614,
-    weeklyChangeShort: 367,
-    openInterest: 276892,
-    reportDate: "June 02, 2026"
+    nonCommercialLong: 84705,
+    nonCommercialShort: 15697,
+    commercialLong: 81108,
+    commercialShort: 165516,
+    weeklyChangeLong: -2391,
+    weeklyChangeShort: -2195,
+    openInterest: 270752,
+    reportDate: "June 16, 2026"
   }
 ];
 
@@ -60,10 +58,10 @@ const COTCommodityData = () => {
 
   return (
     <div className="space-y-4">
-      <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+      <Card className="bg-card/60 backdrop-blur-xl border-border/40 rounded-2xl shadow-[0_8px_40px_-12px_hsl(var(--primary)/0.15)]">
         <CardHeader>
-          <CardTitle className="text-2xl font-display flex items-center gap-2">
-            🪙 Commodity COT Analysis
+          <CardTitle className="text-2xl font-display tracking-tight">
+            Commodity COT Analysis
           </CardTitle>
           <CardDescription>
             CMX Futures - Commitment of Traders data for precious metals and commodities
@@ -99,17 +97,9 @@ const COTCommodityData = () => {
                 >
                   <CardContent className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="text-3xl">
-                          {commodity.symbol === 'CL' ? '🛢️' : 
-                           commodity.symbol === 'GC' ? '🥇' : 
-                           commodity.symbol === 'SI' ? '🥈' : 
-                           commodity.symbol === 'NG' ? '🔥' : '🔶'}
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-foreground">{commodity.name}</h3>
-                          <p className="text-sm text-muted-foreground">{commodity.symbol} Futures</p>
-                        </div>
+                      <div>
+                        <h3 className="text-xl font-bold font-display tracking-tight text-foreground">{commodity.name}</h3>
+                        <p className="text-xs uppercase tracking-wider text-muted-foreground">{commodity.symbol} Futures</p>
                       </div>
                       <Badge 
                         variant="secondary"
@@ -140,7 +130,7 @@ const COTCommodityData = () => {
                         <div className={`text-xs font-mono ${
                           weeklyChange > 0 ? 'text-success' : 'text-destructive'
                         }`}>
-                          {weeklyChange > 0 ? '▲' : '▼'} {Math.abs(weeklyChange).toLocaleString()}
+                          {weeklyChange > 0 ? '+' : '−'} {Math.abs(weeklyChange).toLocaleString()}
                         </div>
                       </div>
 
@@ -182,7 +172,7 @@ const COTCommodityData = () => {
                           {commodity.reportDate}
                         </div>
                          <div className="text-xs text-success mt-1">
-                          ✓ CFTC Official
+                          CFTC Official
                         </div>
                         {(commodity as any).additionalInfo && (
                           <div className="text-xs text-primary mt-1 font-semibold">
@@ -227,11 +217,10 @@ const COTCommodityData = () => {
             })}
           </div>
 
-          {/* Educational Info */}
-          <Card className="mt-6 bg-primary/5 border-primary/20">
+          <Card className="mt-6 bg-primary/5 border-primary/20 rounded-2xl">
             <CardContent className="p-4">
-              <h4 className="font-bold text-primary mb-2 flex items-center gap-2">
-                📊 Understanding Commodity COT Data
+              <h4 className="font-bold text-primary mb-2 font-display tracking-tight">
+                Understanding Commodity COT Data
               </h4>
               <div className="text-sm text-foreground space-y-2">
                 <p>
@@ -243,10 +232,10 @@ const COTCommodityData = () => {
                   They often position opposite to speculators and represent "smart money."
                 </p>
                 <p className="text-muted-foreground text-xs">
-                  💡 Extreme positioning by speculators often precedes price reversals, especially when commercials take the opposite side.
+                  Extreme positioning by speculators often precedes price reversals, especially when commercials take the opposite side.
                 </p>
                 <p className="text-muted-foreground text-xs mt-2">
-                  📌 Data sources: COMEX (metals) and NYMEX (energy) futures contracts
+                  Data sources: COMEX (metals) and NYMEX (energy) futures contracts.
                 </p>
               </div>
             </CardContent>

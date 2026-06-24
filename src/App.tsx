@@ -40,7 +40,8 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <div className="min-h-screen bg-background">
+          <div className="min-h-screen bg-background relative">
+            <div className="app-ambient-bg" aria-hidden="true" />
             <TradingViewBanner />
             <div className="pt-[46px]">
               <TermsAgreementModal />

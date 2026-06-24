@@ -6,6 +6,7 @@ import COTHistoryTrends from "@/components/COTHistoryTrends";
 import COTTradeRecommendations from "@/components/COTTradeRecommendations";
 import SyntheticCurrencyIndex from "@/components/SyntheticCurrencyIndex";
 import COTDataHealthBanner from "@/components/COTDataHealthBanner";
+import PageHeader from "@/components/PageHeader";
 import { COTDataProvider, useCOTData } from "@/components/COTDataContext";
 import { TrendingUp, Users, Building2, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -71,16 +72,14 @@ const COTAnalysisContent = () => {
     <>
       <COTDetailModal open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen} data={selectedCurrency} />
 
-      <div className="min-h-screen bg-background">
-        {/* Header */}
-        <div className="px-4 pt-12 pb-8 text-center">
-          <h1 className="font-display-hero text-4xl sm:text-5xl font-bold text-foreground mb-3">COT Analysis</h1>
-          <p className="text-muted-foreground text-base sm:text-lg font-light max-w-2xl mx-auto">
-            Commitment of Traders data — insights into institutional and retail positioning
-          </p>
-        </div>
+      <div className="min-h-screen">
+        <div className="cot-readable max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-16 space-y-10">
+          <PageHeader
+            eyebrow="Institutional Positioning"
+            title="COT Analysis"
+            subtitle="Commitment of Traders data — insights into institutional and retail positioning, refreshed every Friday from the CFTC."
+          />
 
-        <div className="cot-readable max-w-7xl mx-auto px-4 pb-16 space-y-10">
 
           {/* Data integrity & freshness banner */}
           <COTDataHealthBanner />
