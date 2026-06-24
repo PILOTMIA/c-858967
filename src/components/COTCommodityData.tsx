@@ -130,7 +130,7 @@ const COTCommodityData = () => {
                         <div className={`text-xs font-mono ${
                           weeklyChange > 0 ? 'text-success' : 'text-destructive'
                         }`}>
-                          {weeklyChange > 0 ? '▲' : '▼'} {Math.abs(weeklyChange).toLocaleString()}
+                          {weeklyChange > 0 ? '+' : '−'} {Math.abs(weeklyChange).toLocaleString()}
                         </div>
                       </div>
 
