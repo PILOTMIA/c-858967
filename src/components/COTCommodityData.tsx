@@ -2,47 +2,45 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-// Commodity COT Data from CFTC Reports - January 21, 2026
-// CMX Futures (Gold, Silver, Copper) and NYMEX Futures (Crude Oil, Natural Gas)
-// Source: CFTC Disaggregated Commitments of Traders – Futures Only, June 02, 2026
+// Source: CFTC Disaggregated Commitments of Traders – Futures Only, June 16, 2026
 // Speculator = Managed Money; Commercial = Producer/Merchant + Swap Dealers
 const commodityCOTData = [
   {
     name: "Gold",
     symbol: "GC",
-    nonCommercialLong: 129367,
-    nonCommercialShort: 17188,
-    commercialLong: 37780,
-    commercialShort: 244125,
-    weeklyChangeLong: 5090,
-    weeklyChangeShort: -9643,
-    openInterest: 326052,
-    reportDate: "June 02, 2026",
-    additionalInfo: "Managed Money net long expanded +14,733 WoW — strong institutional bid"
+    nonCommercialLong: 128043,
+    nonCommercialShort: 14322,
+    commercialLong: 41646,
+    commercialShort: 249209,
+    weeklyChangeLong: 1763,
+    weeklyChangeShort: -6095,
+    openInterest: 339330,
+    reportDate: "June 16, 2026",
+    additionalInfo: "Managed Money net long expanded +7,858 WoW — institutional bid intact"
   },
   {
     name: "Silver",
     symbol: "SI",
-    nonCommercialLong: 17047,
-    nonCommercialShort: 6603,
-    commercialLong: 23080,
-    commercialShort: 65741,
-    weeklyChangeLong: 377,
-    weeklyChangeShort: -12,
-    openInterest: 102809,
-    reportDate: "June 02, 2026"
+    nonCommercialLong: 18739,
+    nonCommercialShort: 5854,
+    commercialLong: 23903,
+    commercialShort: 66221,
+    weeklyChangeLong: 2403,
+    weeklyChangeShort: -79,
+    openInterest: 107721,
+    reportDate: "June 16, 2026"
   },
   {
     name: "Copper",
     symbol: "HG",
-    nonCommercialLong: 91214,
-    nonCommercialShort: 15467,
-    commercialLong: 77033,
-    commercialShort: 165678,
-    weeklyChangeLong: 5614,
-    weeklyChangeShort: 367,
-    openInterest: 276892,
-    reportDate: "June 02, 2026"
+    nonCommercialLong: 84705,
+    nonCommercialShort: 15697,
+    commercialLong: 81108,
+    commercialShort: 165516,
+    weeklyChangeLong: -2391,
+    weeklyChangeShort: -2195,
+    openInterest: 270752,
+    reportDate: "June 16, 2026"
   }
 ];
 
