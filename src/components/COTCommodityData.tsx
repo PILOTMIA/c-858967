@@ -172,7 +172,7 @@ const COTCommodityData = () => {
                           {commodity.reportDate}
                         </div>
                          <div className="text-xs text-success mt-1">
-                          ✓ CFTC Official
+                          CFTC Official
                         </div>
                         {(commodity as any).additionalInfo && (
                           <div className="text-xs text-primary mt-1 font-semibold">
