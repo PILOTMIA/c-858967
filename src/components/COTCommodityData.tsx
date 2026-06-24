@@ -58,10 +58,10 @@ const COTCommodityData = () => {
 
   return (
     <div className="space-y-4">
-      <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+      <Card className="bg-card/60 backdrop-blur-xl border-border/40 rounded-2xl shadow-[0_8px_40px_-12px_hsl(var(--primary)/0.15)]">
         <CardHeader>
-          <CardTitle className="text-2xl font-display flex items-center gap-2">
-            🪙 Commodity COT Analysis
+          <CardTitle className="text-2xl font-display tracking-tight">
+            Commodity COT Analysis
           </CardTitle>
           <CardDescription>
             CMX Futures - Commitment of Traders data for precious metals and commodities
