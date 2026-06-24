@@ -97,17 +97,9 @@ const COTCommodityData = () => {
                 >
                   <CardContent className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="text-3xl">
-                          {commodity.symbol === 'CL' ? '🛢️' : 
-                           commodity.symbol === 'GC' ? '🥇' : 
-                           commodity.symbol === 'SI' ? '🥈' : 
-                           commodity.symbol === 'NG' ? '🔥' : '🔶'}
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-foreground">{commodity.name}</h3>
-                          <p className="text-sm text-muted-foreground">{commodity.symbol} Futures</p>
-                        </div>
+                      <div>
+                        <h3 className="text-xl font-bold font-display tracking-tight text-foreground">{commodity.name}</h3>
+                        <p className="text-xs uppercase tracking-wider text-muted-foreground">{commodity.symbol} Futures</p>
                       </div>
                       <Badge 
                         variant="secondary"
