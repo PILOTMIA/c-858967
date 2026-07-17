@@ -46,8 +46,10 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 export function validateRow(currency: string, row: RawCotRow): { ok: true; value: ValidatedRow } | { ok: false; error: string } {
   if (!row || typeof row !== "object") return { ok: false, error: "row missing" };
 
-  const reportDate = String(row.report_date_as_yyyy_mm_dd ?? "");
-  if (!DATE_RE.test(reportDate)) return { ok: false, error: `invalid report_date: ${reportDate}` };
+  const rawDate = String(row.report_date_as_yyyy_mm_dd ?? "");
+  // CFTC returns either "YYYY-MM-DD" or full ISO "YYYY-MM-DDTHH:MM:SS.sss" — normalize to date-only
+  const reportDate = rawDate.slice(0, 10);
+  if (!DATE_RE.test(reportDate)) return { ok: false, error: `invalid report_date: ${rawDate}` };
   const d = new Date(reportDate + "T00:00:00Z");
   if (Number.isNaN(d.getTime())) return { ok: false, error: `unparseable date: ${reportDate}` };
   // Reject future dates beyond 1 day skew
