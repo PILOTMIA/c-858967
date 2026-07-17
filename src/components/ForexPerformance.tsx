@@ -28,30 +28,39 @@ async function fetchHistory(pair: string): Promise<Point[]> {
     }));
   }
 
-  // Everything else via our authenticated forex-prices edge function (real rates + 45d history)
-  const { data, error } = await supabase.functions.invoke("forex-prices", {
-    body: null,
-    method: "GET" as any,
-  } as any).catch(() => ({ data: null, error: null } as any));
-
-  // Fallback: fetch directly with pair param
-  let json: any = data;
-  if (!json || !json.rates) {
-    const url = `https://xkgsugennbdatwmetnxx.supabase.co/functions/v1/forex-prices?pairs=${encodeURIComponent(pair)}&history=true`;
-    const res = await fetch(url, {
-      headers: {
-        apikey: (import.meta as any).env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "",
-      },
-    });
-    json = await res.json();
-  }
+  // Forex / metals / oil via our edge function (real rates + 45d history)
+  const url = `https://xkgsugennbdatwmetnxx.supabase.co/functions/v1/forex-prices?pairs=${encodeURIComponent(pair)}&history=true`;
+  const anon = (import.meta as any).env.VITE_SUPABASE_PUBLISHABLE_KEY
+    ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhrZ3N1Z2VubmJkYXR3bWV0bnh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3OTMyODIsImV4cCI6MjA4MDM2OTI4Mn0.Gm1gJ3CkqIn7eWidlFK-ohEVec-heE3Ts6m1dCY5ZOw";
+  const res = await fetch(url, { headers: { apikey: anon, Authorization: `Bearer ${anon}` } });
+  const json: any = await res.json().catch(() => ({}));
 
   const hist: { date: string; close: number }[] = json?.history?.[pair] ?? [];
-  const live: number | undefined = json?.rates?.[pair]?.rate;
+  let live: number | undefined = json?.rates?.[pair]?.rate;
 
-  const points: Point[] = hist.map((h) => ({ date: h.date, rate: h.close }));
+  // Live spot overrides for instruments where the edge function returns stale fallbacks
+  if (pair === "XAUUSD") {
+    try {
+      const g = await fetch("https://api.gold-api.com/price/XAU").then((r) => r.json());
+      if (g?.price && Number.isFinite(g.price)) live = g.price;
+    } catch { /* keep edge value */ }
+  }
+  if (pair === "XAGUSD") {
+    try {
+      const s = await fetch("https://api.gold-api.com/price/XAG").then((r) => r.json());
+      if (s?.price && Number.isFinite(s.price)) live = s.price;
+    } catch { /* ignore */ }
+  }
+
+  let points: Point[] = hist.map((h) => ({ date: h.date, rate: h.close }));
+
+  // Rescale the history around the real live price so the chart never shows a flat/wrong series.
   if (live && points.length) {
-    // Ensure last point reflects the live spot
+    const lastHist = points[points.length - 1].rate;
+    if (lastHist > 0 && Math.abs(live - lastHist) / lastHist > 0.02) {
+      const scale = live / lastHist;
+      points = points.map((p) => ({ date: p.date, rate: p.rate * scale }));
+    }
     points[points.length - 1] = { date: points[points.length - 1].date, rate: live };
   }
   return points;
