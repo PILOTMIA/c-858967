@@ -101,11 +101,19 @@ const ForexHeatMap = () => {
 
   return (
     <section className="space-y-6">
-      {/* Header */}
+      {/* Section header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">Currency Heat Map</h2>
-          <p className="text-sm text-muted-foreground mt-1">Live pivot signals across 25 instruments · refreshes every 5s</p>
+        <div className="flex items-start gap-3">
+          <div className="ma-accent-bar h-12 mt-1" />
+          <div>
+            <p className="ma-eyebrow">Terminal · Heat Map</p>
+            <h2 className="ma-serif text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+              Currency Heat Map
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Live pivot signals across 25 instruments · refreshes every 5s
+            </p>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <Badge variant="outline" className="gap-1.5 border-success/40 text-success bg-success/10">
@@ -123,52 +131,73 @@ const ForexHeatMap = () => {
         </div>
       </div>
 
-      <MarketClock />
+      {/* Bento grid: sessions + calculator side by side, heat map full-width, detail full-width, correlations */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Sessions clock spans 2 cols */}
+        <div className="ma-panel p-5 lg:col-span-2">
+          <div className="flex items-center gap-2 mb-4">
+            <Clock className="h-4 w-4 text-primary" />
+            <h3 className="ma-serif text-base font-bold text-foreground">Market Sessions</h3>
+          </div>
+          <MarketClock />
+        </div>
 
-      {/* Pip Calculator */}
-      <Card className="p-5 bg-card/50 backdrop-blur-sm border-border/50">
-        <div className="flex items-center gap-2 mb-4">
-          <Calculator className="h-4 w-4 text-primary" />
-          <h3 className="font-semibold text-foreground">Pip Calculator</h3>
+        {/* Pip Calculator */}
+        <div className="ma-panel p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Calculator className="h-4 w-4 text-primary" />
+            <h3 className="ma-serif text-base font-bold text-foreground">Pip Calculator</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <label className="ma-eyebrow block">Lot Size</label>
+              <Input
+                type="number"
+                step="0.01"
+                value={lotSize}
+                onChange={(e) => setLotSize(parseFloat(e.target.value) || 0.1)}
+                className="ma-mono bg-background/60"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1.5">
+                <label className="ma-eyebrow block">Account</label>
+                <Select value={accountCcy} onValueChange={setAccountCcy}>
+                  <SelectTrigger className="bg-background/60"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                    <SelectItem value="GBP">GBP</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="ma-eyebrow block">Pair</label>
+                <Select value={selected} onValueChange={setSelected}>
+                  <SelectTrigger className="bg-background/60"><SelectValue /></SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {PAIRS.map((p) => <SelectItem key={p} value={p}>{formatPair(p)}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="mt-3 pt-3 border-t border-border/50 flex items-baseline justify-between">
+              <span className="ma-eyebrow">Pip Value</span>
+              <span className="ma-serif text-2xl font-bold text-primary">${pipValue.toFixed(2)}</span>
+            </div>
+          </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Lot Size</label>
-            <Input type="number" step="0.01" value={lotSize} onChange={(e) => setLotSize(parseFloat(e.target.value) || 0.1)} />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Account Currency</label>
-            <Select value={accountCcy} onValueChange={setAccountCcy}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="USD">USD</SelectItem>
-                <SelectItem value="EUR">EUR</SelectItem>
-                <SelectItem value="GBP">GBP</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Selected Pair</label>
-            <Select value={selected} onValueChange={setSelected}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent className="max-h-72">
-                {PAIRS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        {selectedData && (
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-border/50">
-            <Stat label="Pip Value" value={`$${pipValue.toFixed(2)}`} />
-            <Stat label="Current Price" value={formatPrice(selected, selectedData.currentPrice)} />
-            <Stat label="Risk / Reward" value={`1:${selectedData.riskReward.toFixed(2)}`} />
-            <Stat label="Signal" value={selectedData.signal} accent={selectedData.signal} />
-          </div>
-        )}
-      </Card>
+      </div>
 
       {/* Heat Map Grid */}
-      <Card className="p-4 sm:p-6 bg-card/40 backdrop-blur-sm border-border/50">
+      <div className="ma-panel p-4 sm:p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <span className="ma-accent-bar h-5" />
+            <h3 className="ma-serif text-base font-bold text-foreground">25 Instruments · Live Signal Grid</h3>
+          </div>
+          <span className="ma-eyebrow hidden sm:inline">Click a cell for detail</span>
+        </div>
         <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2.5">
           {isLoading
             ? [...Array(25)].map((_, i) => (
@@ -187,10 +216,10 @@ const ForexHeatMap = () => {
                     }`}
                   >
                     <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                    <div className="text-[11px] font-bold tracking-wider text-foreground/90 mb-0.5">
+                    <div className="text-[11px] font-bold tracking-wider text-foreground/90 mb-0.5 ma-mono">
                       {formatPair(d.pair)}
                     </div>
-                    <div className={`text-sm font-mono font-bold ${d.changePercent > 0 ? "text-success" : d.changePercent < 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                    <div className={`text-sm ma-mono font-bold ${d.changePercent > 0 ? "text-success" : d.changePercent < 0 ? "text-destructive" : "text-muted-foreground"}`}>
                       {d.changePercent > 0 ? "+" : ""}{d.changePercent.toFixed(2)}%
                     </div>
                     <div className={`mt-1 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
@@ -209,19 +238,24 @@ const ForexHeatMap = () => {
           <LegendDot color="success" label="Bullish" />
           <LegendDot color="destructive" label="Bearish" />
           <LegendDot color="muted" label="Neutral" />
-          <span className="opacity-70">Click any cell for detailed analysis</span>
         </div>
-      </Card>
+      </div>
 
       {/* Detail Panel */}
       {selectedData && (
-        <Card className="p-5 sm:p-6 bg-card/50 backdrop-blur-sm border-border/50">
+        <div className="ma-panel p-5 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
             <div className="flex items-center gap-3">
-              <Clock className="h-4 w-4 text-primary" />
-              <h3 className="text-lg font-semibold text-foreground">
-                {selected} <span className="text-muted-foreground font-normal text-sm ml-2">Detailed Analysis</span>
-              </h3>
+              <span className="ma-accent-bar h-8" />
+              <div>
+                <p className="ma-eyebrow">Detail · Pivots</p>
+                <h3 className="ma-serif text-xl font-bold text-foreground">
+                  {formatPair(selected)}
+                  <span className="ml-3 ma-mono text-sm text-muted-foreground font-normal">
+                    {formatPrice(selected, selectedData.currentPrice)}
+                  </span>
+                </h3>
+              </div>
             </div>
             <Badge
               variant="outline"
@@ -235,15 +269,15 @@ const ForexHeatMap = () => {
             </Badge>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            <Stat label="Current" value={formatPrice(selected, selectedData.currentPrice)} />
-            <Stat label="Daily Pivot" value={formatPrice(selected, selectedData.pivot)} />
-            <Stat label="R1" value={formatPrice(selected, selectedData.r1)} accent="BUY" />
-            <Stat label="S1" value={formatPrice(selected, selectedData.s1)} accent="SELL" />
-            <Stat label="Weekly Pivot" value={formatPrice(selected, selectedData.weeklyPivot)} />
-            <Stat label="Monthly Pivot" value={formatPrice(selected, selectedData.monthlyPivot)} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            <PivotStat label="Current" value={formatPrice(selected, selectedData.currentPrice)} />
+            <PivotStat label="Daily Pivot" value={formatPrice(selected, selectedData.pivot)} highlight />
+            <PivotStat label="R1" value={formatPrice(selected, selectedData.r1)} accent="BUY" />
+            <PivotStat label="S1" value={formatPrice(selected, selectedData.s1)} accent="SELL" />
+            <PivotStat label="Weekly Pivot" value={formatPrice(selected, selectedData.weeklyPivot)} />
+            <PivotStat label="Monthly Pivot" value={formatPrice(selected, selectedData.monthlyPivot)} />
           </div>
-        </Card>
+        </div>
       )}
 
       <CorrelationAnalysis heatMapData={data} />
@@ -251,12 +285,32 @@ const ForexHeatMap = () => {
   );
 };
 
-const Stat = ({ label, value, accent }: { label: string; value: string; accent?: "BUY" | "SELL" | "NEUTRAL" }) => (
-  <div className="rounded-lg bg-muted/40 border border-border/40 px-3 py-2">
-    <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{label}</div>
-    <div className={`mt-0.5 font-mono font-semibold text-sm ${
-      accent === "BUY" ? "text-success" : accent === "SELL" ? "text-destructive" : "text-foreground"
-    }`}>{value}</div>
+const PivotStat = ({
+  label,
+  value,
+  accent,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  accent?: "BUY" | "SELL";
+  highlight?: boolean;
+}) => (
+  <div
+    className={`rounded-lg px-3 py-2.5 border transition-colors ${
+      highlight
+        ? "bg-primary/10 border-primary/40"
+        : "bg-background/40 border-border/50 hover:border-primary/30"
+    }`}
+  >
+    <div className="ma-eyebrow">{label}</div>
+    <div
+      className={`mt-1 ma-mono font-bold text-sm ${
+        accent === "BUY" ? "text-success" : accent === "SELL" ? "text-destructive" : "text-foreground"
+      }`}
+    >
+      {value}
+    </div>
   </div>
 );
 

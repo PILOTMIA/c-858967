@@ -1,6 +1,7 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -296,4 +297,78 @@
 .font-display-hero {
   font-family: 'Outfit', sans-serif;
   letter-spacing: -0.04em;
+}
+
+/* ============================================
+   Market Analysis — Bento Terminal utilities
+   Scoped to .ma-terminal parent so global
+   Apple-minimal aesthetic elsewhere is preserved.
+   ============================================ */
+.ma-terminal {
+  --ma-bg: 240 60% 4%;         /* #0a0a1a */
+  --ma-surface: 240 55% 14%;   /* #141432 */
+  --ma-elev: 240 60% 23%;      /* #1e1e5a */
+  --ma-accent: 244 82% 59%;    /* #4f46e5 */
+  background:
+    radial-gradient(1200px 600px at 85% -10%, hsl(var(--ma-accent) / 0.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 20%, hsl(var(--ma-elev) / 0.35), transparent 55%),
+    hsl(var(--ma-bg));
+}
+.ma-terminal .ma-serif {
+  font-family: 'Libre Baskerville', 'Times New Roman', serif;
+  letter-spacing: -0.01em;
+}
+.ma-terminal .ma-mono {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.ma-terminal .ma-panel {
+  background: linear-gradient(180deg, hsl(var(--ma-surface) / 0.85), hsl(var(--ma-surface) / 0.65));
+  border: 1px solid hsl(var(--ma-elev) / 0.6);
+  border-radius: 14px;
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 1px 0 hsl(0 0% 100% / 0.03) inset,
+    0 20px 60px -30px hsl(0 0% 0% / 0.6);
+  transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+}
+.ma-terminal .ma-panel:hover {
+  border-color: hsl(var(--ma-accent) / 0.35);
+  box-shadow:
+    0 1px 0 hsl(0 0% 100% / 0.04) inset,
+    0 24px 70px -30px hsl(var(--ma-accent) / 0.35);
+}
+.ma-terminal .ma-panel-flush > * { color: hsl(210 40% 96%); }
+.ma-terminal .ma-eyebrow {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(240 20% 70%);
+}
+.ma-terminal .ma-accent-bar {
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, hsl(var(--ma-accent)), hsl(var(--ma-accent) / 0.2));
+}
+.ma-terminal .ma-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--ma-elev));
+  background: hsl(var(--ma-bg) / 0.6);
+  color: hsl(210 40% 90%);
+}
+.ma-terminal .ma-chip-live::before {
+  content: "";
+  width: 6px; height: 6px; border-radius: 999px;
+  background: hsl(142 76% 55%);
+  box-shadow: 0 0 8px hsl(142 76% 55% / 0.7);
+  animation: pulse-slow 2s ease-in-out infinite;
 }
