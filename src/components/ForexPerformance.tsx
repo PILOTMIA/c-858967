@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+
 import { ArrowUpRight, ArrowDownRight, Loader2 } from "lucide-react";
 
 interface ForexPerformanceProps {
