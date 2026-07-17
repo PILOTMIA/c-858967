@@ -4,17 +4,25 @@ import GoldRateCorrelation from "@/components/GoldRateCorrelation";
 import GoldLivePrice from "@/components/GoldLivePrice";
 import GoldCOTSummary from "@/components/GoldCOTSummary";
 import InterestRatesModule from "@/components/InterestRatesModule";
+import AgricultureCOT from "@/components/AgricultureCOT";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles } from "lucide-react";
 
 const Metals = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="px-4 pt-12 pb-8 text-center">
         <h1 className="font-display-hero text-4xl sm:text-5xl font-bold text-foreground mb-3">
-          Metals Analysis
+          Metals & Commodities
         </h1>
         <p className="text-muted-foreground text-base sm:text-lg font-medium max-w-2xl mx-auto">
-          Gold (XAUUSD) pricing, rate correlation, energy impact, and institutional positioning — all in one place.
+          Gold pricing, rate correlation, institutional positioning — plus a brand-new Agriculture COT feed for the inflation story most traders miss.
         </p>
+        <div className="mt-4 inline-flex items-center gap-2">
+          <Badge className="bg-primary/15 text-primary border border-primary/30 gap-1">
+            <Sparkles className="w-3 h-3" /> New: Agriculture COT (Jul 07, 2026)
+          </Badge>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 pb-16 space-y-10">
@@ -22,6 +30,7 @@ const Metals = () => {
         <InterestRatesModule />
         <GoldRateCorrelation />
         <GoldCOTSummary />
+        <AgricultureCOT />
         <COTGoldUsdComparison />
         <COTTradeMap />
 
@@ -38,6 +47,7 @@ const Metals = () => {
             <span className="rounded-md bg-muted px-2 py-1">FRED API (US10Y, FEDFUNDS)</span>
             <span className="rounded-md bg-muted px-2 py-1">Frankfurter (FX rates)</span>
             <span className="rounded-md bg-muted px-2 py-1">GDELT (News sentiment)</span>
+            <span className="rounded-md bg-muted px-2 py-1">CFTC Ag Disaggregated</span>
             <span className="rounded-md bg-muted px-2 py-1">Refreshes daily 2 PM & 3 PM MST</span>
           </div>
         </div>
