@@ -1,215 +1,244 @@
-
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
+import { useMemo, useState } from "react";
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { ArrowUpRight, ArrowDownRight, Loader2 } from "lucide-react";
 
 interface ForexPerformanceProps {
   selectedPair?: string;
 }
 
-const fetchCurrencyHistorical = async (pair: string = 'EURUSD') => {
-  try {
-    console.log('Fetching historical data for:', pair);
-    
-    // For crypto pairs
-    if (pair === 'BTCUSD') {
-      const response = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily');
-      const data = await response.json();
-      return data.prices.map((price: [number, number], index: number) => ({
-        date: new Date(price[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        rate: parseFloat(price[1].toFixed(2))
-      }));
-    }
+type Point = { date: string; rate: number };
 
-    if (pair === 'ETHUSD') {
-      const response = await fetch('https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=30&interval=daily');
-      const data = await response.json();
-      return data.prices.map((price: [number, number], index: number) => ({
-        date: new Date(price[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        rate: parseFloat(price[1].toFixed(2))
-      }));
-    }
-
-    // For forex pairs, use exchange rate API with historical simulation
-    const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-    const data = await response.json();
-    
-    // Get current rate
-    let currentRate = 1;
-    const formatPair = pair.replace(/([A-Z]{3})([A-Z]{3})/, '$1/$2');
-    
-    if (pair === 'EURUSD') {
-      currentRate = data.rates.EUR ? (1 / data.rates.EUR) : 1.0542;
-    } else if (pair === 'GBPUSD') {
-      currentRate = data.rates.GBP ? (1 / data.rates.GBP) : 1.2745;
-    } else if (pair === 'USDJPY') {
-      currentRate = data.rates.JPY || 149.85;
-    } else if (pair === 'USDCHF') {
-      currentRate = data.rates.CHF || 0.8745;
-    } else if (pair === 'AUDUSD') {
-      currentRate = data.rates.AUD ? (1 / data.rates.AUD) : 0.6542;
-    } else if (pair === 'USDCAD') {
-      currentRate = data.rates.CAD || 1.3654;
-    } else if (pair === 'XAUUSD') {
-      currentRate = 2055.32; // Gold - will use fallback
-    } else if (pair === 'XTIUSD') {
-      currentRate = 78.45; // Oil - will use fallback
-    }
-
-    console.log('Current rate for', pair, ':', currentRate);
-
-    // Generate realistic historical data based on current rate
-    const historicalData = [];
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      
-      // Create more realistic price movement (smaller variations for the last few days)
-      const daysFromNow = i;
-      const maxVariation = daysFromNow > 7 ? 0.02 : 0.005; // Smaller variations for recent days
-      const variation = (Math.random() - 0.5) * maxVariation;
-      
-      const historicalRate = currentRate * (1 + variation);
-      
-      historicalData.push({
-        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        rate: parseFloat(historicalRate.toFixed(pair === 'XAUUSD' || pair === 'XTIUSD' ? 2 : 4))
-      });
-    }
-
-    // Ensure the last data point is closer to the current rate
-    if (historicalData.length > 0) {
-      historicalData[historicalData.length - 1].rate = parseFloat(currentRate.toFixed(pair === 'XAUUSD' || pair === 'XTIUSD' ? 2 : 4));
-    }
-
-    return historicalData;
-    
-  } catch (error) {
-    console.error('Error fetching historical data:', error);
-    
-    // Fallback data with more realistic current prices
-    const fallbackRates: { [key: string]: number } = {
-      'EURUSD': 1.0542,
-      'GBPUSD': 1.2745,
-      'USDJPY': 149.85,
-      'USDCHF': 0.8745,
-      'AUDUSD': 0.6542,
-      'USDCAD': 1.3654,
-      'EURGBP': 0.8567,
-      'EURJPY': 158.45,
-      'GBPJPY': 189.75,
-      'AUDJPY': 98.15,
-      'XAUUSD': 2055.32,
-      'XTIUSD': 78.45,
-      'BTCUSD': 107274,
-      'ETHUSD': 2422
-    };
-    
-    const baseRate = fallbackRates[pair] || 1.0542;
-    const mockData = [];
-    
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const variation = (Math.random() - 0.5) * 0.01;
-      mockData.push({
-        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        rate: parseFloat((baseRate + variation * baseRate).toFixed(pair === 'XAUUSD' || pair === 'XTIUSD' || pair === 'BTCUSD' || pair === 'ETHUSD' ? 2 : 4))
-      });
-    }
-    
-    return mockData;
-  }
+const CRYPTO_MAP: Record<string, string> = {
+  BTCUSD: "bitcoin",
+  ETHUSD: "ethereum",
 };
 
-const ForexPerformance = ({ selectedPair = 'EURUSD' }: ForexPerformanceProps) => {
-  const { data: rateData, isLoading, error } = useQuery({
-    queryKey: ['currencyHistorical', selectedPair],
-    queryFn: () => fetchCurrencyHistorical(selectedPair),
-    refetchInterval: 60000, // Refetch every minute for more current data
+async function fetchHistory(pair: string): Promise<Point[]> {
+  // Crypto via CoinGecko (public)
+  if (CRYPTO_MAP[pair]) {
+    const r = await fetch(
+      `https://api.coingecko.com/api/v3/coins/${CRYPTO_MAP[pair]}/market_chart?vs_currency=usd&days=90&interval=daily`
+    );
+    const j = await r.json();
+    return (j.prices || []).map(([t, p]: [number, number]) => ({
+      date: new Date(t).toISOString().slice(0, 10),
+      rate: p,
+    }));
+  }
+
+  // Everything else via our authenticated forex-prices edge function (real rates + 45d history)
+  const { data, error } = await supabase.functions.invoke("forex-prices", {
+    body: null,
+    method: "GET" as any,
+  } as any).catch(() => ({ data: null, error: null } as any));
+
+  // Fallback: fetch directly with pair param
+  let json: any = data;
+  if (!json || !json.rates) {
+    const url = `https://xkgsugennbdatwmetnxx.supabase.co/functions/v1/forex-prices?pairs=${encodeURIComponent(pair)}&history=true`;
+    const res = await fetch(url, {
+      headers: {
+        apikey: (import.meta as any).env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "",
+      },
+    });
+    json = await res.json();
+  }
+
+  const hist: { date: string; close: number }[] = json?.history?.[pair] ?? [];
+  const live: number | undefined = json?.rates?.[pair]?.rate;
+
+  const points: Point[] = hist.map((h) => ({ date: h.date, rate: h.close }));
+  if (live && points.length) {
+    // Ensure last point reflects the live spot
+    points[points.length - 1] = { date: points[points.length - 1].date, rate: live };
+  }
+  return points;
+}
+
+const TIMEFRAMES = [
+  { key: "7D", days: 7 },
+  { key: "30D", days: 30 },
+  { key: "90D", days: 90 },
+] as const;
+
+const ForexPerformance = ({ selectedPair = "EURUSD" }: ForexPerformanceProps) => {
+  const [tf, setTf] = useState<(typeof TIMEFRAMES)[number]["key"]>("30D");
+
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ["fx-history", selectedPair],
+    queryFn: () => fetchHistory(selectedPair),
+    refetchInterval: 60_000,
+    staleTime: 30_000,
   });
 
-  const formatPairDisplay = (pair: string) => {
-    if (pair === 'XAUUSD') return 'GOLD/USD';
-    if (pair === 'XTIUSD') return 'WTI CRUDE/USD';
-    if (pair === 'BTCUSD') return 'BITCOIN/USD';
-    if (pair === 'ETHUSD') return 'ETHEREUM/USD';
-    return pair.replace(/([A-Z]{3})([A-Z]{3})/, '$1/$2');
+  const points = useMemo(() => {
+    if (!data) return [] as Point[];
+    const days = TIMEFRAMES.find((t) => t.key === tf)!.days;
+    return data.slice(-days);
+  }, [data, tf]);
+
+  const isXAU = selectedPair === "XAUUSD";
+  const isOil = selectedPair === "XTIUSD";
+  const isCrypto = !!CRYPTO_MAP[selectedPair];
+  const decimals = isXAU || isOil ? 2 : isCrypto ? 2 : selectedPair.endsWith("JPY") ? 3 : 4;
+
+  const formatPrice = (v: number | string | undefined | null) => {
+    if (v == null || (typeof v === "number" && Number.isNaN(v))) return "—";
+    const n = typeof v === "number" ? v : parseFloat(String(v));
+    if (Number.isNaN(n)) return "—";
+    if (isCrypto || isXAU || isOil) {
+      return `$${n.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
+    }
+    return n.toFixed(decimals);
   };
 
-  const formatPrice = (value: any) => {
-    if (selectedPair === 'XAUUSD' || selectedPair === 'XTIUSD') {
-      return `$${typeof value === 'number' ? value.toFixed(2) : value}`;
-    }
-    if (selectedPair === 'BTCUSD' || selectedPair === 'ETHUSD') {
-      return `$${typeof value === 'number' ? value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : value}`;
-    }
-    return typeof value === 'number' ? value.toFixed(4) : value;
+  const stats = useMemo(() => {
+    if (!points.length) return null;
+    const first = points[0].rate;
+    const last = points[points.length - 1].rate;
+    const high = Math.max(...points.map((p) => p.rate));
+    const low = Math.min(...points.map((p) => p.rate));
+    const change = last - first;
+    const pct = (change / first) * 100;
+    return { first, last, high, low, change, pct, up: change >= 0 };
+  }, [points]);
+
+  const formatPair = (p: string) => {
+    if (p === "XAUUSD") return "GOLD";
+    if (p === "XTIUSD") return "WTI CRUDE";
+    if (p === "BTCUSD") return "BITCOIN";
+    if (p === "ETHUSD") return "ETHEREUM";
+    return p;
   };
-
-  if (isLoading) {
-    return (
-      <div className="glass-card p-6 rounded-lg mb-8 animate-fade-in">
-        <h2 className="text-xl font-semibold mb-6">{formatPairDisplay(selectedPair)} Performance</h2>
-        <div className="w-full h-[200px] flex items-center justify-center">
-          <span className="text-muted-foreground">Loading current market data...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    console.error('Query error:', error);
-  }
-
-  const currentPrice = rateData && rateData.length > 0 ? rateData[rateData.length - 1].rate : null;
 
   return (
-    <div className="glass-card p-6 rounded-lg mb-8 animate-fade-in">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">{formatPairDisplay(selectedPair)} Performance</h2>
-        {currentPrice && (
-          <div className="text-right">
-            <div className="text-sm text-muted-foreground">Current Price</div>
-            <div className="text-lg font-bold text-green-400">{formatPrice(currentPrice)}</div>
+    <div className="rounded-2xl border border-border/40 bg-card/40 backdrop-blur-sm p-5 sm:p-6 h-full flex flex-col">
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Performance</p>
+          <h2 className="text-xl font-bold text-foreground mt-0.5">{formatPair(selectedPair)}</h2>
+        </div>
+        <div className="text-right">
+          <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end">
+            Live {isFetching && <Loader2 className="h-3 w-3 animate-spin" />}
+          </div>
+          <div className={`text-xl font-bold tabular-nums ${stats?.up ? "text-emerald-400" : "text-red-400"}`}>
+            {formatPrice(stats?.last)}
+          </div>
+        </div>
+      </div>
+
+      {/* Change row */}
+      {stats && (
+        <div className="flex items-center gap-2 mb-3">
+          <span
+            className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold ${
+              stats.up ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"
+            }`}
+          >
+            {stats.up ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+            {stats.pct >= 0 ? "+" : ""}
+            {stats.pct.toFixed(2)}%
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {stats.change >= 0 ? "+" : ""}
+            {(isCrypto || isXAU || isOil ? stats.change.toFixed(2) : stats.change.toFixed(decimals))} over {tf}
+          </span>
+        </div>
+      )}
+
+      {/* Timeframe toggle */}
+      <div className="inline-flex rounded-lg border border-border/40 p-0.5 bg-background/40 mb-4 w-fit">
+        {TIMEFRAMES.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTf(t.key)}
+            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+              tf === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t.key}
+          </button>
+        ))}
+      </div>
+
+      {/* Chart */}
+      <div className="w-full h-[200px] flex-1 min-h-[200px]">
+        {isLoading ? (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
+            <Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading live market data…
+          </div>
+        ) : points.length ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={points} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="fxFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={stats?.up ? "hsl(142 76% 55%)" : "hsl(0 84% 60%)"} stopOpacity={0.35} />
+                  <stop offset="100%" stopColor={stats?.up ? "hsl(142 76% 55%)" : "hsl(0 84% 60%)"} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.25} vertical={false} />
+              <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} minTickGap={30} />
+              <YAxis
+                stroke="hsl(var(--muted-foreground))"
+                fontSize={10}
+                domain={["dataMin", "dataMax"]}
+                tickLine={false}
+                axisLine={false}
+                width={60}
+                tickFormatter={(v) => formatPrice(v)}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
+                  borderRadius: 10,
+                  fontSize: 12,
+                }}
+                labelStyle={{ color: "hsl(var(--muted-foreground))" }}
+                formatter={(v: number) => [formatPrice(v), "Price"]}
+              />
+              <Area
+                type="monotone"
+                dataKey="rate"
+                stroke={stats?.up ? "hsl(142 76% 55%)" : "hsl(0 84% 60%)"}
+                strokeWidth={2}
+                fill="url(#fxFill)"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
+            No data available
           </div>
         )}
       </div>
-      <div className="w-full h-[200px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={rateData}>
-            <XAxis 
-              dataKey="date" 
-              stroke="#E6E4DD"
-              fontSize={12}
-            />
-            <YAxis 
-              stroke="#E6E4DD"
-              fontSize={12}
-              domain={['dataMin - 0.01', 'dataMax + 0.01']}
-              tickFormatter={(value) => formatPrice(value)}
-            />
-            <Tooltip 
-              contentStyle={{ 
-                background: '#3A3935',
-                border: '1px solid #605F5B',
-                borderRadius: '8px'
-              }}
-              labelStyle={{ color: '#E6E4DD' }}
-              itemStyle={{ color: '#8989DE' }}
-              formatter={(value: number | string) => [formatPrice(value), 'Price']}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="rate" 
-              stroke="#8989DE" 
-              strokeWidth={2}
-              dot={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+
+      {/* Stat grid */}
+      {stats && (
+        <div className="grid grid-cols-3 gap-2 mt-4">
+          <StatCell label={`${tf} High`} value={formatPrice(stats.high)} tone="up" />
+          <StatCell label={`${tf} Low`} value={formatPrice(stats.low)} tone="down" />
+          <StatCell label="Open" value={formatPrice(stats.first)} />
+        </div>
+      )}
     </div>
   );
 };
+
+const StatCell = ({ label, value, tone }: { label: string; value: string; tone?: "up" | "down" }) => (
+  <div className="rounded-lg border border-border/40 bg-background/40 px-3 py-2">
+    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+    <div
+      className={`text-sm font-semibold tabular-nums ${
+        tone === "up" ? "text-emerald-400" : tone === "down" ? "text-red-400" : "text-foreground"
+      }`}
+    >
+      {value}
+    </div>
+  </div>
+);
 
 export default ForexPerformance;
