@@ -494,16 +494,34 @@ const CentralBankRates = () => {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Current Rate:</span>
-                        <span className="text-foreground font-medium">{bank.currentRate}%</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Next Meeting:</span>
-                        <span className="text-foreground">{new Date(bank.nextMeeting).toLocaleDateString()}</span>
-                      </div>
+                    {(() => {
+                      const priorRate = bank.recentChanges.find(c => c.rate !== bank.currentRate)?.rate
+                        ?? bank.recentChanges[1]?.rate
+                        ?? bank.currentRate;
+                      const delta = +(bank.currentRate - priorRate).toFixed(2);
+                      return (
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="rounded-lg border border-border bg-background/60 p-3">
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Current</p>
+                            <p className="text-lg font-bold text-foreground">{bank.currentRate}%</p>
+                          </div>
+                          <div className="rounded-lg border border-border bg-background/60 p-3">
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Prior</p>
+                            <div className="flex items-baseline gap-1.5">
+                              <p className="text-lg font-bold text-muted-foreground line-through decoration-1">{priorRate}%</p>
+                              <span className={`text-[11px] font-semibold ${delta > 0 ? 'text-green-400' : delta < 0 ? 'text-red-400' : 'text-yellow-400'}`}>
+                                {delta > 0 ? '▲ +' : delta < 0 ? '▼ ' : '● '}{delta !== 0 ? `${delta}%` : 'no change'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Next Meeting:</span>
+                      <span className="text-foreground">{new Date(bank.nextMeeting).toLocaleDateString()}</span>
                     </div>
+
 
                     <div className="border-t border-border pt-3">
                       <div className="flex items-center justify-between mb-2">
@@ -537,18 +555,19 @@ const CentralBankRates = () => {
                     </div>
 
                     <div className="border-t border-border pt-3">
-                      <h4 className="text-sm font-medium text-muted-foreground mb-2">Recent Changes</h4>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-2">Rate History</h4>
                       <div className="space-y-1">
-                        {bank.recentChanges.slice(0, 2).map((change, index) => (
+                        {bank.recentChanges.map((change, index) => (
                           <div key={index} className="flex justify-between text-xs">
                             <span className="text-muted-foreground">{new Date(change.date).toLocaleDateString()}</span>
                             <span className={change.change > 0 ? 'text-green-400' : change.change < 0 ? 'text-red-400' : 'text-yellow-400'}>
-                              {change.change > 0 ? '+' : ''}{change.change}% ({change.rate}%)
+                              {change.change > 0 ? '+' : ''}{change.change}% → {change.rate}%
                             </span>
                           </div>
                         ))}
                       </div>
                     </div>
+
 
                     <div className="border-t border-border pt-3">
                       <h4 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1">
