@@ -555,18 +555,19 @@ const CentralBankRates = () => {
                     </div>
 
                     <div className="border-t border-border pt-3">
-                      <h4 className="text-sm font-medium text-muted-foreground mb-2">Recent Changes</h4>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-2">Rate History</h4>
                       <div className="space-y-1">
-                        {bank.recentChanges.slice(0, 2).map((change, index) => (
+                        {bank.recentChanges.map((change, index) => (
                           <div key={index} className="flex justify-between text-xs">
                             <span className="text-muted-foreground">{new Date(change.date).toLocaleDateString()}</span>
                             <span className={change.change > 0 ? 'text-green-400' : change.change < 0 ? 'text-red-400' : 'text-yellow-400'}>
-                              {change.change > 0 ? '+' : ''}{change.change}% ({change.rate}%)
+                              {change.change > 0 ? '+' : ''}{change.change}% → {change.rate}%
                             </span>
                           </div>
                         ))}
                       </div>
                     </div>
+
 
                     <div className="border-t border-border pt-3">
                       <h4 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1">
