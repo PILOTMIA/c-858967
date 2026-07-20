@@ -152,7 +152,7 @@ const MarketStats = () => {
     staleTime: 15_000,
   });
 
-  if (isLoading || !data) {
+  if (isLoading || !data || !data.usdIndex || !data.btc || !data.eurUsd) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">
         {[...Array(3)].map((_, i) => (
@@ -167,6 +167,8 @@ const MarketStats = () => {
   }
 
   const ageSec = Math.max(0, Math.floor((Date.now() - dataUpdatedAt) / 1000));
+  const safeNum = (n: number | undefined, d = 2) =>
+    Number.isFinite(n) ? (n as number).toFixed(d) : "—";
 
   return (
     <div className="mb-8 animate-fade-in">
