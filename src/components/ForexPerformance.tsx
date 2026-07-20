@@ -1,31 +1,45 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 
-import { ArrowUpRight, ArrowDownRight, Loader2 } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Loader2, Radio, Clock, Gauge, Database } from "lucide-react";
 
 interface ForexPerformanceProps {
   selectedPair?: string;
 }
 
 type Point = { date: string; rate: number };
+type FetchResult = { points: Point[]; source: string; fetchedAt: number; latencyMs: number };
 
 const CRYPTO_MAP: Record<string, string> = {
   BTCUSD: "bitcoin",
   ETHUSD: "ethereum",
 };
 
-async function fetchHistory(pair: string): Promise<Point[]> {
+async function fetchHistory(pair: string): Promise<FetchResult> {
+  const started = performance.now();
+
   // Crypto via CoinGecko (public)
   if (CRYPTO_MAP[pair]) {
     const r = await fetch(
       `https://api.coingecko.com/api/v3/coins/${CRYPTO_MAP[pair]}/market_chart?vs_currency=usd&days=90&interval=daily`
     );
     const j = await r.json();
-    return (j.prices || []).map(([t, p]: [number, number]) => ({
+    const points: Point[] = (j.prices || []).map(([t, p]: [number, number]) => ({
       date: new Date(t).toISOString().slice(0, 10),
       rate: p,
     }));
+    // Pin last point to real-time spot from CoinGecko simple/price
+    try {
+      const s = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${CRYPTO_MAP[pair]}&vs_currencies=usd`
+      ).then((r) => r.json());
+      const live = s?.[CRYPTO_MAP[pair]]?.usd;
+      if (Number.isFinite(live) && points.length) {
+        points[points.length - 1] = { date: points[points.length - 1].date, rate: live };
+      }
+    } catch { /* ignore */ }
+    return { points, source: "CoinGecko", fetchedAt: Date.now(), latencyMs: Math.round(performance.now() - started) };
   }
 
   // Forex / metals / oil via our edge function (real rates + 45d history)
@@ -37,18 +51,19 @@ async function fetchHistory(pair: string): Promise<Point[]> {
 
   const hist: { date: string; close: number }[] = json?.history?.[pair] ?? [];
   let live: number | undefined = json?.rates?.[pair]?.rate;
+  let source: string = json?.rates?.[pair]?.source ?? "unknown";
 
   // Live spot overrides for instruments where the edge function returns stale fallbacks
   if (pair === "XAUUSD") {
     try {
       const g = await fetch("https://api.gold-api.com/price/XAU").then((r) => r.json());
-      if (g?.price && Number.isFinite(g.price)) live = g.price;
+      if (g?.price && Number.isFinite(g.price)) { live = g.price; source = "gold-api.com"; }
     } catch { /* keep edge value */ }
   }
   if (pair === "XAGUSD") {
     try {
       const s = await fetch("https://api.gold-api.com/price/XAG").then((r) => r.json());
-      if (s?.price && Number.isFinite(s.price)) live = s.price;
+      if (s?.price && Number.isFinite(s.price)) { live = s.price; source = "gold-api.com"; }
     } catch { /* ignore */ }
   }
 
@@ -63,7 +78,7 @@ async function fetchHistory(pair: string): Promise<Point[]> {
     }
     points[points.length - 1] = { date: points[points.length - 1].date, rate: live };
   }
-  return points;
+  return { points, source, fetchedAt: Date.now(), latencyMs: Math.round(performance.now() - started) };
 }
 
 const TIMEFRAMES = [
@@ -72,10 +87,27 @@ const TIMEFRAMES = [
   { key: "90D", days: 90 },
 ] as const;
 
+const SOURCE_LABELS: Record<string, string> = {
+  freeforexapi: "FreeForexAPI",
+  "exchangerate-api": "ExchangeRate-API",
+  frankfurter: "Frankfurter (ECB)",
+  "xauusd-fallback": "Internal fallback",
+  fallback: "Internal fallback",
+  "gold-api.com": "gold-api.com",
+  CoinGecko: "CoinGecko",
+  unknown: "Unknown",
+};
+
 const ForexPerformance = ({ selectedPair = "EURUSD" }: ForexPerformanceProps) => {
   const [tf, setTf] = useState<(typeof TIMEFRAMES)[number]["key"]>("30D");
+  const [now, setNow] = useState(Date.now());
 
-  const { data, isLoading, isFetching } = useQuery({
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const { data, isLoading, isFetching } = useQuery<FetchResult>({
     queryKey: ["fx-history", selectedPair],
     queryFn: () => fetchHistory(selectedPair),
     refetchInterval: 60_000,
@@ -83,9 +115,9 @@ const ForexPerformance = ({ selectedPair = "EURUSD" }: ForexPerformanceProps) =>
   });
 
   const points = useMemo(() => {
-    if (!data) return [] as Point[];
+    if (!data?.points) return [] as Point[];
     const days = TIMEFRAMES.find((t) => t.key === tf)!.days;
-    return data.slice(-days);
+    return data.points.slice(-days);
   }, [data, tf]);
 
   const isXAU = selectedPair === "XAUUSD";
@@ -122,6 +154,20 @@ const ForexPerformance = ({ selectedPair = "EURUSD" }: ForexPerformanceProps) =>
     return p;
   };
 
+  const ageSec = data?.fetchedAt ? Math.max(0, Math.floor((now - data.fetchedAt) / 1000)) : null;
+  const ageLabel = ageSec == null ? "—" : ageSec < 60 ? `${ageSec}s ago` : `${Math.floor(ageSec / 60)}m ${ageSec % 60}s ago`;
+  const freshness = ageSec == null ? "muted" : ageSec < 75 ? "fresh" : ageSec < 180 ? "warn" : "stale";
+  const freshDot =
+    freshness === "fresh" ? "bg-emerald-500" :
+    freshness === "warn" ? "bg-amber-500" :
+    freshness === "stale" ? "bg-red-500" : "bg-muted-foreground";
+  const latencyTone =
+    !data?.latencyMs ? "text-muted-foreground" :
+    data.latencyMs < 400 ? "text-emerald-400" :
+    data.latencyMs < 1200 ? "text-amber-400" : "text-red-400";
+  const sourceLabel = data?.source ? (SOURCE_LABELS[data.source] ?? data.source) : "—";
+  const isFallback = data?.source === "fallback" || data?.source === "xauusd-fallback";
+
   return (
     <div className="rounded-2xl border border-border/40 bg-card/40 backdrop-blur-sm p-5 sm:p-6 h-full flex flex-col">
       <div className="flex items-start justify-between gap-3 mb-4">
@@ -157,6 +203,30 @@ const ForexPerformance = ({ selectedPair = "EURUSD" }: ForexPerformanceProps) =>
           </span>
         </div>
       )}
+
+      {/* Freshness / source strip */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground mb-3 border-y border-border/40 py-2">
+        <span className="inline-flex items-center gap-1.5">
+          <span className={`h-1.5 w-1.5 rounded-full ${freshDot} ${freshness === "fresh" ? "animate-pulse" : ""}`} />
+          <Radio className="h-3 w-3" />
+          <span className="font-medium text-foreground/80">
+            {freshness === "fresh" ? "Live" : freshness === "warn" ? "Delayed" : freshness === "stale" ? "Stale" : "—"}
+          </span>
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <Clock className="h-3 w-3" /> Updated {ageLabel}
+        </span>
+        <span className={`inline-flex items-center gap-1 ${latencyTone}`}>
+          <Gauge className="h-3 w-3" /> {data?.latencyMs ? `${data.latencyMs} ms` : "—"}
+        </span>
+        <span className="inline-flex items-center gap-1 ml-auto">
+          <Database className="h-3 w-3" />
+          Source:{" "}
+          <span className={`font-medium ${isFallback ? "text-amber-400" : "text-foreground/80"}`}>
+            {sourceLabel}{isFallback ? " (cached)" : ""}
+          </span>
+        </span>
+      </div>
 
       {/* Timeframe toggle */}
       <div className="inline-flex rounded-lg border border-border/40 p-0.5 bg-background/40 mb-4 w-fit">
