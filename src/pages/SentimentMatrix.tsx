@@ -296,33 +296,43 @@ const SentimentMatrix = () => {
         </div>
 
         {/* Contrarian Radar - custom SVG/HTML */}
-        <section className="rounded-xl border border-border bg-card p-6 shadow-2xl relative overflow-hidden">
+        <section
+          className="rounded-2xl border border-border p-6 shadow-2xl relative overflow-hidden"
+          style={{
+            background:
+              "radial-gradient(circle at 20% 15%, hsl(var(--primary) / 0.12), transparent 55%), radial-gradient(circle at 85% 85%, hsl(0 84% 60% / 0.10), transparent 55%), hsl(var(--card))",
+          }}
+        >
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-6">
             <div>
-              <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-                <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+              <h2 className="text-2xl font-semibold text-foreground flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-primary rounded-full animate-pulse shadow-[0_0_12px_hsl(var(--primary))]" />
                 Contrarian Radar
               </h2>
               <p className="text-xs text-muted-foreground mt-1 uppercase tracking-widest font-mono">
-                Institutional Conviction vs. Price Action
+                COT Conviction · 5-Day Price Momentum
               </p>
             </div>
-            <div className="flex gap-4 text-[10px] uppercase font-mono tracking-widest text-muted-foreground">
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 bg-emerald-500 rounded-full" /> Bullish Price</span>
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 bg-rose-500 rounded-full" /> Bearish Price</span>
+            <div className="flex gap-4 text-[11px] uppercase font-mono tracking-widest text-muted-foreground">
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.6)]" /> Bullish</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-rose-500 rounded-full shadow-[0_0_8px_rgba(244,63,94,0.6)]" /> Bearish</span>
             </div>
           </div>
 
-          <div className="relative h-[480px] w-full border-l border-b border-border">
+          <div className="relative h-[520px] w-full border-l border-b border-border ml-8">
             {/* Quadrant labels */}
-            <div className="absolute top-3 left-3 text-[10px] font-medium text-emerald-500/70 uppercase tracking-widest font-mono">Bullish, Unexpected</div>
-            <div className="absolute top-3 right-3 text-[10px] font-medium text-muted-foreground uppercase tracking-widest font-mono">Bullish, As Expected</div>
-            <div className="absolute bottom-3 left-3 text-[10px] font-medium text-muted-foreground uppercase tracking-widest font-mono">Bearish, As Expected</div>
-            <div className="absolute bottom-3 right-3 text-[10px] font-medium text-rose-500/70 uppercase tracking-widest font-mono">Bearish, Unexpected</div>
+            <div className="absolute top-3 left-3 text-[11px] font-bold text-emerald-500 uppercase tracking-widest font-mono">Bullish · Unexpected</div>
+            <div className="absolute top-3 right-3 text-[11px] font-bold text-emerald-500/60 uppercase tracking-widest font-mono">Bullish · As Expected</div>
+            <div className="absolute bottom-3 left-3 text-[11px] font-bold text-rose-500/60 uppercase tracking-widest font-mono">Bearish · As Expected</div>
+            <div className="absolute bottom-3 right-3 text-[11px] font-bold text-rose-500 uppercase tracking-widest font-mono">Bearish · Unexpected</div>
+
+            {/* Quadrant tints */}
+            <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-emerald-500/[0.03]" />
+            <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-rose-500/[0.03]" />
 
             {/* Crosshair */}
-            <div className="absolute top-1/2 left-0 w-full h-px border-t border-dashed border-border" />
-            <div className="absolute left-1/2 top-0 h-full w-px border-l border-dashed border-border" />
+            <div className="absolute top-1/2 left-0 w-full h-px bg-foreground/20" />
+            <div className="absolute left-1/2 top-0 h-full w-px bg-foreground/20" />
 
             {/* Faint grid */}
             {[25, 75].map(p => (
@@ -333,50 +343,57 @@ const SentimentMatrix = () => {
             ))}
 
             {/* Y axis ticks */}
-            <div className="absolute -left-10 top-[5%] text-[10px] font-mono text-muted-foreground">+3%</div>
-            <div className="absolute -left-10 top-[50%] -translate-y-1/2 text-[10px] font-mono text-muted-foreground">0%</div>
-            <div className="absolute -left-10 bottom-[5%] text-[10px] font-mono text-muted-foreground">-3%</div>
+            <div className="absolute -left-10 top-[3%] text-[11px] font-mono text-muted-foreground">+{yMax}%</div>
+            <div className="absolute -left-10 top-[50%] -translate-y-1/2 text-[11px] font-mono text-muted-foreground">0%</div>
+            <div className="absolute -left-10 bottom-[3%] text-[11px] font-mono text-muted-foreground">-{yMax}%</div>
 
             {/* Data points */}
             {radarPoints.map(pt => {
               const priceUp = pt.dailyPct >= 0;
+              const strong = Math.abs(pt.conviction) >= 3;
               return (
                 <div
                   key={pt.pair}
-                  className="absolute group"
+                  className="absolute group z-10"
                   style={{ left: `${pt.x}%`, top: `${pt.y}%`, transform: "translate(-50%, -50%)" }}
                 >
                   <div
-                    className={`w-3 h-3 rounded-full transition-transform group-hover:scale-150 ${
+                    className={`rounded-full transition-transform group-hover:scale-150 ring-2 ${
+                      strong ? "w-4 h-4" : "w-3 h-3"
+                    } ${
                       priceUp
-                        ? "bg-emerald-500 shadow-[0_0_14px_rgba(16,185,129,0.55)]"
-                        : "bg-rose-500 shadow-[0_0_14px_rgba(244,63,94,0.55)]"
+                        ? "bg-emerald-500 ring-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.7)]"
+                        : "bg-rose-500 ring-rose-500/20 shadow-[0_0_20px_rgba(244,63,94,0.7)]"
                     }`}
                   />
                   <span
-                    className="absolute left-1/2 -translate-x-1/2 font-mono text-[11px] text-foreground whitespace-nowrap pointer-events-none"
+                    className={`absolute left-1/2 -translate-x-1/2 font-mono text-[12px] font-semibold whitespace-nowrap pointer-events-none ${
+                      priceUp ? "text-emerald-300" : "text-rose-300"
+                    }`}
                     style={{ top: pt.labelOffsetY }}
                   >
                     {pt.pair}
                   </span>
                   {/* Tooltip on hover */}
-                  <div className="absolute left-1/2 -translate-x-1/2 top-4 hidden group-hover:block z-10 whitespace-nowrap bg-popover border border-border rounded-md px-3 py-2 text-xs shadow-lg">
-                    <div className="font-semibold text-foreground">{pt.pair}</div>
-                    <div className="text-muted-foreground">{pt.quadrant}</div>
-                    <div className="font-mono">Conviction: {pt.conviction}</div>
-                    <div className="font-mono">Daily: {pt.dailyPct >= 0 ? "+" : ""}{pt.dailyPct}%</div>
+                  <div className="absolute left-1/2 -translate-x-1/2 top-5 hidden group-hover:block z-20 whitespace-nowrap bg-popover border border-border rounded-md px-3 py-2 text-xs shadow-2xl">
+                    <div className="font-bold text-foreground">{pt.pair}</div>
+                    <div className="text-muted-foreground text-[10px] uppercase tracking-wider mt-0.5">{pt.quadrant}</div>
+                    <div className="font-mono mt-1">Conviction: <span className={pt.conviction >= 0 ? "text-emerald-400" : "text-rose-400"}>{pt.conviction >= 0 ? "+" : ""}{pt.conviction}</span></div>
+                    <div className="font-mono">5d Move: <span className={pt.dailyPct >= 0 ? "text-emerald-400" : "text-rose-400"}>{pt.dailyPct >= 0 ? "+" : ""}{pt.dailyPct}%</span></div>
                   </div>
                 </div>
               );
             })}
           </div>
 
-          <div className="flex justify-between mt-4 text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
-            <span>-6 Bearish Conviction</span>
+          <div className="flex justify-between mt-4 ml-8 text-[11px] font-mono text-muted-foreground uppercase tracking-widest">
+            <span className="text-rose-500/70">-6 Bearish Conviction</span>
             <span>0 Neutral</span>
-            <span>+6 Bullish Conviction</span>
+            <span className="text-emerald-500/70">+6 Bullish Conviction</span>
           </div>
         </section>
+
+
 
         {/* Consensus + Universe */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
