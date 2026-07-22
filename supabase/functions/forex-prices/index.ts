@@ -104,78 +104,56 @@ serve(async (req) => {
       });
     };
     
-    for (const pairCode of pairs) {
+    const fetchWithTimeout = async (url: string, ms = 3500) => {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), ms);
+      try {
+        return await fetch(url, { signal: ctrl.signal, headers: { Accept: 'application/json' } });
+      } finally {
+        clearTimeout(t);
+      }
+    };
+
+    const resolvePair = async (pairCode: string): Promise<{ rate: number; source: string }> => {
       if (pairCode === 'XAUUSD') {
-        results[pairCode] = { rate: fallbackPrices.XAUUSD, source: 'xauusd-fallback' };
-        if (includeHistory) history[pairCode] = makeHistory(pairCode, fallbackPrices.XAUUSD);
-        continue;
+        return { rate: fallbackPrices.XAUUSD, source: 'xauusd-fallback' };
       }
+      try {
+        const r = await fetchWithTimeout(`https://www.freeforexapi.com/api/live?pairs=${pairCode}`);
+        if (r.ok) {
+          const d = await r.json();
+          if (d?.rates?.[pairCode]?.rate) return { rate: d.rates[pairCode].rate, source: 'freeforexapi' };
+        }
+      } catch { /* next */ }
 
-      // Try FreeForexAPI
-      try {
-        const freeForexRes = await fetch(
-          `https://www.freeforexapi.com/api/live?pairs=${pairCode}`,
-          { headers: { 'Accept': 'application/json' } }
-        );
-        
-        if (freeForexRes.ok) {
-          const data = await freeForexRes.json();
-          if (data.rates && data.rates[pairCode]) {
-            results[pairCode] = { rate: data.rates[pairCode].rate, source: 'freeforexapi' };
-            if (includeHistory) history[pairCode] = makeHistory(pairCode, data.rates[pairCode].rate);
-            continue;
-          }
-        }
-      } catch {
-        // Silent fallback to next API
-      }
-      
-      // Try ExchangeRate-API (free tier)
-      try {
-        const base = pairCode.substring(0, 3);
-        const quote = pairCode.substring(3);
-        const exchangeRes = await fetch(
-          `https://api.exchangerate-api.com/v4/latest/${base}`
-        );
-        
-        if (exchangeRes.ok) {
-          const data = await exchangeRes.json();
-          if (data.rates && data.rates[quote]) {
-            results[pairCode] = { rate: data.rates[quote], source: 'exchangerate-api' };
-            if (includeHistory) history[pairCode] = makeHistory(pairCode, data.rates[quote]);
-            continue;
-          }
-        }
-      } catch {
-        // Silent fallback to next API
-      }
+      const base = pairCode.substring(0, 3);
+      const quote = pairCode.substring(3);
 
-      // Try Frankfurter API (free, no key needed)
       try {
-        const base = pairCode.substring(0, 3);
-        const quote = pairCode.substring(3);
-        const frankfurterRes = await fetch(
-          `https://api.frankfurter.app/latest?from=${base}&to=${quote}`
-        );
-        
-        if (frankfurterRes.ok) {
-          const data = await frankfurterRes.json();
-          if (data.rates && data.rates[quote]) {
-            results[pairCode] = { rate: data.rates[quote], source: 'frankfurter' };
-            if (includeHistory) history[pairCode] = makeHistory(pairCode, data.rates[quote]);
-            continue;
-          }
+        const r = await fetchWithTimeout(`https://api.exchangerate-api.com/v4/latest/${base}`);
+        if (r.ok) {
+          const d = await r.json();
+          if (d?.rates?.[quote]) return { rate: d.rates[quote], source: 'exchangerate-api' };
         }
-      } catch {
-        // Silent fallback
-      }
-      
-      // Fallback
-      if (fallbackPrices[pairCode]) {
-        results[pairCode] = { rate: fallbackPrices[pairCode], source: 'fallback' };
-        if (includeHistory) history[pairCode] = makeHistory(pairCode, fallbackPrices[pairCode]);
-      }
+      } catch { /* next */ }
+
+      try {
+        const r = await fetchWithTimeout(`https://api.frankfurter.app/latest?from=${base}&to=${quote}`);
+        if (r.ok) {
+          const d = await r.json();
+          if (d?.rates?.[quote]) return { rate: d.rates[quote], source: 'frankfurter' };
+        }
+      } catch { /* next */ }
+
+      return { rate: fallbackPrices[pairCode] ?? 1, source: 'fallback' };
+    };
+
+    const resolved = await Promise.all(pairs.map(async (p) => [p, await resolvePair(p)] as const));
+    for (const [p, r] of resolved) {
+      results[p] = r;
+      if (includeHistory) history[p] = makeHistory(p, r.rate);
     }
+
     
     return new Response(JSON.stringify({ rates: results, history: includeHistory ? history : undefined, timestamp: Date.now() }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
