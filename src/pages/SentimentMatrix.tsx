@@ -73,10 +73,12 @@ type Row = {
   category: PairDef["category"];
   conviction: number;
   dailyPct: number;
+  mom5d: number;
   price: number | null;
   tone: ReturnType<typeof sentimentTone>;
   quadrant: string;
 };
+
 
 const filters = ["All", "Forex", "Commodities", "Crypto"] as const;
 type Filter = typeof filters[number];
