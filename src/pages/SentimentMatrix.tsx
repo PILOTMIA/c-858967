@@ -198,26 +198,27 @@ const SentimentMatrix = () => {
   const maxAbs = Math.max(6, ...ranked.map(r => Math.abs(r.conviction)));
 
   // Positions for the radar (in %) with a simple label-collision offset.
-  const radarPoints = useMemo(() => {
+  const { radarPoints, yMax } = useMemo(() => {
+    const maxAbs = Math.max(1, ...filtered.map(r => Math.abs(r.dailyPct)));
+    const yScale = Math.ceil(maxAbs * 1.1); // symmetric ±yScale
     const items = filtered.map(r => {
       const x = ((r.conviction + 6) / 12) * 100;
-      // clamp visible daily change to ±3% so labels stay in the plot
-      const clamped = Math.max(-3, Math.min(3, r.dailyPct));
-      const y = 50 - (clamped / 3) * 45; // 5..95%
+      const clamped = Math.max(-yScale, Math.min(yScale, r.dailyPct));
+      const y = 50 - (clamped / yScale) * 45; // 5..95%
       return { ...r, x, y };
     });
-    // sort by x so we can offset overlapping labels vertically
     items.sort((a, b) => a.x - b.x);
     const bucket: Record<number, number> = {};
-    return items.map(it => {
-      const key = Math.round(it.x / 6); // ~6% wide buckets
+    const positioned = items.map(it => {
+      const key = Math.round(it.x / 7);
       bucket[key] = (bucket[key] ?? 0) + 1;
       const stack = bucket[key] - 1;
-      // alternate above/below when stacked
-      const labelOffsetY = stack === 0 ? -14 : stack % 2 === 1 ? 14 + Math.floor(stack / 2) * 14 : -(14 + Math.floor(stack / 2) * 14);
+      const labelOffsetY = stack === 0 ? -16 : stack % 2 === 1 ? 16 + Math.floor(stack / 2) * 16 : -(16 + Math.floor(stack / 2) * 16);
       return { ...it, labelOffsetY };
     });
+    return { radarPoints: positioned, yMax: yScale };
   }, [filtered]);
+
 
   return (
     <div className="min-h-screen bg-background">
