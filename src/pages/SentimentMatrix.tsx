@@ -120,9 +120,6 @@ const SentimentMatrix = () => {
 
       // 2. Live prices with history (so we can compute daily %)
       const fxPairs = PAIRS.filter(p => p.category === "Forex" || p.pair === "XAUUSD").map(p => p.pair).join(",");
-      const { data: fxData } = await supabase.functions.invoke("forex-prices", {
-        method: "GET" as any,
-      }).catch(() => ({ data: null } as any));
 
       // supabase.functions.invoke doesn't attach query params easily; use direct fetch.
       const fxRes = await fetch(
