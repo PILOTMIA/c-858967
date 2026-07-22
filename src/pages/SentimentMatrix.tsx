@@ -122,7 +122,7 @@ const SentimentMatrix = () => {
         ).then(r => r.json());
         const rate = Number(btc?.bitcoin?.usd) || 0;
         const chg  = Number(btc?.bitcoin?.usd_24h_change) || 0;
-        if (rate) priceMap["BTCUSD"] = { rate, prev: rate / (1 + chg / 100) };
+        if (rate) priceMap["BTCUSD"] = { rate, prev: rate / (1 + chg / 100), mom5d: chg };
       } catch { /* ignore */ }
 
       setPrices(priceMap);
