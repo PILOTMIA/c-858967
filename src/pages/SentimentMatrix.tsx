@@ -153,9 +153,12 @@ const SentimentMatrix = () => {
 
       const px = prices[p.pair];
       const dailyPct = px && px.prev ? ((px.rate - px.prev) / px.prev) * 100 : 0;
+      const mom5d = px?.mom5d ?? 0;
+      // Y metric: prefer 5-day momentum (has real spread), fall back to daily
+      const priceMove = Math.abs(mom5d) > 0.05 ? mom5d : dailyPct;
 
       const bullishConviction = conviction > 0;
-      const bullishPrice = dailyPct > 0;
+      const bullishPrice = priceMove > 0;
       const quadrant =
         bullishConviction && bullishPrice   ? "Bullish, As Expected"
       : !bullishConviction && !bullishPrice ? "Bearish, As Expected"
@@ -166,12 +169,14 @@ const SentimentMatrix = () => {
         pair: p.pair,
         category: p.category,
         conviction: Number(conviction.toFixed(2)),
-        dailyPct: Number(dailyPct.toFixed(2)),
+        dailyPct: Number(priceMove.toFixed(2)),
+        mom5d: Number(mom5d.toFixed(2)),
         price: px?.rate ?? null,
         tone: sentimentTone(conviction),
         quadrant,
       };
     });
+
   }, [cot, prices]);
 
   const filtered = rows.filter(r => filter === "All" || r.category === filter);
