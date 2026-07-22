@@ -104,13 +104,17 @@ const SentimentMatrix = () => {
         `https://xkgsugennbdatwmetnxx.supabase.co/functions/v1/forex-prices?pairs=${fxPairs}&history=true`
       ).then(r => r.json()).catch(() => ({ rates: {}, history: {} }));
 
-      const priceMap: Record<string, { rate: number; prev: number }> = {};
+      const priceMap: Record<string, { rate: number; prev: number; mom5d: number }> = {};
       Object.entries(fxRes?.rates || {}).forEach(([k, v]: any) => {
         const hist = fxRes?.history?.[k] || [];
         const rate = Number(v?.rate) || 0;
         const prev = hist.length >= 2 ? Number(hist[hist.length - 2].close) : rate;
-        priceMap[k] = { rate, prev };
+        // 5-day momentum — always has spread even when the daily tick is flat
+        const back = hist.length >= 6 ? Number(hist[hist.length - 6].close) : prev;
+        const mom5d = back ? ((rate - back) / back) * 100 : 0;
+        priceMap[k] = { rate, prev, mom5d };
       });
+
 
       try {
         const btc = await fetch(
