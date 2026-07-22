@@ -83,7 +83,7 @@ type Filter = typeof filters[number];
 
 const SentimentMatrix = () => {
   const [cot, setCot] = useState<Record<string, { netPosition: number; weeklyChange: number }>>({});
-  const [prices, setPrices] = useState<Record<string, { rate: number; prev: number }>>({});
+  const [prices, setPrices] = useState<Record<string, { rate: number; prev: number; mom5d: number }>>({});
   const [loading, setLoading] = useState(true);
   const [updated, setUpdated] = useState<Date | null>(null);
   const [filter, setFilter] = useState<Filter>("All");
