@@ -588,61 +588,55 @@ const CategoryLegend = ({ name, count }: { name: string; count: number }) => (
  * palette classes — no pie/donut/sunburst.
  */
 const UniverseTreemap = ({ rows }: { rows: Row[] }) => {
-  const groups = (["Forex", "Commodities", "Crypto"] as const)
-    .map(cat => ({
-      category: cat,
-      items: rows.filter(r => r.category === cat),
-    }))
-    .filter(g => g.items.length > 0);
-
-  const totalMag = rows.reduce((a, r) => a + (Math.abs(r.conviction) + 1), 0) || 1;
+  // Sort by conviction magnitude — strongest gets a bigger tile
+  const sorted = [...rows].sort((a, b) => Math.abs(b.conviction) - Math.abs(a.conviction));
+  const maxMag = Math.max(1, ...sorted.map(r => Math.abs(r.conviction)));
 
   return (
-    <div className="flex gap-2 h-[320px] w-full">
-      {groups.map(g => {
-        const groupMag = g.items.reduce((a, r) => a + (Math.abs(r.conviction) + 1), 0);
-        const widthPct = (groupMag / totalMag) * 100;
+    <div className="grid grid-cols-6 auto-rows-[64px] gap-2 w-full">
+      {sorted.map((r, i) => {
+        const t = TONE_STYLE[r.tone];
+        const mag = Math.abs(r.conviction);
+        // Top 2 by magnitude are 2x2, next 4 are 2x1, rest 1x1
+        const size =
+          i < 2 && mag > maxMag * 0.6 ? "col-span-2 row-span-2" :
+          i < 6 && mag > maxMag * 0.3 ? "col-span-2 row-span-1" :
+          "col-span-1 row-span-1";
+        const big = size.includes("row-span-2");
+        const medium = size.includes("col-span-2") && !big;
+        const catAccent =
+          r.category === "Crypto" ? "before:bg-purple-500" :
+          r.category === "Commodities" ? "before:bg-amber-500" :
+          "before:bg-blue-500";
+
         return (
           <div
-            key={g.category}
-            className="flex flex-col gap-1.5"
-            style={{ width: `${widthPct}%` }}
+            key={r.pair}
+            className={`relative rounded-lg border ${t.border} ${t.bg} p-3 flex flex-col justify-between cursor-crosshair hover:brightness-125 hover:scale-[1.02] transition-all overflow-hidden group ${size}
+              before:absolute before:top-0 before:left-0 before:h-full before:w-0.5 ${catAccent}`}
+            title={`${r.pair} · ${r.category} · ${TONE_LABEL[r.tone]} · ${r.conviction}`}
           >
-            <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground pb-1 border-b border-border">
-              {g.category} · {g.items.length}
+            <div className="flex items-start justify-between gap-1">
+              <span className={`font-mono font-bold ${t.text} leading-none ${
+                big ? "text-2xl" : medium ? "text-base" : "text-xs"
+              }`}>
+                {r.pair}
+              </span>
+              <span className={`text-[9px] font-mono uppercase tracking-widest text-muted-foreground opacity-60 leading-none`}>
+                {r.category.slice(0, 3)}
+              </span>
             </div>
-            <div className="flex-1 flex flex-col gap-1.5">
-              {g.items
-                .sort((a, b) => Math.abs(b.conviction) - Math.abs(a.conviction))
-                .map(r => {
-                  const heightPct = ((Math.abs(r.conviction) + 1) / groupMag) * 100;
-                  const t = TONE_STYLE[r.tone];
-                  const big = heightPct > 15;
-                  return (
-                    <div
-                      key={r.pair}
-                      className={`rounded-md border ${t.border} ${t.bg} p-2 flex flex-col justify-between cursor-crosshair hover:brightness-125 transition-all overflow-hidden`}
-                      style={{ flexBasis: `${heightPct}%` }}
-                      title={`${r.pair} · ${TONE_LABEL[r.tone]} · ${r.conviction}`}
-                    >
-                      <div className="flex items-start justify-between gap-1">
-                        <span className={`font-mono font-semibold ${t.text} ${big ? "text-sm" : "text-[10px]"} leading-none`}>
-                          {r.pair}
-                        </span>
-                        {big && (
-                          <span className={`text-[10px] font-mono ${t.text} tabular-nums opacity-70`}>
-                            {r.conviction >= 0 ? "+" : ""}{r.conviction}
-                          </span>
-                        )}
-                      </div>
-                      {big && (
-                        <span className={`text-[9px] font-mono uppercase tracking-widest ${t.text} opacity-70`}>
-                          {TONE_LABEL[r.tone]}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
+            <div className="flex items-end justify-between gap-1">
+              <span className={`text-[10px] font-mono uppercase tracking-wider ${t.text} opacity-80 leading-none ${
+                !big && !medium ? "hidden" : ""
+              }`}>
+                {TONE_LABEL[r.tone]}
+              </span>
+              <span className={`font-mono font-bold tabular-nums ${t.text} leading-none ${
+                big ? "text-xl" : medium ? "text-sm" : "text-[11px]"
+              }`}>
+                {r.conviction >= 0 ? "+" : ""}{r.conviction}
+              </span>
             </div>
           </div>
         );
@@ -650,5 +644,6 @@ const UniverseTreemap = ({ rows }: { rows: Row[] }) => {
     </div>
   );
 };
+
 
 export default SentimentMatrix;
