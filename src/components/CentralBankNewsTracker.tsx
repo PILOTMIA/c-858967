@@ -284,7 +284,7 @@ const CentralBankNewsTracker = () => {
       case 'Low':
         return 'bg-green-500/20 text-green-400 border-green-500/30';
       default:
-        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+        return 'bg-gray-500/20 text-muted-foreground border-gray-500/30';
     }
   };
 
@@ -312,9 +312,9 @@ const CentralBankNewsTracker = () => {
 
   if (isLoading) {
     return (
-      <Card className="bg-gray-900/50 border-gray-700">
+      <Card className="bg-gray-900/50 border-border">
         <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
+          <CardTitle className="text-foreground flex items-center gap-2">
             <Building className="w-5 h-5" />
             Central Bank News Tracker
           </CardTitle>
@@ -322,7 +322,7 @@ const CentralBankNewsTracker = () => {
         <CardContent>
           <div className="animate-pulse space-y-4">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-800 rounded" />
+              <div key={i} className="h-32 bg-muted rounded" />
             ))}
           </div>
         </CardContent>
@@ -332,7 +332,7 @@ const CentralBankNewsTracker = () => {
 
   if (error) {
     return (
-      <Card className="bg-gray-900/50 border-gray-700">
+      <Card className="bg-gray-900/50 border-border">
         <CardContent className="p-6">
           <div className="text-red-400 text-center">Failed to load central bank news</div>
         </CardContent>
@@ -341,13 +341,13 @@ const CentralBankNewsTracker = () => {
   }
 
   return (
-    <Card className="bg-gray-900/50 border-gray-700">
+    <Card className="bg-gray-900/50 border-border">
       <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
+        <CardTitle className="text-foreground flex items-center gap-2">
           <Building className="w-5 h-5 text-blue-400" />
           Central Bank News Tracker
         </CardTitle>
-        <p className="text-gray-300 text-sm">
+        <p className="text-muted-foreground text-sm">
           Real-time tracking of central bank decisions, speeches, and policy changes
         </p>
       </CardHeader>
@@ -355,7 +355,7 @@ const CentralBankNewsTracker = () => {
         {/* Filters */}
         <div className="flex flex-wrap gap-4 mb-6">
           <div className="space-x-2">
-            <span className="text-sm text-gray-300">Central Bank:</span>
+            <span className="text-sm text-muted-foreground">Central Bank:</span>
             <Button
               variant={selectedBank === 'All' ? 'default' : 'outline'}
               size="sm"
@@ -377,7 +377,7 @@ const CentralBankNewsTracker = () => {
             ))}
           </div>
           <div className="space-x-2">
-            <span className="text-sm text-gray-300">Importance:</span>
+            <span className="text-sm text-muted-foreground">Importance:</span>
             {['All', 'High', 'Medium', 'Low'].map(importance => (
               <Button
                 key={importance}
@@ -397,7 +397,7 @@ const CentralBankNewsTracker = () => {
           {filteredEvents.map(event => (
             <div
               key={event.id}
-              className="bg-gray-800/50 border border-gray-600/50 rounded-lg p-4 hover:bg-gray-800/70 transition-all duration-200"
+              className="bg-muted/50 border border-border/50 rounded-lg p-4 hover:bg-muted/70 transition-all duration-200"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
@@ -410,14 +410,14 @@ const CentralBankNewsTracker = () => {
                       <DollarSign className="w-3 h-3 mr-1" />
                       {event.type}
                     </Badge>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-muted-foreground">
                       {new Date(event.timestamp).toLocaleString()}
                     </span>
                   </div>
-                  <h3 className="text-white font-medium text-sm mb-2 leading-relaxed">
+                  <h3 className="text-foreground font-medium text-sm mb-2 leading-relaxed">
                     {event.headline}
                   </h3>
-                  <p className="text-gray-300 text-xs mb-3 leading-relaxed">
+                  <p className="text-muted-foreground text-xs mb-3 leading-relaxed">
                     {event.description}
                   </p>
                 </div>
@@ -426,31 +426,31 @@ const CentralBankNewsTracker = () => {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">Currency:</span>
+                    <span className="text-xs text-muted-foreground">Currency:</span>
                     <Badge variant="outline" className="text-xs font-mono">
                       {event.currency}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">Impact:</span>
+                    <span className="text-xs text-muted-foreground">Impact:</span>
                     <Badge className={`${getImpactColor(event.marketImpact)} text-xs`}>
                       {getImpactIcon(event.marketImpact)}
                       <span className="ml-1">{event.marketImpact}</span>
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">Confidence:</span>
-                    <span className="text-xs font-medium text-white">{event.confidence}%</span>
+                    <span className="text-xs text-muted-foreground">Confidence:</span>
+                    <span className="text-xs font-medium text-foreground">{event.confidence}%</span>
                   </div>
                 </div>
               </div>
 
               {/* Key Points */}
               <div className="mb-4">
-                <h4 className="text-white text-xs font-medium mb-2">Key Points:</h4>
+                <h4 className="text-foreground text-xs font-medium mb-2">Key Points:</h4>
                 <ul className="space-y-1">
                   {event.keyPoints.map((point, index) => (
-                    <li key={index} className="text-xs text-gray-300 flex items-start">
+                    <li key={index} className="text-xs text-muted-foreground flex items-start">
                       <span className="w-1 h-1 bg-blue-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
                       {point}
                     </li>
@@ -459,23 +459,23 @@ const CentralBankNewsTracker = () => {
               </div>
 
               {/* Market Reaction */}
-              <div className="mb-4 p-2 bg-gray-700/30 rounded">
-                <div className="text-xs text-gray-400 mb-1">Market Reaction:</div>
-                <div className="text-xs text-gray-300">{event.marketReaction}</div>
+              <div className="mb-4 p-2 bg-accent/30 rounded">
+                <div className="text-xs text-muted-foreground mb-1">Market Reaction:</div>
+                <div className="text-xs text-muted-foreground">{event.marketReaction}</div>
               </div>
 
               {/* Affected Pairs & Next Meeting */}
-              <div className="flex items-center justify-between text-xs border-t border-gray-600/30 pt-3">
+              <div className="flex items-center justify-between text-xs border-t border-border/30 pt-3">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-gray-400">Affected Pairs:</span>
+                  <span className="text-muted-foreground">Affected Pairs:</span>
                   {event.affectedPairs.slice(0, 4).map(pair => (
-                    <Badge key={pair} variant="outline" className="text-xs font-mono bg-gray-700/30">
+                    <Badge key={pair} variant="outline" className="text-xs font-mono bg-accent/30">
                       {pair}
                     </Badge>
                   ))}
                 </div>
                 {event.nextMeetingDate && (
-                  <div className="flex items-center gap-1 text-gray-400">
+                  <div className="flex items-center gap-1 text-muted-foreground">
                     <Calendar className="w-3 h-3" />
                     <span>Next: {new Date(event.nextMeetingDate).toLocaleDateString()}</span>
                   </div>
@@ -486,13 +486,13 @@ const CentralBankNewsTracker = () => {
         </div>
 
         {filteredEvents.length === 0 && (
-          <div className="text-center py-8 text-gray-400">
+          <div className="text-center py-8 text-muted-foreground">
             No events match the selected filters
           </div>
         )}
 
         {/* Live Update Indicator */}
-        <div className="flex items-center justify-center gap-2 text-sm text-gray-400 pt-4 border-t border-gray-700 mt-6">
+        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground pt-4 border-t border-border mt-6">
           <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
           <span>Live central bank monitoring • Updates every 30 seconds</span>
         </div>

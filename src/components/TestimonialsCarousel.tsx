@@ -62,20 +62,20 @@ const TestimonialsCarousel = () => {
   const currentTestimonial = testimonials[currentIndex];
 
   return (
-    <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
-      <h3 className="text-lg font-bold text-white mb-4">Client Success Stories</h3>
+    <div className="bg-muted p-6 rounded-xl border border-border">
+      <h3 className="text-lg font-bold text-foreground mb-4">Client Success Stories</h3>
       <div className="relative">
-        <div className="bg-gray-900 p-4 rounded-lg border border-gray-600">
+        <div className="bg-gray-900 p-4 rounded-lg border border-border">
           <div className="flex items-center gap-1 mb-2">
             {[...Array(currentTestimonial.rating)].map((_, i) => (
               <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
             ))}
           </div>
-          <p className="text-gray-300 text-sm italic mb-3">"{currentTestimonial.text}"</p>
+          <p className="text-muted-foreground text-sm italic mb-3">"{currentTestimonial.text}"</p>
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-white font-semibold text-sm">{currentTestimonial.name}</p>
-              <p className="text-gray-400 text-xs">{currentTestimonial.location}</p>
+              <p className="text-foreground font-semibold text-sm">{currentTestimonial.name}</p>
+              <p className="text-muted-foreground text-xs">{currentTestimonial.location}</p>
             </div>
             <div className="text-green-400 font-bold text-lg">
               {currentTestimonial.profit}
@@ -86,16 +86,16 @@ const TestimonialsCarousel = () => {
         <div className="flex justify-center gap-2 mt-4">
           <button 
             onClick={prevTestimonial}
-            className="p-1 rounded bg-gray-700 hover:bg-gray-600 text-white"
+            className="p-1 rounded bg-accent hover:bg-gray-600 text-foreground"
           >
             <ChevronUp className="w-4 h-4" />
           </button>
-          <span className="text-gray-400 text-sm px-2 py-1">
+          <span className="text-muted-foreground text-sm px-2 py-1">
             {currentIndex + 1} / {testimonials.length}
           </span>
           <button 
             onClick={nextTestimonial}
-            className="p-1 rounded bg-gray-700 hover:bg-gray-600 text-white"
+            className="p-1 rounded bg-accent hover:bg-gray-600 text-foreground"
           >
             <ChevronDown className="w-4 h-4" />
           </button>

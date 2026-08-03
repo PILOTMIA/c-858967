@@ -187,9 +187,9 @@ const TradingQuizGame = () => {
   if (gameComplete) {
     const scoreLevel = getScoreLevel();
     return (
-      <Card className="bg-gray-900 border-gray-700 max-w-2xl mx-auto">
+      <Card className="bg-gray-900 border-border max-w-2xl mx-auto">
         <CardHeader className="text-center">
-          <CardTitle className="text-white flex items-center justify-center gap-2">
+          <CardTitle className="text-foreground flex items-center justify-center gap-2">
             {scoreLevel.icon}
             Trading Quiz Complete!
           </CardTitle>
@@ -203,22 +203,22 @@ const TradingQuizGame = () => {
               {scoreLevel.level}
             </div>
             <div className="grid grid-cols-2 gap-4 text-center">
-              <div className="bg-gray-800 p-3 rounded">
+              <div className="bg-muted p-3 rounded">
                 <div className="text-2xl font-bold text-blue-400">{bestStreak}</div>
-                <div className="text-sm text-gray-400">Best Streak</div>
+                <div className="text-sm text-muted-foreground">Best Streak</div>
               </div>
-              <div className="bg-gray-800 p-3 rounded">
+              <div className="bg-muted p-3 rounded">
                 <div className="text-2xl font-bold text-green-400">
                   {Math.round((score / (quizQuestions.reduce((sum, q) => sum + q.points, 0))) * 100)}%
                 </div>
-                <div className="text-sm text-gray-400">Accuracy</div>
+                <div className="text-sm text-muted-foreground">Accuracy</div>
               </div>
             </div>
           </div>
           
-          <div className="bg-gray-800 p-4 rounded">
-            <h4 className="font-bold text-white mb-2">Dr. Elder's Trading Wisdom</h4>
-            <p className="text-gray-300 text-sm italic">
+          <div className="bg-muted p-4 rounded">
+            <h4 className="font-bold text-foreground mb-2">Dr. Elder's Trading Wisdom</h4>
+            <p className="text-muted-foreground text-sm italic">
               "The goal of a successful trader is to make the best trades. Money is secondary."
             </p>
           </div>
@@ -235,10 +235,10 @@ const TradingQuizGame = () => {
   const progress = ((currentQuestion + 1) / quizQuestions.length) * 100;
 
   return (
-    <Card className="bg-gray-900 border-gray-700 max-w-2xl mx-auto">
+    <Card className="bg-gray-900 border-border max-w-2xl mx-auto">
       <CardHeader>
         <div className="flex justify-between items-center mb-2">
-          <CardTitle className="text-white flex items-center gap-2">
+          <CardTitle className="text-foreground flex items-center gap-2">
             <Brain className="w-5 h-5 text-blue-400" />
             Trading for a Living Quiz
           </CardTitle>
@@ -248,7 +248,7 @@ const TradingQuizGame = () => {
           </div>
         </div>
         <Progress value={progress} className="h-2" />
-        <div className="flex justify-between text-sm text-gray-400">
+        <div className="flex justify-between text-sm text-muted-foreground">
           <span>Question {currentQuestion + 1} of {quizQuestions.length}</span>
           <div className="flex items-center gap-1">
             {getCategoryIcon(question.category)}
@@ -261,8 +261,8 @@ const TradingQuizGame = () => {
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <div className="bg-gray-800 p-4 rounded">
-          <h3 className="text-white font-semibold mb-4">{question.question}</h3>
+        <div className="bg-muted p-4 rounded">
+          <h3 className="text-foreground font-semibold mb-4">{question.question}</h3>
           
           <div className="space-y-2">
             {question.options.map((option, index) => (
@@ -279,7 +279,7 @@ const TradingQuizGame = () => {
                       : 'bg-blue-900 border-blue-600 text-blue-100'
                     : showExplanation && index === question.correctAnswer
                     ? 'bg-green-900 border-green-600 text-green-100'
-                    : 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600'
+                    : 'bg-accent border-border text-muted-foreground hover:bg-gray-600'
                 }`}
               >
                 <span className="font-semibold mr-2">
@@ -294,7 +294,7 @@ const TradingQuizGame = () => {
         {showExplanation && (
           <div className="bg-blue-900/30 border border-blue-600/50 p-4 rounded">
             <h4 className="font-bold text-blue-400 mb-2">Explanation</h4>
-            <p className="text-gray-300 text-sm">{question.explanation}</p>
+            <p className="text-muted-foreground text-sm">{question.explanation}</p>
           </div>
         )}
 

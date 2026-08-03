@@ -273,16 +273,16 @@ const GuideOptionsModal = ({ isOpen, onClose, steps }: GuideOptionsModalProps) =
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-gray-900 border-gray-700">
+      <DialogContent className="max-w-md bg-gray-900 border-border">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-white">
+          <DialogTitle className="text-xl font-bold text-foreground">
             Get Your Learning Guide
           </DialogTitle>
         </DialogHeader>
 
         {!showSMSForm ? (
           <div className="space-y-4">
-            <p className="text-gray-300 text-sm">
+            <p className="text-muted-foreground text-sm">
               Choose how you'd like to access your personalized learning guide:
             </p>
             
@@ -298,7 +298,7 @@ const GuideOptionsModal = ({ isOpen, onClose, steps }: GuideOptionsModalProps) =
               <Button 
                 onClick={handlePrintPDF}
                 variant="outline"
-                className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 justify-start"
+                className="w-full border-border text-muted-foreground hover:bg-accent justify-start"
               >
                 <Printer className="w-4 h-4 mr-2" />
                 Print PDF
@@ -307,7 +307,7 @@ const GuideOptionsModal = ({ isOpen, onClose, steps }: GuideOptionsModalProps) =
               <Button 
                 onClick={() => setShowSMSForm(true)}
                 variant="outline"
-                className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 justify-start"
+                className="w-full border-border text-muted-foreground hover:bg-accent justify-start"
               >
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Send via SMS
@@ -328,14 +328,14 @@ const GuideOptionsModal = ({ isOpen, onClose, steps }: GuideOptionsModalProps) =
 
             <div className="space-y-3">
               <div>
-                <Label htmlFor="phone" className="text-gray-300">Phone Number</Label>
+                <Label htmlFor="phone" className="text-muted-foreground">Phone Number</Label>
                 <Input
                   id="phone"
                   type="tel"
                   placeholder="(555) 123-4567"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="bg-gray-800 border-gray-600 text-white"
+                  className="bg-muted border-border text-foreground"
                 />
               </div>
 
@@ -347,7 +347,7 @@ const GuideOptionsModal = ({ isOpen, onClose, steps }: GuideOptionsModalProps) =
                   onChange={(e) => setAgreedToSMS(e.target.checked)}
                   className="mt-1"
                 />
-                <Label htmlFor="sms-agreement" className="text-sm text-gray-300">
+                <Label htmlFor="sms-agreement" className="text-sm text-muted-foreground">
                   I agree to receive SMS messages and understand that standard rates may apply.
                 </Label>
               </div>
@@ -363,7 +363,7 @@ const GuideOptionsModal = ({ isOpen, onClose, steps }: GuideOptionsModalProps) =
               <Button 
                 onClick={() => setShowSMSForm(false)}
                 variant="outline"
-                className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700"
+                className="flex-1 border-border text-muted-foreground hover:bg-accent"
               >
                 Back
               </Button>

@@ -172,13 +172,13 @@ const TradingBot = () => {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 w-96 max-w-[calc(100vw-2rem)]">
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-gray-900 border-border">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-white flex items-center gap-2 text-base">
+            <CardTitle className="text-foreground flex items-center gap-2 text-base">
               {showHistory ? (
                 <>
-                  <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)} className="text-gray-400 hover:text-white h-7 w-7 p-0">
+                  <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)} className="text-muted-foreground hover:text-foreground h-7 w-7 p-0">
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
                   Chat History
@@ -192,18 +192,18 @@ const TradingBot = () => {
             </CardTitle>
             <div className="flex items-center gap-1">
               {!showHistory && userId && (
-                <Button variant="ghost" size="sm" onClick={() => setShowHistory(true)} className="text-gray-400 hover:text-white h-7 w-7 p-0" title="Chat history">
+                <Button variant="ghost" size="sm" onClick={() => setShowHistory(true)} className="text-muted-foreground hover:text-foreground h-7 w-7 p-0" title="Chat history">
                   <History className="w-3.5 h-3.5" />
                 </Button>
               )}
               {!showHistory && (
                 <>
-                  <Button variant="ghost" size="sm" onClick={handleClearChat} className="text-gray-400 hover:text-white h-7 w-7 p-0" title="New chat">
+                  <Button variant="ghost" size="sm" onClick={handleClearChat} className="text-muted-foreground hover:text-foreground h-7 w-7 p-0" title="New chat">
                     <Plus className="w-3.5 h-3.5" />
                   </Button>
                 </>
               )}
-              <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white h-7 w-7 p-0">
+              <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground h-7 w-7 p-0">
                 ×
               </Button>
             </div>
@@ -221,7 +221,7 @@ const TradingBot = () => {
                     className={`flex items-center justify-between p-2.5 rounded-lg cursor-pointer text-sm transition-colors ${
                       conv.id === activeConversationId
                         ? 'bg-blue-900/40 text-blue-100'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                        : 'bg-muted text-muted-foreground hover:bg-accent'
                     }`}
                     onClick={() => handleSelectConversation(conv.id)}
                   >
@@ -245,7 +245,7 @@ const TradingBot = () => {
             <>
               <div ref={scrollRef} className="h-72 overflow-y-auto mb-3 space-y-3 pr-1 scrollbar-thin">
                 {historyLoading ? (
-                  <div className="flex items-center justify-center h-full text-gray-400">
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
                     <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading...
                   </div>
                 ) : (
@@ -255,7 +255,7 @@ const TradingBot = () => {
                       className={`p-2.5 rounded-lg text-sm ${
                         message.role === 'assistant'
                           ? 'bg-blue-900/30 text-blue-100'
-                          : 'bg-gray-700 text-white ml-6'
+                          : 'bg-accent text-foreground ml-6'
                       }`}
                     >
                       {message.role === 'assistant' ? (
@@ -281,7 +281,7 @@ const TradingBot = () => {
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                   placeholder="Ask about trading..."
-                  className="bg-gray-800 border-gray-600 text-white"
+                  className="bg-muted border-border text-foreground"
                   disabled={isLoading}
                 />
                 <Button onClick={handleSendMessage} size="sm" disabled={isLoading || !inputMessage.trim()}>

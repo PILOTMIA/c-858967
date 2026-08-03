@@ -36,20 +36,20 @@ const CurrencySelector = ({ selectedPair, onPairChange }: CurrencySelectorProps)
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors"
+        className="flex items-center gap-2 bg-muted text-foreground px-4 py-2 rounded hover:bg-accent transition-colors"
       >
         <span>{currentPair?.display || 'EUR/USD'}</span>
         <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-600 rounded shadow-lg z-10 min-w-full max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 mt-1 bg-muted border border-border rounded shadow-lg z-10 min-w-full max-h-60 overflow-y-auto">
           {currencyPairs.map((pair) => (
             <button
               key={pair.symbol}
               onClick={() => handlePairSelect(pair.symbol)}
-              className={`w-full text-left px-4 py-2 hover:bg-gray-700 transition-colors ${
-                selectedPair === pair.symbol ? 'bg-gray-700 text-white' : 'text-gray-200'
+              className={`w-full text-left px-4 py-2 hover:bg-accent transition-colors ${
+                selectedPair === pair.symbol ? 'bg-accent text-foreground' : 'text-foreground'
               }`}
             >
               {pair.display}

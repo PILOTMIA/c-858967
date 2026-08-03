@@ -361,10 +361,10 @@ What specific aspect of trading would you like to discuss? Remember, successful 
 
   return (
     <div className="fixed bottom-4 left-4 z-50 w-96 max-w-[calc(100vw-2rem)]">
-      <Card className="bg-gray-900 border-gray-700 shadow-xl">
+      <Card className="bg-gray-900 border-border shadow-xl">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-foreground flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-blue-400" />
               Trading Assistant
             </CardTitle>
@@ -372,12 +372,12 @@ What specific aspect of trading would you like to discuss? Remember, successful 
               variant="ghost"
               size="sm"
               onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-white"
+              className="text-muted-foreground hover:text-foreground"
             >
               <X className="w-4 h-4" />
             </Button>
           </div>
-          <div className="text-xs text-gray-400">
+          <div className="text-xs text-muted-foreground">
             Expert Trading Knowledge • Questions: {questionCount}/5
           </div>
         </CardHeader>
@@ -389,7 +389,7 @@ What specific aspect of trading would you like to discuss? Remember, successful 
                   className={`p-2 rounded text-sm ${
                     message.isBot
                       ? 'bg-blue-900/30 text-blue-100 border-l-2 border-blue-400'
-                      : 'bg-gray-700 text-white ml-4'
+                      : 'bg-accent text-foreground ml-4'
                   }`}
                  >
                    {message.text || (message.isBot && isTyping && (
@@ -403,7 +403,7 @@ What specific aspect of trading would you like to discuss? Remember, successful 
                      </div>
                    ))}
                  </div>
-                <div className="text-xs text-right text-gray-400">
+                <div className="text-xs text-right text-muted-foreground">
                   {message.timestamp.toLocaleTimeString()}
                 </div>
               </div>
@@ -443,7 +443,7 @@ What specific aspect of trading would you like to discuss? Remember, successful 
                       size="sm" 
                       variant="outline" 
                       onClick={() => setInputMessage(topic)}
-                      className="text-xs bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+                      className="text-xs bg-muted border-border text-muted-foreground hover:bg-accent hover:text-foreground"
                     >
                       {topic}
                     </Button>
@@ -457,7 +457,7 @@ What specific aspect of trading would you like to discuss? Remember, successful 
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                   placeholder="Ask about trading strategies..."
-                  className="bg-gray-800 border-gray-600 text-white"
+                  className="bg-muted border-border text-foreground"
                 />
                 <Button onClick={handleSendMessage} size="sm" disabled={showVipPrompt || !inputMessage.trim() || isTyping}>
                   <Send className="w-4 h-4" />
