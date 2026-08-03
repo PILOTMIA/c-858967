@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, Home, TrendingUp, BookOpen, Users, BarChart3, Calendar, Settings, PieChart, Activity, Newspaper, Gem, Compass } , Globe2 } from 'lucide-react';
+import { Menu, X, Home, TrendingUp, BookOpen, Users, BarChart3, Calendar, Settings, PieChart, Activity, Newspaper, Gem, Compass, Globe2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { ThemeToggle } from './ThemeToggle';
 
