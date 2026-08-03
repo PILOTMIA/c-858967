@@ -154,8 +154,64 @@ function buildArticle(title: string, description: string, url: string, published
   };
 }
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-const trendCache: { ts: number; d30: Article[]; d90: Article[] } = { ts: 0, d30: [], d90: [] };
+type Snapshot = { articles: number; bullish: number; bearish: number; neutral: number; score: number; overall: string };
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+
+function aggregate(rows: Array<Record<string, number>>, label: string) {
+  const days = rows.length;
+  const sum = (k: string) => rows.reduce((t, r) => t + Number(r[k] ?? 0), 0);
+  const b = sum('bullish');
+  const s = sum('bearish');
+  const total = sum('articles');
+  return {
+    window: label,
+    days,
+    articles: total,
+    bullish: b,
+    bearish: s,
+    neutral: Math.max(total - b - s, 0),
+    sentiment: b > s ? 'BULLISH' : s > b ? 'BEARISH' : 'NEUTRAL',
+    score: days ? rows.reduce((t, r) => t + Number(r.score ?? 0), 0) / days : 0,
+  };
+}
+
+async function recordAndReadTrend(snapshot: Snapshot) {
+  const empty = { last30Days: aggregate([], '30d'), last90Days: aggregate([], '90d') };
+  if (!SUPABASE_URL || !SERVICE_KEY) return empty;
+  const headers = {
+    apikey: SERVICE_KEY,
+    Authorization: `Bearer ${SERVICE_KEY}`,
+    'Content-Type': 'application/json',
+    Prefer: 'resolution=merge-duplicates',
+  };
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/news_sentiment_history?on_conflict=snapshot_date`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        snapshot_date: new Date().toISOString().slice(0, 10),
+        ...snapshot,
+      }),
+      signal: AbortSignal.timeout(6000),
+    });
+    const since = (days: number) => new Date(Date.now() - days * 864e5).toISOString().slice(0, 10);
+    const load = async (days: number) => {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/news_sentiment_history?select=articles,bullish,bearish,score&snapshot_date=gte.${since(days)}`,
+        { headers, signal: AbortSignal.timeout(6000) },
+      );
+      return res.ok ? await res.json() : [];
+    };
+    const [r30, r90] = await Promise.all([load(30), load(90)]);
+    return { last30Days: aggregate(r30, '30d'), last90Days: aggregate(r90, '90d') };
+  } catch (_e) {
+    return empty;
+  }
+}
+
+
 
 async function fetchGdelt(limit: number, timespan = '24h'): Promise<Article[]> {
 
