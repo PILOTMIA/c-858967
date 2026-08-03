@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import GlobeGl from "globe.gl";
+import GlobeGl, { type GlobeInstance } from "globe.gl";
 import {
   BANK_BY_CODE,
   CENTRAL_BANKS,
@@ -45,13 +45,13 @@ const GlobeCurrencyFlow = ({
   onSelectArc,
 }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const globeRef = useRef<ReturnType<typeof GlobeGl> | null>(null);
+  const globeRef = useRef<GlobeInstance | null>(null);
 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
-    const globe = GlobeGl()(el)
+    const globe = new GlobeGl(el)
       .backgroundColor("rgba(0,0,0,0)")
       .globeImageUrl("https://unpkg.com/three-globe/example/img/earth-dark.jpg")
       .bumpImageUrl("https://unpkg.com/three-globe/example/img/earth-topology.png")
