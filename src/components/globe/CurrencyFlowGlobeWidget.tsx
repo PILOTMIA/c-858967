@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,9 +59,20 @@ const CurrencyFlowGlobeWidget = ({ height = 620 }: { height?: number }) => {
     if (!playing || frames.length === 0) return;
     const id = setInterval(() => {
       setIndex((i) => (i + 1 >= frames.length ? 0 : i + 1));
-    }, 1400);
+    }, 2600);
     return () => clearInterval(id);
   }, [playing, frames.length]);
+
+  const handleSelectBank = useCallback((code: string) => {
+    setSelectedBank(code);
+    setSelectedArc(null);
+  }, []);
+
+  const handleSelectArc = useCallback((arc: FlowArc) => {
+    setSelectedArc(arc);
+    setSelectedBank(null);
+  }, []);
+
 
   const frame = frames[index];
   const visibleCodes = useMemo(
@@ -121,15 +132,10 @@ const CurrencyFlowGlobeWidget = ({ height = 620 }: { height?: number }) => {
               visibleCodes={visibleCodes}
               colorMode={colorMode}
               autoRotate={autoRotate}
-              onSelectBank={(code) => {
-                setSelectedBank(code);
-                setSelectedArc(null);
-              }}
-              onSelectArc={(arc) => {
-                setSelectedArc(arc);
-                setSelectedBank(null);
-              }}
+              onSelectBank={handleSelectBank}
+              onSelectArc={handleSelectArc}
             />
+
           </Suspense>
         )}
 

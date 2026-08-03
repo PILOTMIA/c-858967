@@ -28,6 +28,12 @@ interface PointDatum {
   label: string;
 }
 
+interface ArcDatum extends FlowArc {
+  _stroke: number;
+  _speed: number;
+  _label: string;
+}
+
 const tip = (title: string, lines: string[]) => `
   <div style="background:rgba(6,10,20,.92);border:1px solid rgba(120,160,255,.35);
     border-radius:10px;padding:10px 12px;color:#e6edff;font-family:ui-monospace,monospace;
@@ -47,6 +53,19 @@ const GlobeCurrencyFlow = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const globeRef = useRef<GlobeInstance | null>(null);
 
+  // Keep latest callbacks / mode in refs so the globe is never re-created.
+  const onSelectBankRef = useRef(onSelectBank);
+  const onSelectArcRef = useRef(onSelectArc);
+  const colorModeRef = useRef(colorMode);
+  onSelectBankRef.current = onSelectBank;
+  onSelectArcRef.current = onSelectArc;
+  colorModeRef.current = colorMode;
+
+  // Stable object identity per arc / point so three-globe updates instead of
+  // tearing down + restarting the dash animations on every frame change.
+  const arcCache = useRef(new Map<string, ArcDatum>());
+  const pointCache = useRef(new Map<string, PointDatum>());
+
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -63,38 +82,53 @@ const GlobeCurrencyFlow = ({
       .pointRadius(0.32)
       .pointColor((d) => (d as PointDatum).color)
       .pointLabel((d) => (d as PointDatum).label)
-      .onPointClick((d) => onSelectBank((d as PointDatum).code))
-      .ringAltitude(0.006)
-      .ringColor((d) => () => (d as PointDatum).color)
-      .ringMaxRadius(3.2)
-      .ringPropagationSpeed(1.6)
-      .ringRepeatPeriod(1400)
+      .pointsTransitionDuration(1200)
+      .onPointClick((d) => onSelectBankRef.current((d as PointDatum).code))
       .arcAltitudeAutoScale(0.45)
-      .arcDashLength(0.35)
-      .arcDashGap(0.9)
-      .arcDashAnimateTime(2200)
-      .arcsTransitionDuration(600)
-      .onArcClick((d) => onSelectArc(d as FlowArc));
+      .arcDashLength(0.4)
+      .arcDashGap(0.85)
+      .arcDashInitialGap(() => Math.random())
+      .arcStroke((d) => (d as ArcDatum)._stroke)
+      .arcDashAnimateTime((d) => (d as ArcDatum)._speed)
+      .arcLabel((d) => (d as ArcDatum)._label)
+      .arcColor((d) => {
+        const a = d as ArcDatum;
+        if (colorModeRef.current === "direction") {
+          return a.change > 0 ? [`${OUTFLOW_COLOR}00`, INFLOW_COLOR] : [`${INFLOW_COLOR}00`, OUTFLOW_COLOR];
+        }
+        const src = BANK_BY_CODE[a.from]?.color ?? "#888";
+        const dst = BANK_BY_CODE[a.to]?.color ?? "#888";
+        return [`${src}22`, dst];
+      })
+      .arcsTransitionDuration(1200)
+      .onArcClick((d) => onSelectArcRef.current(d as FlowArc));
 
     globe.controls().autoRotate = true;
     globe.controls().autoRotateSpeed = 0.45;
+    globe.controls().enableDamping = true;
+    globe.controls().dampingFactor = 0.08;
     globe.pointOfView({ lat: 25, lng: -20, altitude: 2.4 });
     globeRef.current = globe;
 
+    let raf = 0;
     const resize = () => {
-      globe.width(el.clientWidth).height(el.clientHeight);
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => globe.width(el.clientWidth).height(el.clientHeight));
     };
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(el);
 
     return () => {
+      cancelAnimationFrame(raf);
       ro.disconnect();
       globe._destructor?.();
       el.innerHTML = "";
       globeRef.current = null;
+      arcCache.current.clear();
+      pointCache.current.clear();
     };
-  }, [onSelectArc, onSelectBank]);
+  }, []);
 
   useEffect(() => {
     const globe = globeRef.current;
@@ -102,58 +136,60 @@ const GlobeCurrencyFlow = ({
     globe.controls().autoRotate = autoRotate;
   }, [autoRotate]);
 
+  // Re-paint colors in place when the color mode toggles (no data churn).
+  useEffect(() => {
+    const globe = globeRef.current;
+    if (!globe) return;
+    globe.arcColor(globe.arcColor());
+  }, [colorMode]);
+
   useEffect(() => {
     const globe = globeRef.current;
     if (!globe) return;
 
-    const points: PointDatum[] = CENTRAL_BANKS.filter((b) => visibleCodes.includes(b.code)).map((b) => {
+    const points = CENTRAL_BANKS.filter((b) => visibleCodes.includes(b.code)).map((b) => {
       const p = frame?.points.find((x) => x.code === b.code);
       const mag = p ? Math.min(1, Math.abs(p.change) / 60000) : 0;
-      return {
+      const existing = pointCache.current.get(b.code) ?? {
         code: b.code,
         lat: b.lat,
         lng: b.lng,
         color: b.color,
-        size: 0.035 + mag * 0.09,
-        label: tip(`${b.code} · ${b.bank}`, [
-          `${b.city}, ${b.country}`,
-          p
-            ? `Net position: <b>${fmtNum(p.net)}</b>`
-            : "No COT contract reported by the CFTC",
-          p ? `Weekly change: <b>${fmtNum(p.change)}</b> (${p.pctChange.toFixed(1)}%)` : "",
-        ].filter(Boolean)),
+        size: 0.035,
+        label: "",
       };
+      existing.size = 0.035 + mag * 0.09;
+      existing.label = tip(`${b.code} · ${b.bank}`, [
+        `${b.city}, ${b.country}`,
+        p ? `Net position: <b>${fmtNum(p.net)}</b>` : "No COT contract reported by the CFTC",
+        p ? `Weekly change: <b>${fmtNum(p.change)}</b> (${p.pctChange.toFixed(1)}%)` : "",
+      ].filter(Boolean));
+      pointCache.current.set(b.code, existing);
+      return existing;
     });
 
-    const arcs = (frame?.arcs ?? []).filter(
+    const rawArcs = (frame?.arcs ?? []).filter(
       (a) => visibleCodes.includes(a.from) && visibleCodes.includes(a.to),
     );
-    const maxMag = Math.max(1, ...arcs.map((a) => a.magnitude));
+    const maxMag = Math.max(1, ...rawArcs.map((a) => a.magnitude));
 
-    globe
-      .pointsData(points)
-      .ringsData(points)
-      .arcsData(arcs)
-      .arcStroke((d) => 0.25 + ((d as FlowArc).magnitude / maxMag) * 1.1)
-      .arcDashAnimateTime((d) => 3000 - ((d as FlowArc).magnitude / maxMag) * 1800)
-      .arcColor((d) => {
-        const a = d as FlowArc;
-        if (colorMode === "direction") {
-          return a.change > 0 ? [`${OUTFLOW_COLOR}00`, INFLOW_COLOR] : [`${INFLOW_COLOR}00`, OUTFLOW_COLOR];
-        }
-        const src = BANK_BY_CODE[a.from]?.color ?? "#888";
-        const dst = BANK_BY_CODE[a.to]?.color ?? "#888";
-        return [`${src}22`, dst];
-      })
-      .arcLabel((d) => {
-        const a = d as FlowArc;
-        return tip(`${a.pair} flow`, [
+    const arcs = rawArcs.map((a) => {
+      const existing = arcCache.current.get(a.id) as ArcDatum | undefined;
+      const merged: ArcDatum = Object.assign(existing ?? ({} as ArcDatum), a, {
+        _stroke: 0.25 + (a.magnitude / maxMag) * 1.1,
+        _speed: 4200 - (a.magnitude / maxMag) * 1800,
+        _label: tip(`${a.pair} flow`, [
           `${BANK_BY_CODE[a.from]?.city} → ${BANK_BY_CODE[a.to]?.city}`,
           `Net change: <b>${fmtNum(a.change)}</b> contracts`,
           `Trend: ${a.change > 0 ? "Speculators building longs" : "Speculators cutting longs / adding shorts"}`,
-        ]);
+        ]),
       });
-  }, [frame, visibleCodes, colorMode]);
+      arcCache.current.set(a.id, merged);
+      return merged;
+    });
+
+    globe.pointsData(points).arcsData(arcs);
+  }, [frame, visibleCodes]);
 
   return <div ref={containerRef} className="h-full w-full cursor-grab active:cursor-grabbing" />;
 };
