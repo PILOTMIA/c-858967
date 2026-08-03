@@ -261,10 +261,22 @@ Deno.serve(async (req) => {
         score: list.reduce((sum, a) => sum + a.score, 0) / Math.max(list.length, 1),
       };
     };
-    const [d30, d90] = await Promise.all([
-      fetchGdelt(50, '30d').catch(() => [] as Article[]),
-      fetchGdelt(50, '90d').catch(() => [] as Article[]),
-    ]);
+    // GDELT rate-limits to ~1 request / 5s, so stagger and cache the long windows.
+    const now = Date.now();
+    let d30: Article[] = trendCache.d30;
+    let d90: Article[] = trendCache.d90;
+    if (now - trendCache.ts > 30 * 60 * 1000 || (!d30.length && !d90.length)) {
+      await sleep(5500);
+      d30 = await fetchGdelt(50, '30d').catch(() => [] as Article[]);
+      await sleep(5500);
+      d90 = await fetchGdelt(50, '90d').catch(() => [] as Article[]);
+      if (d30.length || d90.length) {
+        trendCache.ts = now;
+        trendCache.d30 = d30;
+        trendCache.d90 = d90;
+      }
+    }
+
 
     return new Response(JSON.stringify({
       articles,
