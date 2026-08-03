@@ -76,6 +76,7 @@ const GlobeCurrencyFlow = ({
       .arcsTransitionDuration(600)
       .onArcClick((d) => onSelectArc(d as FlowArc));
 
+    globe.controls().autoRotate = true;
     globe.controls().autoRotateSpeed = 0.45;
     globe.pointOfView({ lat: 25, lng: -20, altitude: 2.4 });
     globeRef.current = globe;
