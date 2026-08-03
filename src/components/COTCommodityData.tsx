@@ -2,47 +2,48 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-// Source: CFTC Disaggregated Commitments of Traders – Futures Only, June 16, 2026
+// Source: CFTC Disaggregated Commitments of Traders – Futures Only, July 28, 2026
 // Speculator = Managed Money; Commercial = Producer/Merchant + Swap Dealers
 const commodityCOTData = [
   {
     name: "Gold",
     symbol: "GC",
-    nonCommercialLong: 128043,
-    nonCommercialShort: 14322,
-    commercialLong: 41646,
-    commercialShort: 249209,
-    weeklyChangeLong: 1763,
-    weeklyChangeShort: -6095,
-    openInterest: 339330,
-    reportDate: "June 16, 2026",
-    additionalInfo: "Managed Money net long expanded +7,858 WoW — institutional bid intact"
+    nonCommercialLong: 135093,
+    nonCommercialShort: 15298,
+    commercialLong: 39028,
+    commercialShort: 251337,
+    weeklyChangeLong: -6394,
+    weeklyChangeShort: -1358,
+    openInterest: 384603,
+    reportDate: "July 28, 2026",
+    additionalInfo: "Managed Money net long trimmed -5,036 WoW to +119,795 — profit taking, not a trend break"
   },
   {
     name: "Silver",
     symbol: "SI",
-    nonCommercialLong: 18739,
-    nonCommercialShort: 5854,
-    commercialLong: 23903,
-    commercialShort: 66221,
-    weeklyChangeLong: 2403,
-    weeklyChangeShort: -79,
-    openInterest: 107721,
-    reportDate: "June 16, 2026"
+    nonCommercialLong: 17939,
+    nonCommercialShort: 8757,
+    commercialLong: 27663,
+    commercialShort: 66472,
+    weeklyChangeLong: -265,
+    weeklyChangeShort: 1835,
+    openInterest: 106719,
+    reportDate: "July 28, 2026"
   },
   {
     name: "Copper",
     symbol: "HG",
-    nonCommercialLong: 84705,
-    nonCommercialShort: 15697,
-    commercialLong: 81108,
-    commercialShort: 165516,
-    weeklyChangeLong: -2391,
-    weeklyChangeShort: -2195,
-    openInterest: 270752,
-    reportDate: "June 16, 2026"
+    nonCommercialLong: 82988,
+    nonCommercialShort: 17980,
+    commercialLong: 79095,
+    commercialShort: 155256,
+    weeklyChangeLong: -5247,
+    weeklyChangeShort: 1260,
+    openInterest: 274552,
+    reportDate: "July 28, 2026"
   }
 ];
+
 
 const COTCommodityData = () => {
   const calculateNetPosition = (long: number, short: number) => long - short;
