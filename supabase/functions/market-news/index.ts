@@ -154,7 +154,11 @@ function buildArticle(title: string, description: string, url: string, published
   };
 }
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const trendCache: { ts: number; d30: Article[]; d90: Article[] } = { ts: 0, d30: [], d90: [] };
+
 async function fetchGdelt(limit: number, timespan = '24h'): Promise<Article[]> {
+
   const query = encodeURIComponent('(forex OR currency OR dollar OR euro OR yen OR sterling OR gold OR "Federal Reserve" OR ECB OR "treasury yields")');
   const gdeltUrl = `https://api.gdeltproject.org/api/v2/doc/doc?query=${query}&mode=ArtList&format=json&maxrecords=${limit}&sort=DateDesc&timespan=${timespan}`;
 
