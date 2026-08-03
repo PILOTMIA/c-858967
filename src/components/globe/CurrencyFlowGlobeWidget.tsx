@@ -184,15 +184,25 @@ const CurrencyFlowGlobeWidget = ({ height = 620 }: { height?: number }) => {
 
       <div className="space-y-3 border-t border-border/50 px-4 py-4">
         <div className="flex items-center gap-3">
-          <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => setPlaying((p) => !p)}>
-            {playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+          <Button
+            size="icon"
+            variant={playing ? "outline" : "default"}
+            className="h-8 w-8"
+            onClick={() => setPlaying((p) => !p)}
+            aria-label={playing ? "Pause timeline" : "Resume timeline"}
+            title={playing ? "Pause timeline" : "Resume timeline"}
+          >
+            <Pause className="h-3.5 w-3.5" />
           </Button>
           <Slider
             value={[index]}
             min={0}
             max={Math.max(0, frames.length - 1)}
             step={1}
-            onValueChange={([v]) => setIndex(v)}
+            onValueChange={([v]) => {
+              setPlaying(false);
+              setIndex(v);
+            }}
             className="flex-1"
           />
           <span className="w-28 text-right font-mono text-[11px] text-muted-foreground">
