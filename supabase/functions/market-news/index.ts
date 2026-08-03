@@ -252,35 +252,15 @@ Deno.serve(async (req) => {
     const majorPairs = pairSentiment(articles);
     const highImpact = articles.filter(article => article.impact === 'High').length;
 
-    // Longer-horizon sentiment trend (30 & 90 day GDELT windows)
-    const summarize = (list: Article[]) => {
-      const b = list.filter(a => a.sentiment === 'bullish').length;
-      const s = list.filter(a => a.sentiment === 'bearish').length;
-      return {
-        articles: list.length,
-        bullish: b,
-        bearish: s,
-        neutral: list.length - b - s,
-        sentiment: b > s ? 'BULLISH' : s > b ? 'BEARISH' : 'NEUTRAL',
-        score: list.reduce((sum, a) => sum + a.score, 0) / Math.max(list.length, 1),
-      };
-    };
-    // GDELT rate-limits to ~1 request / 5s, so stagger and cache the long windows.
-    const now = Date.now();
-    let d30: Article[] = trendCache.d30;
-    let d90: Article[] = trendCache.d90;
-    if (now - trendCache.ts > 30 * 60 * 1000 || (!d30.length && !d90.length)) {
-      await sleep(5500);
-      d30 = await fetchGdelt(50, '30d').catch(() => [] as Article[]);
-      await sleep(5500);
-      d90 = await fetchGdelt(50, '90d').catch(() => [] as Article[]);
-      if (d30.length || d90.length) {
-        trendCache.ts = now;
-        trendCache.d30 = d30;
-        trendCache.d90 = d90;
-      }
-    }
-
+    // Persist today's snapshot and derive the 30/90 day sentiment trend from stored history.
+    const trend = await recordAndReadTrend({
+      articles: articles.length,
+      bullish,
+      bearish,
+      neutral: articles.length - bullish - bearish,
+      score,
+      overall,
+    });
 
     return new Response(JSON.stringify({
       articles,
@@ -290,7 +270,8 @@ Deno.serve(async (req) => {
       overall,
       score,
       majorPairs,
-      trend: { last30Days: summarize(d30), last90Days: summarize(d90) },
+      trend,
+
       summary: `${articles.length} live market headlines aggregated from GDELT, Investing.com, ForexLive, FXStreet, MarketWatch, and WSJ. ${highImpact} high-impact items across USD pairs, central banks, yields, and gold.`,
 
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=600' } });
