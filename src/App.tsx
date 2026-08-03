@@ -20,6 +20,7 @@ import Charts from "./pages/Charts";
 import RiskDisclaimer from "./pages/RiskDisclaimer";
 import Metals from "./pages/Metals";
 import SentimentMatrix from "./pages/SentimentMatrix";
+import CurrencyFlow from "./pages/CurrencyFlow";
 import AppNavigation from "./components/AppNavigation";
 import TradingViewBanner from "./components/TradingViewBanner";
 import TermsAgreementModal from "./components/TermsAgreementModal";
@@ -64,6 +65,7 @@ const App = () => (
                 <Route path="/charts" element={<PageTransition><Charts /></PageTransition>} />
                 <Route path="/metals" element={<PageTransition><Metals /></PageTransition>} />
                 <Route path="/sentiment-matrix" element={<PageTransition><SentimentMatrix /></PageTransition>} />
+                <Route path="/currency-flow" element={<PageTransition><CurrencyFlow /></PageTransition>} />
                 <Route path="/risk-disclaimer" element={<PageTransition><RiskDisclaimer /></PageTransition>} />
               </Routes>
             </div>
