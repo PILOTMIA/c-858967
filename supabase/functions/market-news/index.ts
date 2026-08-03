@@ -248,6 +248,24 @@ Deno.serve(async (req) => {
     const majorPairs = pairSentiment(articles);
     const highImpact = articles.filter(article => article.impact === 'High').length;
 
+    // Longer-horizon sentiment trend (30 & 90 day GDELT windows)
+    const summarize = (list: Article[]) => {
+      const b = list.filter(a => a.sentiment === 'bullish').length;
+      const s = list.filter(a => a.sentiment === 'bearish').length;
+      return {
+        articles: list.length,
+        bullish: b,
+        bearish: s,
+        neutral: list.length - b - s,
+        sentiment: b > s ? 'BULLISH' : s > b ? 'BEARISH' : 'NEUTRAL',
+        score: list.reduce((sum, a) => sum + a.score, 0) / Math.max(list.length, 1),
+      };
+    };
+    const [d30, d90] = await Promise.all([
+      fetchGdelt(50, '30d').catch(() => [] as Article[]),
+      fetchGdelt(50, '90d').catch(() => [] as Article[]),
+    ]);
+
     return new Response(JSON.stringify({
       articles,
       source,
@@ -256,7 +274,9 @@ Deno.serve(async (req) => {
       overall,
       score,
       majorPairs,
+      trend: { last30Days: summarize(d30), last90Days: summarize(d90) },
       summary: `${articles.length} live market headlines aggregated from GDELT, Investing.com, ForexLive, FXStreet, MarketWatch, and WSJ. ${highImpact} high-impact items across USD pairs, central banks, yields, and gold.`,
+
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=600' } });
   } catch (error) {
     const articles = fallbackArticles();
