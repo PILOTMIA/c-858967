@@ -132,15 +132,10 @@ const CurrencyFlowGlobeWidget = ({ height = 620 }: { height?: number }) => {
               visibleCodes={visibleCodes}
               colorMode={colorMode}
               autoRotate={autoRotate}
-              onSelectBank={(code) => {
-                setSelectedBank(code);
-                setSelectedArc(null);
-              }}
-              onSelectArc={(arc) => {
-                setSelectedArc(arc);
-                setSelectedBank(null);
-              }}
+              onSelectBank={handleSelectBank}
+              onSelectArc={handleSelectArc}
             />
+
           </Suspense>
         )}
 
