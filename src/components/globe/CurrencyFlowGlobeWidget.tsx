@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
-import { Play, Pause, Globe2, RotateCw, Loader2 } from "lucide-react";
+import { Pause, Globe2, RotateCw, Loader2 } from "lucide-react";
 import {
   BANK_BY_CODE,
   CENTRAL_BANKS,
@@ -30,7 +30,7 @@ const CurrencyFlowGlobeWidget = ({ height = 620 }: { height?: number }) => {
   const [frames, setFrames] = useState<WeekFrame[]>([]);
   const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(0);
-  const [playing, setPlaying] = useState(false);
+  const [playing, setPlaying] = useState(true);
   const [autoRotate, setAutoRotate] = useState(true);
   const [colorMode, setColorMode] = useState<"currency" | "direction">("direction");
   const [filter, setFilter] = useState<Filter>("all");
