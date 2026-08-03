@@ -154,9 +154,10 @@ function buildArticle(title: string, description: string, url: string, published
   };
 }
 
-async function fetchGdelt(limit: number): Promise<Article[]> {
+async function fetchGdelt(limit: number, timespan = '24h'): Promise<Article[]> {
   const query = encodeURIComponent('(forex OR currency OR dollar OR euro OR yen OR sterling OR gold OR "Federal Reserve" OR ECB OR "treasury yields")');
-  const gdeltUrl = `https://api.gdeltproject.org/api/v2/doc/doc?query=${query}&mode=ArtList&format=json&maxrecords=${limit}&sort=DateDesc&timespan=24h`;
+  const gdeltUrl = `https://api.gdeltproject.org/api/v2/doc/doc?query=${query}&mode=ArtList&format=json&maxrecords=${limit}&sort=DateDesc&timespan=${timespan}`;
+
   const response = await fetch(gdeltUrl, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(7000) });
   if (!response.ok) throw new Error(`GDELT ${response.status}`);
   const data = await response.json();
