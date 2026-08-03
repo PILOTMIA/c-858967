@@ -77,10 +77,10 @@ const CustomerServiceChat = () => {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 w-96 max-w-[calc(100vw-2rem)]">
-      <Card className="bg-gray-900 border-gray-700 shadow-xl">
+      <Card className="bg-gray-900 border-border shadow-xl">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-foreground flex items-center gap-2">
               <HeadphonesIcon className="w-5 h-5 text-green-400" />
               Customer Service
             </CardTitle>
@@ -88,24 +88,24 @@ const CustomerServiceChat = () => {
               variant="ghost"
               size="sm"
               onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-white"
+              className="text-muted-foreground hover:text-foreground"
             >
               <X className="w-4 h-4" />
             </Button>
           </div>
-          <div className="text-sm text-gray-300">
+          <div className="text-sm text-muted-foreground">
             Need help? We're here for you!
           </div>
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="bg-gray-800 p-3 rounded-lg space-y-2">
-            <h3 className="text-white font-semibold text-sm">Direct Contact</h3>
-            <div className="flex items-center gap-2 text-sm text-gray-300">
+          <div className="bg-muted p-3 rounded-lg space-y-2">
+            <h3 className="text-foreground font-semibold text-sm">Direct Contact</h3>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Phone className="w-4 h-4 text-green-400" />
               <span>559.997.6387</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-300">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Mail className="w-4 h-4 text-green-400" />
               <span>opmeninactionllc@gmail.com</span>
             </div>
@@ -114,17 +114,17 @@ const CustomerServiceChat = () => {
           {isSubmitted ? (
             <div className="text-center py-6 space-y-2">
               <CheckCircle className="w-12 h-12 text-green-400 mx-auto" />
-              <p className="text-white font-medium">Message Received!</p>
-              <p className="text-gray-400 text-sm">We'll respond within 24 hours.</p>
+              <p className="text-foreground font-medium">Message Received!</p>
+              <p className="text-muted-foreground text-sm">We'll respond within 24 hours.</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="text-white text-sm font-medium">Send us a message:</div>
+              <div className="text-foreground text-sm font-medium">Send us a message:</div>
               <Input
                 placeholder="Your Name *"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
                 required
               />
               <Input
@@ -132,7 +132,7 @@ const CustomerServiceChat = () => {
                 placeholder="Your Email *"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
                 required
               />
               <Input
@@ -140,13 +140,13 @@ const CustomerServiceChat = () => {
                 placeholder="Your Phone (optional)"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
               />
               <Textarea
                 placeholder="How can we help you? *"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 min-h-[80px]"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground min-h-[80px]"
                 required
               />
               <Button
@@ -164,7 +164,7 @@ const CustomerServiceChat = () => {
             </form>
           )}
 
-          <div className="text-xs text-gray-400 text-center">
+          <div className="text-xs text-muted-foreground text-center">
             We typically respond within 24 hours
           </div>
         </CardContent>

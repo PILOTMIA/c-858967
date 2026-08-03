@@ -2,8 +2,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Wheat, Sparkles } from "lucide-react";
 
-// Managed Money (speculator) positions from CFTC Disaggregated COT — July 21, 2026
-// vs. July 14, 2026 (change in Managed Money net = change_long - change_short)
+// Managed Money (speculator) positions from CFTC Disaggregated COT — July 28, 2026
+// vs. July 21, 2026 (change in Managed Money net = change_long - change_short)
 type AgRow = {
   commodity: string;
   exchange: string;
@@ -16,13 +16,14 @@ type AgRow = {
 };
 
 const AG_DATA: AgRow[] = [
-  { commodity: "Corn", exchange: "CBOT", long: 305756, short: 249043, changeLong: 11428, changeShort: -33924, unit: "5,000 bu", note: "Flipped decisively net-long — shorts covering -33.9k, longs adding +11.4k" },
-  { commodity: "Wheat SRW", exchange: "CBOT", long: 74206, short: 92605, changeLong: -1814, changeShort: -18302, unit: "5,000 bu", note: "Still net-short but aggressive short covering (-18.3k) — bearish exhaustion" },
-  { commodity: "Wheat HRW", exchange: "CBOT", long: 65425, short: 38715, changeLong: 3745, changeShort: -9176, unit: "5,000 bu", note: "Net-long deepening — longs adding, shorts capitulating" },
-  { commodity: "Lean Hogs", exchange: "CME", long: 48007, short: 75798, changeLong: 245, changeShort: -15145, unit: "40,000 lbs", note: "Net-short but shorts covered hard (-15k) — bearish bias fading" },
-  { commodity: "Live Cattle", exchange: "CME", long: 90219, short: 14538, changeLong: -18883, changeShort: 3571, unit: "40,000 lbs", note: "Longs liquidating aggressively (-18.9k) — momentum cooling from crowded highs" },
-  { commodity: "Feeder Cattle", exchange: "CME", long: 18042, short: 8697, changeLong: -847, changeShort: 1094, unit: "50,000 lbs", note: "Longs trimming, shorts adding — feeder demand softening" },
+  { commodity: "Corn", exchange: "CBOT", long: 314454, short: 187678, changeLong: 8698, changeShort: -61365, unit: "5,000 bu", note: "Massive short capitulation (-61.4k) — net-long now +126.8k, the most bullish grain flow of the year" },
+  { commodity: "Wheat SRW", exchange: "CBOT", long: 85168, short: 93331, changeLong: 10962, changeShort: 726, unit: "5,000 bu", note: "Longs added +11.0k against flat shorts — net-short gap nearly closed" },
+  { commodity: "Wheat HRW", exchange: "CBOT", long: 65075, short: 33664, changeLong: -350, changeShort: -5051, unit: "5,000 bu", note: "Shorts covering again (-5.1k) — net-long extends to +31.4k" },
+  { commodity: "Lean Hogs", exchange: "CME", long: 52484, short: 71602, changeLong: 4477, changeShort: -4196, unit: "40,000 lbs", note: "Longs building, shorts covering — bearish positioning unwinding fast" },
+  { commodity: "Live Cattle", exchange: "CME", long: 84907, short: 17882, changeLong: -5312, changeShort: 3344, unit: "40,000 lbs", note: "Second week of long liquidation (-5.3k) with shorts adding — crowded trade cooling" },
+  { commodity: "Feeder Cattle", exchange: "CME", long: 17153, short: 8166, changeLong: -889, changeShort: -531, unit: "50,000 lbs", note: "Both sides trimming — conviction draining out of the feeder complex" },
 ];
+
 
 const AgricultureCOT = () => {
   return (

@@ -227,19 +227,19 @@ const CorrelationAnalysis = ({ heatMapData }: CorrelationAnalysisProps) => {
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div>
             <span className="text-blue-200">US Inflation:</span>
-            <span className="font-bold text-white ml-2">
+            <span className="font-bold text-foreground ml-2">
               {correlationInsights?.[0]?.economicData?.inflation}%
             </span>
           </div>
           <div>
             <span className="text-blue-200">GDP Growth:</span>
-            <span className="font-bold text-white ml-2">
+            <span className="font-bold text-foreground ml-2">
               {correlationInsights?.[0]?.economicData?.gdp}%
             </span>
           </div>
           <div>
             <span className="text-blue-200">Unemployment:</span>
-            <span className="font-bold text-white ml-2">
+            <span className="font-bold text-foreground ml-2">
               {correlationInsights?.[0]?.economicData?.unemployment}%
             </span>
           </div>
@@ -256,12 +256,12 @@ const CorrelationAnalysis = ({ heatMapData }: CorrelationAnalysisProps) => {
                 ↔ 
                 {insight.pair2 === 'XAUUSD' ? 'GOLD' : insight.pair2 === 'XTIUSD' ? 'OIL' : insight.pair2}
               </span>
-              <span className="text-sm bg-gray-700 px-2 py-1 rounded">
+              <span className="text-sm bg-accent px-2 py-1 rounded">
                 {(insight.strength * 100).toFixed(0)}%
               </span>
             </div>
-            <p className="text-sm text-gray-300 mb-2">{insight.explanation}</p>
-            <div className="text-xs text-gray-400 bg-gray-800 p-2 rounded">
+            <p className="text-sm text-muted-foreground mb-2">{insight.explanation}</p>
+            <div className="text-xs text-muted-foreground bg-muted p-2 rounded">
               <strong>Current Context:</strong> {insight.newsContext}
             </div>
           </div>
@@ -270,7 +270,7 @@ const CorrelationAnalysis = ({ heatMapData }: CorrelationAnalysisProps) => {
       
       {!isExpanded && correlationInsights && correlationInsights.length > 6 && (
         <div className="text-center mt-4">
-          <span className="text-sm text-gray-400">
+          <span className="text-sm text-muted-foreground">
             +{correlationInsights.length - 6} more correlations available
           </span>
         </div>

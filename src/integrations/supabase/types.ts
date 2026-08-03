@@ -166,6 +166,42 @@ export type Database = {
         }
         Relationships: []
       }
+      news_sentiment_history: {
+        Row: {
+          articles: number
+          bearish: number
+          bullish: number
+          created_at: string
+          id: string
+          neutral: number
+          overall: string
+          score: number
+          snapshot_date: string
+        }
+        Insert: {
+          articles?: number
+          bearish?: number
+          bullish?: number
+          created_at?: string
+          id?: string
+          neutral?: number
+          overall?: string
+          score?: number
+          snapshot_date?: string
+        }
+        Update: {
+          articles?: number
+          bearish?: number
+          bullish?: number
+          created_at?: string
+          id?: string
+          neutral?: number
+          overall?: string
+          score?: number
+          snapshot_date?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

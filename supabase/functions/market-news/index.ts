@@ -154,9 +154,70 @@ function buildArticle(title: string, description: string, url: string, published
   };
 }
 
-async function fetchGdelt(limit: number): Promise<Article[]> {
+type Snapshot = { articles: number; bullish: number; bearish: number; neutral: number; score: number; overall: string };
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+
+function aggregate(rows: Array<Record<string, number>>, label: string) {
+  const days = rows.length;
+  const sum = (k: string) => rows.reduce((t, r) => t + Number(r[k] ?? 0), 0);
+  const b = sum('bullish');
+  const s = sum('bearish');
+  const total = sum('articles');
+  return {
+    window: label,
+    days,
+    articles: total,
+    bullish: b,
+    bearish: s,
+    neutral: Math.max(total - b - s, 0),
+    sentiment: b > s ? 'BULLISH' : s > b ? 'BEARISH' : 'NEUTRAL',
+    score: days ? rows.reduce((t, r) => t + Number(r.score ?? 0), 0) / days : 0,
+  };
+}
+
+async function recordAndReadTrend(snapshot: Snapshot) {
+  const empty = { last30Days: aggregate([], '30d'), last90Days: aggregate([], '90d') };
+  if (!SUPABASE_URL || !SERVICE_KEY) return empty;
+  const headers = {
+    apikey: SERVICE_KEY,
+    Authorization: `Bearer ${SERVICE_KEY}`,
+    'Content-Type': 'application/json',
+    Prefer: 'resolution=merge-duplicates',
+  };
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/news_sentiment_history?on_conflict=snapshot_date`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        snapshot_date: new Date().toISOString().slice(0, 10),
+        ...snapshot,
+      }),
+      signal: AbortSignal.timeout(6000),
+    });
+    const since = (days: number) => new Date(Date.now() - days * 864e5).toISOString().slice(0, 10);
+    const load = async (days: number) => {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/news_sentiment_history?select=articles,bullish,bearish,score&snapshot_date=gte.${since(days)}`,
+        { headers, signal: AbortSignal.timeout(6000) },
+      );
+      return res.ok ? await res.json() : [];
+    };
+    const [r30, r90] = await Promise.all([load(30), load(90)]);
+    return { last30Days: aggregate(r30, '30d'), last90Days: aggregate(r90, '90d') };
+  } catch (_e) {
+    return empty;
+  }
+}
+
+
+
+async function fetchGdelt(limit: number, timespan = '24h'): Promise<Article[]> {
+
   const query = encodeURIComponent('(forex OR currency OR dollar OR euro OR yen OR sterling OR gold OR "Federal Reserve" OR ECB OR "treasury yields")');
-  const gdeltUrl = `https://api.gdeltproject.org/api/v2/doc/doc?query=${query}&mode=ArtList&format=json&maxrecords=${limit}&sort=DateDesc&timespan=24h`;
+  const gdeltUrl = `https://api.gdeltproject.org/api/v2/doc/doc?query=${query}&mode=ArtList&format=json&maxrecords=${limit}&sort=DateDesc&timespan=${timespan}`;
+
   const response = await fetch(gdeltUrl, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(7000) });
   if (!response.ok) throw new Error(`GDELT ${response.status}`);
   const data = await response.json();
@@ -247,6 +308,16 @@ Deno.serve(async (req) => {
     const majorPairs = pairSentiment(articles);
     const highImpact = articles.filter(article => article.impact === 'High').length;
 
+    // Persist today's snapshot and derive the 30/90 day sentiment trend from stored history.
+    const trend = await recordAndReadTrend({
+      articles: articles.length,
+      bullish,
+      bearish,
+      neutral: articles.length - bullish - bearish,
+      score,
+      overall,
+    });
+
     return new Response(JSON.stringify({
       articles,
       source,
@@ -255,7 +326,10 @@ Deno.serve(async (req) => {
       overall,
       score,
       majorPairs,
+      trend,
+
       summary: `${articles.length} live market headlines aggregated from GDELT, Investing.com, ForexLive, FXStreet, MarketWatch, and WSJ. ${highImpact} high-impact items across USD pairs, central banks, yields, and gold.`,
+
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=600' } });
   } catch (error) {
     const articles = fallbackArticles();

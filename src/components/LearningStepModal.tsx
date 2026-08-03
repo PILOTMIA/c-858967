@@ -76,22 +76,22 @@ const LearningStepModal = ({ step, isOpen, onClose, onMarkComplete }: LearningSt
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-gray-900 border-gray-700">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-gray-900 border-border">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
+          <DialogTitle className="text-xl font-bold text-foreground flex items-center gap-2">
             <BookOpen className="w-6 h-6 text-blue-400" />
             {step.title}
           </DialogTitle>
-          <DialogDescription className="text-gray-300 text-base mt-2">
+          <DialogDescription className="text-muted-foreground text-base mt-2">
             {stepContent.details}
           </DialogDescription>
         </DialogHeader>
         
         <div className="mt-4">
-          <h4 className="text-lg font-semibold text-white mb-3">Key Learning Points:</h4>
+          <h4 className="text-lg font-semibold text-foreground mb-3">Key Learning Points:</h4>
           <ul className="space-y-2">
             {stepContent.keyPoints.map((point, index) => (
-              <li key={index} className="flex items-start gap-2 text-gray-300">
+              <li key={index} className="flex items-start gap-2 text-muted-foreground">
                 <span className="text-blue-400 mt-1">•</span>
                 <span>{point}</span>
               </li>
@@ -99,7 +99,7 @@ const LearningStepModal = ({ step, isOpen, onClose, onMarkComplete }: LearningSt
           </ul>
         </div>
 
-        <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-700">
+        <div className="flex justify-between items-center mt-6 pt-4 border-t border-border">
           <div className="flex items-center gap-2">
             {step.completed ? (
               <div className="flex items-center gap-2 text-green-400">
@@ -107,7 +107,7 @@ const LearningStepModal = ({ step, isOpen, onClose, onMarkComplete }: LearningSt
                 <span className="font-semibold">Completed</span>
               </div>
             ) : (
-              <span className="text-gray-400">Ready to start</span>
+              <span className="text-muted-foreground">Ready to start</span>
             )}
           </div>
           
@@ -123,7 +123,7 @@ const LearningStepModal = ({ step, isOpen, onClose, onMarkComplete }: LearningSt
             <Button 
               onClick={onClose}
               variant="outline"
-              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+              className="border-border text-muted-foreground hover:bg-accent"
             >
               Close
             </Button>

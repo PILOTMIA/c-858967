@@ -111,7 +111,7 @@ const ForexList = () => {
           </thead>
           <tbody>
             {forexPairs?.map((forex) => (
-              <tr key={forex.pair} className="border-t border-secondary hover:bg-gray-800/50 transition-colors">
+              <tr key={forex.pair} className="border-t border-secondary hover:bg-muted/50 transition-colors">
                 <td className="py-4">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs font-bold">
