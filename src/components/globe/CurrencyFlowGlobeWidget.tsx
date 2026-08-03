@@ -59,9 +59,20 @@ const CurrencyFlowGlobeWidget = ({ height = 620 }: { height?: number }) => {
     if (!playing || frames.length === 0) return;
     const id = setInterval(() => {
       setIndex((i) => (i + 1 >= frames.length ? 0 : i + 1));
-    }, 1400);
+    }, 2600);
     return () => clearInterval(id);
   }, [playing, frames.length]);
+
+  const handleSelectBank = useCallback((code: string) => {
+    setSelectedBank(code);
+    setSelectedArc(null);
+  }, []);
+
+  const handleSelectArc = useCallback((arc: FlowArc) => {
+    setSelectedArc(arc);
+    setSelectedBank(null);
+  }, []);
+
 
   const frame = frames[index];
   const visibleCodes = useMemo(
