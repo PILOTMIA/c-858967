@@ -1,5 +1,6 @@
 import PageHeader from "@/components/PageHeader";
 import CurrencyFlowGlobeWidget from "@/components/globe/CurrencyFlowGlobeWidget";
+import MarketPulseLive from "@/components/globe/MarketPulseLive";
 import { CENTRAL_BANKS } from "@/components/globe/currencyFlowData";
 
 const CurrencyFlow = () => (
@@ -9,7 +10,9 @@ const CurrencyFlow = () => (
       title="3D Global Currency Flow"
       subtitle="Weekly CFTC Commitments of Traders positioning rendered as live capital flow between central banks. Scrub the timeline to watch speculative money rotate across the majors."
     />
+    <MarketPulseLive />
     <CurrencyFlowGlobeWidget />
+
 
     <section className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
       {CENTRAL_BANKS.map((b) => (
