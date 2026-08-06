@@ -222,7 +222,7 @@ const SentimentMatrix = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-6 py-10 space-y-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-10 space-y-4 sm:space-y-6 overflow-x-hidden">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>

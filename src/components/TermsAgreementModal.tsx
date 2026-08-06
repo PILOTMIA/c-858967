@@ -41,7 +41,8 @@ const TermsAgreementModal = () => {
   };
 
   const TermsContent = () => (
-    <ScrollArea className="h-96 w-full rounded-xl border border-border/30 bg-muted/20 p-5">
+    <ScrollArea className="h-[38vh] sm:h-96 w-full rounded-xl border border-border/30 bg-muted/20 p-4 sm:p-5">
+
       <div className="space-y-5 text-sm text-foreground">
         <div>
           <h3 className="font-display-hero text-lg mb-3 text-foreground">Disclaimer</h3>
