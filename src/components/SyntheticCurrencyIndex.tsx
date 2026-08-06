@@ -44,18 +44,19 @@ const CURRENCY_META: Record<string, { name: string; flag: string }> = {
 
 const G10_CURRENCIES = ['USD', 'EUR', 'JPY', 'GBP', 'AUD', 'CHF', 'CAD', 'NZD', 'MXN'];
 
-// Fallback COT positions (CFTC April 28, 2026)
+// Fallback COT positions (CFTC TFF report, July 28, 2026 — Leveraged Funds)
 const FALLBACK_COT: Record<string, CurrencyData> = {
-  EUR: { netPosition: 11594, long: 111857, short: 100263, weeklyChange: -8723, dealerLong: 48682, dealerShort: 396571, assetManagerLong: 439565, assetManagerShort: 148667, reportDate: "2026-04-28" },
-  GBP: { netPosition: 28882, long: 58489, short: 29607, weeklyChange: -255, dealerLong: 131315, dealerShort: 63446, assetManagerLong: 39695, assetManagerShort: 133448, reportDate: "2026-04-28" },
-  JPY: { netPosition: -75802, long: 81800, short: 157602, weeklyChange: -7305, dealerLong: 84091, dealerShort: 25315, assetManagerLong: 66512, assetManagerShort: 93062, reportDate: "2026-04-28" },
-  CHF: { netPosition: -5174, long: 7107, short: 12281, weeklyChange: -1408, dealerLong: 62055, dealerShort: 12371, assetManagerLong: 6003, assetManagerShort: 43537, reportDate: "2026-04-28" },
-  AUD: { netPosition: 47855, long: 73808, short: 25953, weeklyChange: -470, dealerLong: 41534, dealerShort: 166752, assetManagerLong: 102988, assetManagerShort: 57891, reportDate: "2026-04-28" },
-  CAD: { netPosition: -53828, long: 25239, short: 79067, weeklyChange: 10387, dealerLong: 83444, dealerShort: 60192, assetManagerLong: 88349, assetManagerShort: 72317, reportDate: "2026-04-28" },
-  NZD: { netPosition: -16833, long: 7160, short: 23993, weeklyChange: 1229, dealerLong: 61264, dealerShort: 3960, assetManagerLong: 7660, assetManagerShort: 49488, reportDate: "2026-04-28" },
-  MXN: { netPosition: 49189, long: 76797, short: 27608, weeklyChange: 3969, dealerLong: 21503, dealerShort: 60570, assetManagerLong: 91215, assetManagerShort: 35502, reportDate: "2026-04-28" },
-  USD: { netPosition: 0, long: 0, short: 0, weeklyChange: 0, dealerLong: 0, dealerShort: 0, assetManagerLong: 0, assetManagerShort: 0, reportDate: "2026-04-28" },
+  EUR: { netPosition: -65198, long: 92672, short: 157870, weeklyChange: -8527, dealerLong: 76674, dealerShort: 252190, assetManagerLong: 449191, assetManagerShort: 239865, reportDate: "2026-07-28" },
+  GBP: { netPosition: 41097, long: 74612, short: 33515, weeklyChange: 7861, dealerLong: 143700, dealerShort: 36350, assetManagerLong: 12433, assetManagerShort: 153344, reportDate: "2026-07-28" },
+  JPY: { netPosition: -101990, long: 76752, short: 178742, weeklyChange: -5805, dealerLong: 155239, dealerShort: 15902, assetManagerLong: 70643, assetManagerShort: 153700, reportDate: "2026-07-28" },
+  CHF: { netPosition: -9647, long: 10272, short: 19919, weeklyChange: -750, dealerLong: 73539, dealerShort: 8817, assetManagerLong: 4725, assetManagerShort: 44926, reportDate: "2026-07-28" },
+  AUD: { netPosition: 27618, long: 57490, short: 29872, weeklyChange: 2830, dealerLong: 61155, dealerShort: 75324, assetManagerLong: 66328, assetManagerShort: 98037, reportDate: "2026-07-28" },
+  CAD: { netPosition: -102495, long: 26391, short: 128886, weeklyChange: -4118, dealerLong: 236930, dealerShort: 31423, assetManagerLong: 41277, assetManagerShort: 142437, reportDate: "2026-07-28" },
+  NZD: { netPosition: -30027, long: 3676, short: 33703, weeklyChange: 1059, dealerLong: 87547, dealerShort: 12067, assetManagerLong: 7386, assetManagerShort: 51543, reportDate: "2026-07-28" },
+  MXN: { netPosition: 63807, long: 87313, short: 23506, weeklyChange: 9344, dealerLong: 33071, dealerShort: 96133, assetManagerLong: 65163, assetManagerShort: 43889, reportDate: "2026-07-28" },
+  USD: { netPosition: -1601, long: 17528, short: 19129, weeklyChange: 337, dealerLong: 5347, dealerShort: 32488, assetManagerLong: 22964, assetManagerShort: 1352, reportDate: "2026-07-28" },
 };
+
 
 // ── Scoring logic ───────────────────────────────────────────────────────────
 function computeStrength(
