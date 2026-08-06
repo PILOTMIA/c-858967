@@ -69,7 +69,7 @@ const COTMarketWheel = () => {
       commercialShort: data.short,
       nonCommercialLong: data.ncLong,
       nonCommercialShort: data.ncShort,
-      reportDate: '2026-03-29T00:00:00Z',
+      reportDate: '2026-07-28T00:00:00Z',
       weeklyChange: item.weeklyChange
     };
     
@@ -80,7 +80,7 @@ const COTMarketWheel = () => {
 
   // Generate data from uploaded COT data or fallback to mock data
   const generateData = (): WheelDataItem[] => {
-    // Mar 29, 2026 CFTC Report (data as of Mar 24, 2026) - VERIFIED from uploaded PDF
+    // CFTC TFF report, July 28, 2026 (Leveraged Funds) — VERIFIED from official PDF
     const majorPairs: WheelDataItem[] = [
       { currency: 'EUR', netPosition: -65198, strength: 65198, bias: 'BEARISH', weeklyChange: -8527, color: '#EF4444', type: 'major' },
       { currency: 'GBP', netPosition: 41097, strength: 41097, bias: 'BULLISH', weeklyChange: 7861, color: '#7EBF8E', type: 'major' },
@@ -92,7 +92,7 @@ const COTMarketWheel = () => {
       { currency: 'NZD', netPosition: -30027, strength: 30027, bias: 'BEARISH', weeklyChange: 1059, color: '#EF4444', type: 'major' }
     ];
 
-    const crossData: COTWheelItem[] = [
+    const crossPairs: WheelDataItem[] = [
       { currency: 'EURJPY', netPosition: 36792, strength: 36792, bias: 'BULLISH', weeklyChange: -2722, color: '#7EBF8E', type: 'cross' },
       { currency: 'GBPJPY', netPosition: 143087, strength: 143087, bias: 'BULLISH', weeklyChange: 13666, color: '#7EBF8E', type: 'cross' },
       { currency: 'EURGBP', netPosition: -106295, strength: 106295, bias: 'BEARISH', weeklyChange: -16388, color: '#EF4444', type: 'cross' },
