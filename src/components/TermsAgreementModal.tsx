@@ -90,44 +90,45 @@ const TermsAgreementModal = () => {
         {/* Terms Agreement Modal */}
         <Dialog open={isOpen} onOpenChange={() => {}}>
           <DialogContent
-            className="sm:max-w-[680px] max-h-[90vh] bg-background/95 backdrop-blur-xl border-border/30 rounded-2xl shadow-2xl"
+            className="w-[calc(100vw-1.5rem)] max-w-[680px] sm:max-w-[680px] max-h-[92vh] overflow-y-auto p-4 sm:p-6 bg-background/95 backdrop-blur-xl border-border/30 rounded-2xl shadow-2xl"
             onPointerDownOutside={(e) => e.preventDefault()}
           >
             <DialogHeader>
-              <DialogTitle className="font-display-hero text-2xl text-center text-foreground flex items-center justify-center gap-2">
+              <DialogTitle className="font-display-hero text-lg sm:text-2xl text-center text-foreground flex items-center justify-center gap-2">
                 <Shield className="w-5 h-5 text-primary" />
-                MIA FX Labs — Terms & Disclaimer
+                MIA FX Labs — Terms &amp; Disclaimer
               </DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-5">
-              <p className="text-center text-muted-foreground text-sm">Please read before continuing</p>
+            <div className="space-y-4 sm:space-y-5">
+              <p className="text-center text-muted-foreground text-xs sm:text-sm">Please read before continuing</p>
 
               <TermsContent />
 
-              <div className="space-y-4">
-                <div className="flex flex-row items-start space-x-3">
+              <div className="space-y-4 sticky bottom-0 bg-background/95 backdrop-blur-xl pt-2 pb-1">
+                <label className="flex flex-row items-start gap-3 rounded-xl border border-border/40 p-3 cursor-pointer active:bg-muted/40 min-h-[48px]">
                   <Checkbox
                     checked={agreedToTerms}
                     onCheckedChange={handleCheckboxChange}
-                    className="border-border/50 data-[state=checked]:bg-primary data-[state=checked]:border-primary mt-0.5"
+                    className="h-6 w-6 border-border/50 data-[state=checked]:bg-primary data-[state=checked]:border-primary mt-0.5 shrink-0"
                   />
-                  <label className="text-sm text-muted-foreground cursor-pointer leading-relaxed">
+                  <span className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                     I have read and agree to the terms and conditions, disclaimer, and understand the risks involved in forex trading.
-                  </label>
-                </div>
+                  </span>
+                </label>
 
                 <Button
                   onClick={handleAgree}
                   disabled={!agreedToTerms}
-                  className="w-full rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 transition-all disabled:opacity-40"
+                  className="w-full min-h-[52px] rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm sm:text-base transition-all disabled:opacity-40"
                 >
-                  I Agree — Continue to MIA FX Labs
+                  I Agree — Continue
                 </Button>
               </div>
             </div>
           </DialogContent>
         </Dialog>
+
 
         {/* First Time User Question Modal */}
         <Dialog open={showFirstTimeQuestion} onOpenChange={() => {}}>
