@@ -20,7 +20,7 @@ const Metals = () => {
         </p>
         <div className="mt-4 inline-flex items-center gap-2">
           <Badge className="bg-primary/15 text-primary border border-primary/30 gap-1">
-            <Sparkles className="w-3 h-3" /> New: Agriculture COT (Jul 07, 2026)
+            <Sparkles className="w-3 h-3" /> New: Agriculture COT (Jul 28, 2026)
           </Badge>
         </div>
       </div>
