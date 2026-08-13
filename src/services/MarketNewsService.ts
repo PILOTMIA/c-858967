@@ -57,8 +57,6 @@ export const fetchMarketNews = async (): Promise<MarketNewsResponse> => {
     },
     signal: AbortSignal.timeout(18000),
   });
-    signal: AbortSignal.timeout(18000),
-  });
 
   if (!response.ok) {
     throw new Error(`Market news failed with status ${response.status}`);
