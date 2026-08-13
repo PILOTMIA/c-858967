@@ -48,12 +48,15 @@ export const fetchMarketNews = async (): Promise<MarketNewsResponse> => {
 
   if (!projectId || !anonKey) return fallbackNews;
 
-  const response = await fetch(`https://${projectId}.supabase.co/functions/v1/market-news?limit=30`, {
+  const response = await fetch(`https://${projectId}.supabase.co/functions/v1/market-news?limit=30&t=${Date.now()}`, {
+    cache: 'no-store',
     headers: {
       Authorization: `Bearer ${anonKey}`,
       apikey: anonKey,
       'Content-Type': 'application/json',
     },
+    signal: AbortSignal.timeout(18000),
+  });
     signal: AbortSignal.timeout(18000),
   });
 
