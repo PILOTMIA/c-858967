@@ -53,8 +53,10 @@ const NewsSentimentAnalysis = () => {
   const { data, isLoading, error, refetch, isFetching, dataUpdatedAt } = useQuery({
     queryKey: ['marketNewsLive'],
     queryFn: fetchMarketNews,
-    staleTime: 1000 * 60 * 15,
-    refetchInterval: 1000 * 60 * 15,
+    staleTime: 1000 * 60,
+    refetchInterval: 1000 * 60 * 5,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 
   if (error) {
