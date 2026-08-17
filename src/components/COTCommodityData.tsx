@@ -2,45 +2,45 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-// Source: CFTC Disaggregated Commitments of Traders – Futures Only, July 28, 2026
+// Source: CFTC Disaggregated Commitments of Traders – Futures Only, August 11, 2026
 // Speculator = Managed Money; Commercial = Producer/Merchant + Swap Dealers
 const commodityCOTData = [
   {
     name: "Gold",
     symbol: "GC",
-    nonCommercialLong: 135093,
-    nonCommercialShort: 15298,
-    commercialLong: 39028,
-    commercialShort: 251337,
-    weeklyChangeLong: -6394,
-    weeklyChangeShort: -1358,
-    openInterest: 384603,
-    reportDate: "July 28, 2026",
-    additionalInfo: "Managed Money net long trimmed -5,036 WoW to +119,795 — profit taking, not a trend break"
+    nonCommercialLong: 148634,
+    nonCommercialShort: 10972,
+    commercialLong: 34808,
+    commercialShort: 287448,
+    weeklyChangeLong: 8825,
+    weeklyChangeShort: 1929,
+    openInterest: 400309,
+    reportDate: "August 11, 2026",
+    additionalInfo: "Managed Money net long expanded +6,896 WoW to +137,662 — fresh institutional accumulation"
   },
   {
     name: "Silver",
     symbol: "SI",
-    nonCommercialLong: 17939,
-    nonCommercialShort: 8757,
-    commercialLong: 27663,
-    commercialShort: 66472,
-    weeklyChangeLong: -265,
-    weeklyChangeShort: 1835,
-    openInterest: 106719,
-    reportDate: "July 28, 2026"
+    nonCommercialLong: 19956,
+    nonCommercialShort: 8798,
+    commercialLong: 27985,
+    commercialShort: 71959,
+    weeklyChangeLong: -509,
+    weeklyChangeShort: 307,
+    openInterest: 115127,
+    reportDate: "August 11, 2026"
   },
   {
     name: "Copper",
     symbol: "HG",
-    nonCommercialLong: 82988,
-    nonCommercialShort: 17980,
-    commercialLong: 79095,
-    commercialShort: 155256,
-    weeklyChangeLong: -5247,
-    weeklyChangeShort: 1260,
-    openInterest: 274552,
-    reportDate: "July 28, 2026"
+    nonCommercialLong: 93911,
+    nonCommercialShort: 14884,
+    commercialLong: 83464,
+    commercialShort: 174710,
+    weeklyChangeLong: 738,
+    weeklyChangeShort: -2531,
+    openInterest: 297047,
+    reportDate: "August 11, 2026"
   }
 ];
 

@@ -2,8 +2,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Wheat, Sparkles } from "lucide-react";
 
-// Managed Money (speculator) positions from CFTC Disaggregated COT — July 28, 2026
-// vs. July 21, 2026 (change in Managed Money net = change_long - change_short)
+// Managed Money (speculator) positions from CFTC Disaggregated COT — August 11, 2026
+// vs. August 4, 2026 (change in Managed Money net = change_long - change_short)
 type AgRow = {
   commodity: string;
   exchange: string;
@@ -16,12 +16,15 @@ type AgRow = {
 };
 
 const AG_DATA: AgRow[] = [
-  { commodity: "Corn", exchange: "CBOT", long: 314454, short: 187678, changeLong: 8698, changeShort: -61365, unit: "5,000 bu", note: "Massive short capitulation (-61.4k) — net-long now +126.8k, the most bullish grain flow of the year" },
-  { commodity: "Wheat SRW", exchange: "CBOT", long: 85168, short: 93331, changeLong: 10962, changeShort: 726, unit: "5,000 bu", note: "Longs added +11.0k against flat shorts — net-short gap nearly closed" },
-  { commodity: "Wheat HRW", exchange: "CBOT", long: 65075, short: 33664, changeLong: -350, changeShort: -5051, unit: "5,000 bu", note: "Shorts covering again (-5.1k) — net-long extends to +31.4k" },
-  { commodity: "Lean Hogs", exchange: "CME", long: 52484, short: 71602, changeLong: 4477, changeShort: -4196, unit: "40,000 lbs", note: "Longs building, shorts covering — bearish positioning unwinding fast" },
-  { commodity: "Live Cattle", exchange: "CME", long: 84907, short: 17882, changeLong: -5312, changeShort: 3344, unit: "40,000 lbs", note: "Second week of long liquidation (-5.3k) with shorts adding — crowded trade cooling" },
-  { commodity: "Feeder Cattle", exchange: "CME", long: 17153, short: 8166, changeLong: -889, changeShort: -531, unit: "50,000 lbs", note: "Both sides trimming — conviction draining out of the feeder complex" },
+  { commodity: "Corn", exchange: "CBOT", long: 312829, short: 186954, changeLong: 3112, changeShort: 22058, unit: "5,000 bu", note: "Shorts rebuilt +22.1k against modest long adds — net-long trimmed to +125.9k" },
+  { commodity: "Wheat SRW", exchange: "CBOT", long: 78009, short: 111409, changeLong: -2028, changeShort: 6502, unit: "5,000 bu", note: "Longs liquidating while shorts pile in — net-short widens to -33.4k" },
+  { commodity: "Wheat HRW", exchange: "CBOT", long: 63122, short: 37516, changeLong: -3834, changeShort: 2056, unit: "5,000 bu", note: "Bullish conviction fading — net-long down to +25.6k" },
+  { commodity: "Lean Hogs", exchange: "CME", long: 59057, short: 83420, changeLong: 2714, changeShort: 7898, unit: "40,000 lbs", note: "Both sides adding, shorts faster — net-short deepens to -24.4k" },
+  { commodity: "Live Cattle", exchange: "CME", long: 82466, short: 16517, changeLong: -772, changeShort: -1755, unit: "40,000 lbs", note: "Shorts covering faster than longs exit — net-long holds near +66.0k" },
+  { commodity: "Feeder Cattle", exchange: "CME", long: 17685, short: 6783, changeLong: -249, changeShort: -751, unit: "50,000 lbs", note: "Short covering lifts net-long to +10.9k — feeder complex firming" },
+  { commodity: "Soybeans", exchange: "CBOT", long: 169712, short: 60603, changeLong: -9787, changeShort: 13628, unit: "5,000 bu", note: "Heaviest bullish unwind in the complex — net-long cut -23.4k to +109.1k" },
+  { commodity: "Soybean Oil", exchange: "CBOT", long: 110018, short: 30734, changeLong: 3908, changeShort: 3657, unit: "60,000 lbs", note: "Two-way flow, net-long steady at +79.3k" },
+  { commodity: "Soybean Meal", exchange: "CBOT", long: 122391, short: 48701, changeLong: -4038, changeShort: 102, unit: "100 short tons", note: "Longs trimming — net-long eases to +73.7k" },
 ];
 
 
@@ -52,7 +55,7 @@ const AgricultureCOT = () => {
           </div>
         </div>
         <div className="text-xs text-muted-foreground shrink-0">
-          <div>Report: <span className="text-foreground font-medium">Jul 21, 2026</span></div>
+          <div>Report: <span className="text-foreground font-medium">Aug 11, 2026</span></div>
           <div>Source: CFTC Disaggregated</div>
         </div>
       </div>
