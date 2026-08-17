@@ -11,6 +11,7 @@ import { COTDataProvider, useCOTData } from "@/components/COTDataContext";
 import { TrendingUp, Users, Building2, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const getNote = (net: number, change: number) => {
   if (change > 5000) return net > 0 ? 'Adding longs' : 'Shorts covering';
