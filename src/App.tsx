@@ -28,7 +28,20 @@ import FirstTimeUserTutorial from "./components/FirstTimeUserTutorial";
 import PageTransition from "./components/PageTransition";
 import ScrollToTop from "./components/ScrollToTop";
 
-const queryClient = new QueryClient();
+// Global data policy: every API-backed query refreshes at least every 30 minutes.
+const THIRTY_MIN = 1000 * 60 * 30;
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: THIRTY_MIN,
+      gcTime: THIRTY_MIN * 2,
+      refetchInterval: THIRTY_MIN,
+      refetchIntervalInBackground: false,
+      refetchOnWindowFocus: true,
+      retry: 1,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

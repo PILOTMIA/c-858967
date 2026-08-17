@@ -20,6 +20,21 @@ const CFTC_CODES: Record<string, { name: string; code: string }> = {
   BTC: { name: "BITCOIN", code: "133741" },
 };
 
+// Verified fallback data — CFTC TFF report 8/11/2026 (Leveraged Funds, synced from cot_history)
+const FALLBACK_DATA: Record<string, any> = {
+  EUR: { netPosition: -60600, long: 86753, short: 147353, weeklyChange: -8395, reportDate: "2026-08-11", source: "verified_8_11" },
+  GBP: { netPosition: 40670, long: 67627, short: 26957, weeklyChange: 2496, reportDate: "2026-08-11", source: "verified_8_11" },
+  JPY: { netPosition: -53070, long: 74973, short: 128043, weeklyChange: 7755, reportDate: "2026-08-11", source: "verified_8_11" },
+  CHF: { netPosition: -11432, long: 10165, short: 21597, weeklyChange: -1348, reportDate: "2026-08-11", source: "verified_8_11" },
+  AUD: { netPosition: 48541, long: 72166, short: 23625, weeklyChange: 7904, reportDate: "2026-08-11", source: "verified_8_11" },
+  CAD: { netPosition: -92005, long: 26511, short: 118516, weeklyChange: 9743, reportDate: "2026-08-11", source: "verified_8_11" },
+  NZD: { netPosition: -33461, long: 2520, short: 35981, weeklyChange: -3171, reportDate: "2026-08-11", source: "verified_8_11" },
+  MXN: { netPosition: 76282, long: 130485, short: 54203, weeklyChange: 8575, reportDate: "2026-08-11", source: "verified_8_11" },
+  USD: { netPosition: 5772, long: 15398, short: 9626, weeklyChange: 1923, reportDate: "2026-08-11", source: "verified_8_11" },
+  XAU: { netPosition: 137662, long: 148634, short: 10972, weeklyChange: 6896, reportDate: "2026-08-11", source: "verified_8_11" },
+  BTC: { netPosition: -7052, long: 4997, short: 12049, weeklyChange: 188, reportDate: "2026-08-11", source: "verified_8_11" },
+};
+
 // Verified fallback data — CFTC report 7/28/2026 (synced from cot_history)
 const FALLBACK_DATA: Record<string, any> = {
   EUR: { netPosition: -72447, long: 204975, short: 277422, weeklyChange: -31109, reportDate: "2026-07-28", source: "verified_7_28" },
