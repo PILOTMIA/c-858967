@@ -145,6 +145,7 @@ const COTAnalysisContent = () => {
             </TabsContent>
 
             <TabsContent value="positioning" className="mt-6 space-y-10 focus-visible:outline-none">
+              <COTIndexPositioning />
               <COTHistoryTrends />
               <SyntheticCurrencyIndex />
             </TabsContent>
