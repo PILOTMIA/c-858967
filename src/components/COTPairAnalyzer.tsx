@@ -71,6 +71,31 @@ const COTPairAnalyzer = () => {
   const [us10yData, setUs10yData] = useState(US10Y_FALLBACK);
   const [us10ySource, setUs10ySource] = useState<'fallback' | 'fred'>('fallback');
 
+  // Live historical net positions from cot_history (last ~10 reports)
+  const { data: historicalNet = {} } = useQuery({
+    queryKey: ['cot-pair-analyzer-history'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('cot_history')
+        .select('currency, report_date, net_position')
+        .order('report_date', { ascending: false })
+        .limit(300);
+      const dates = [...new Set((data ?? []).map((r) => r.report_date))].sort().slice(-10);
+      const map: Record<string, { date: string; value: number }[]> = {};
+      dates.forEach((d) => {
+        (data ?? [])
+          .filter((r) => r.report_date === d)
+          .forEach((r) => {
+            const label = new Date(r.report_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            (map[r.currency] ??= []).push({ date: label, value: r.net_position });
+          });
+      });
+      return map;
+    },
+    staleTime: 1000 * 60 * 30,
+  });
+
+
   const isUSDPair = baseCurrency === 'USD' || quoteCurrency === 'USD';
 
   // Fetch live US10Y data when USD pair is selected
