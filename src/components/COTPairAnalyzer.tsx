@@ -34,57 +34,8 @@ const COT_POSITIONS: Record<string, CurrencyPositioning> = {
 };
 
 
-// Historical net positions for chart (Leveraged Funds)
-const HISTORICAL_NET: Record<string, { date: string; value: number }[]> = {
-  EUR: [
-    { date: 'Mar 24', value: -13538 },
-    { date: 'Mar 31', value: 3947 },
-    { date: 'Apr 7', value: 3947 }, // published report same data
-    { date: 'Apr 28', value: 11594 },
-  ],
-  GBP: [
-    { date: 'Mar 24', value: 15716 },
-    { date: 'Mar 31', value: 29932 },
-    { date: 'Apr 7', value: 29932 },
-    { date: 'Apr 28', value: 28882 },
-  ],
-  JPY: [
-    { date: 'Mar 24', value: -54852 },
-    { date: 'Mar 31', value: -46182 },
-    { date: 'Apr 7', value: -46182 },
-    { date: 'Apr 28', value: -75802 },
-  ],
-  CHF: [
-    { date: 'Mar 24', value: 235 },
-    { date: 'Mar 31', value: 1490 },
-    { date: 'Apr 7', value: 1490 },
-    { date: 'Apr 28', value: -5174 },
-  ],
-  AUD: [
-    { date: 'Mar 24', value: 49145 },
-    { date: 'Mar 31', value: 52569 },
-    { date: 'Apr 7', value: 52569 },
-    { date: 'Apr 28', value: 47855 },
-  ],
-  CAD: [
-    { date: 'Mar 24', value: -31700 },
-    { date: 'Mar 31', value: -42910 },
-    { date: 'Apr 7', value: -42910 },
-    { date: 'Apr 28', value: -53828 },
-  ],
-  NZD: [
-    { date: 'Mar 24', value: -16730 },
-    { date: 'Mar 31', value: -17798 },
-    { date: 'Apr 7', value: -17798 },
-    { date: 'Apr 28', value: -16833 },
-  ],
-  MXN: [
-    { date: 'Mar 24', value: 54787 },
-    { date: 'Mar 31', value: 52803 },
-    { date: 'Apr 7', value: 52803 },
-    { date: 'Apr 28', value: 49189 },
-  ],
-};
+// Historical net positions are loaded live from cot_history (see useHistoricalNet below)
+
 
 // US 10-Year Treasury Note fallback
 const US10Y_FALLBACK = {
