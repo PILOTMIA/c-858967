@@ -170,15 +170,18 @@ const COTPairAnalyzer = () => {
 
   // Historical positioning chart data
   const historicalChartData = useMemo(() => {
-    const baseHist = HISTORICAL_NET[baseCurrency];
-    const quoteHist = HISTORICAL_NET[quoteCurrency];
-    if (!baseHist || !quoteHist) return null;
-    return baseHist.map((item, i) => ({
-      date: item.date,
-      [baseCurrency]: item.value,
-      [quoteCurrency]: quoteHist[i]?.value ?? 0,
-    }));
-  }, [baseCurrency, quoteCurrency]);
+    const baseHist = historicalNet[baseCurrency];
+    const quoteHist = historicalNet[quoteCurrency];
+    if (!baseHist?.length || !quoteHist?.length) return null;
+    const quoteByDate = new Map(quoteHist.map((q) => [q.date, q.value]));
+    return baseHist
+      .filter((item) => quoteByDate.has(item.date))
+      .map((item) => ({
+        date: item.date,
+        [baseCurrency]: item.value,
+        [quoteCurrency]: quoteByDate.get(item.date) ?? 0,
+      }));
+  }, [baseCurrency, quoteCurrency, historicalNet]);
 
   // Generate concise Smart Money Insight (≤150 words)
   const smartMoneyInsight = useMemo(() => {
