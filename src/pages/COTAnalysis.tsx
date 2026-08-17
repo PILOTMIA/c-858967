@@ -129,49 +129,65 @@ const COTAnalysisContent = () => {
             </div>
           )}
 
-          {/* What to Trade — recommendations from COT data */}
-          <COTTradeRecommendations />
+          {/* Grouped sections — tabbed to reduce visual load */}
+          <Tabs defaultValue="signals" className="w-full">
+            <TabsList className="w-full flex flex-wrap h-auto gap-1 rounded-2xl bg-muted/40 p-1.5">
+              <TabsTrigger value="signals" className="flex-1 min-w-[130px] rounded-xl py-2.5 text-sm">What to Trade</TabsTrigger>
+              <TabsTrigger value="positioning" className="flex-1 min-w-[130px] rounded-xl py-2.5 text-sm">Positioning</TabsTrigger>
+              <TabsTrigger value="pairs" className="flex-1 min-w-[130px] rounded-xl py-2.5 text-sm">Pair Tools</TabsTrigger>
+              <TabsTrigger value="learn" className="flex-1 min-w-[130px] rounded-xl py-2.5 text-sm">Learn</TabsTrigger>
+            </TabsList>
 
-          {/* COT History Trend Charts */}
-          <COTHistoryTrends />
+            <TabsContent value="signals" className="mt-6 space-y-10 focus-visible:outline-none">
+              <COTTradeRecommendations />
+              <COTTradeThisNotThat />
+            </TabsContent>
 
-          {/* Info Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {infoCards.map((card) => {
-              const Icon = card.icon;
-              return (
-                <div key={card.title} className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{card.title}</span>
-                    <Icon className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <div className={`text-2xl font-bold ${card.accent} mb-1`}>{card.label}</div>
-                  <p className="text-xs text-muted-foreground">{card.desc}</p>
+            <TabsContent value="positioning" className="mt-6 space-y-10 focus-visible:outline-none">
+              <COTHistoryTrends />
+              <SyntheticCurrencyIndex />
+            </TabsContent>
+
+            <TabsContent value="pairs" className="mt-6 space-y-10 focus-visible:outline-none">
+              <COTPairScorecard />
+              <COTPairAnalyzer />
+            </TabsContent>
+
+            <TabsContent value="learn" className="mt-6 space-y-10 focus-visible:outline-none">
+              {/* Who's who in the report */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {infoCards.map((card) => {
+                  const Icon = card.icon;
+                  return (
+                    <div key={card.title} className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-6">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{card.title}</span>
+                        <Icon className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <div className={`text-2xl font-bold ${card.accent} mb-1`}>{card.label}</div>
+                      <p className="text-xs text-muted-foreground">{card.desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="rounded-3xl border border-border/30 bg-card/20 backdrop-blur-sm p-8 sm:p-10">
+                <h2 className="font-display-hero text-2xl sm:text-3xl font-bold text-foreground mb-2">Understanding COT Data</h2>
+                <p className="text-muted-foreground text-sm mb-8">
+                  Learn how to interpret Commitment of Traders reports for better trading decisions
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {educationItems.map((item) => (
+                    <div key={item.title}>
+                      <h3 className="font-semibold text-foreground mb-2 text-sm">{item.title}</h3>
+                      <p className="text-muted-foreground text-sm leading-relaxed">{item.text}</p>
+                    </div>
+                  ))}
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            </TabsContent>
+          </Tabs>
 
-          <COTPairScorecard />
-          <COTTradeThisNotThat />
-          <SyntheticCurrencyIndex />
-          <COTPairAnalyzer />
-
-          {/* Educational Section */}
-          <div className="rounded-3xl border border-border/30 bg-card/20 backdrop-blur-sm p-8 sm:p-10">
-            <h2 className="font-display-hero text-2xl sm:text-3xl font-bold text-foreground mb-2">Understanding COT Data</h2>
-            <p className="text-muted-foreground text-sm mb-8">
-              Learn how to interpret Commitment of Traders reports for better trading decisions
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {educationItems.map((item) => (
-                <div key={item.title}>
-                  <h3 className="font-semibold text-foreground mb-2 text-sm">{item.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{item.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* MidasFX Banner */}
           <div className="flex justify-center">
