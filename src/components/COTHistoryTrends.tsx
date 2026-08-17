@@ -248,11 +248,11 @@ const COTHistoryTrends = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.2} />
                 <XAxis
                   dataKey="label"
-                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                  tick={{ fill: "hsl(var(--foreground))", fillOpacity: 0.85, fontSize: 11, fontWeight: 600 }}
                   interval="preserveStartEnd"
                 />
                 <YAxis
-                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                  tick={{ fill: "hsl(var(--foreground))", fillOpacity: 0.85, fontSize: 11, fontWeight: 600 }}
                   tickFormatter={fmt}
                 />
                 <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" opacity={0.5} />
@@ -359,8 +359,8 @@ const COTHistoryTrends = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.2} />
-                <XAxis dataKey="label" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} interval="preserveStartEnd" />
-                <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} tickFormatter={(v) => fmt(Math.abs(v))} />
+                <XAxis dataKey="label" tick={{ fill: "hsl(var(--foreground))", fillOpacity: 0.85, fontSize: 11, fontWeight: 600 }} interval="preserveStartEnd" />
+                <YAxis tick={{ fill: "hsl(var(--foreground))", fillOpacity: 0.85, fontSize: 11, fontWeight: 600 }} tickFormatter={(v) => fmt(Math.abs(v))} />
                 <ReferenceLine y={0} stroke="hsl(var(--foreground))" strokeOpacity={0.4} />
                 <Tooltip content={<DetailedTooltip history={history} focusCurrency={focusCurrency} />} />
                 <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} iconType="circle" />
@@ -388,7 +388,7 @@ const COTHistoryTrends = () => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData} layout="vertical" barSize={18}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.15} />
-                <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} tickFormatter={fmt} />
+                <XAxis type="number" tick={{ fill: "hsl(var(--foreground))", fillOpacity: 0.85, fontSize: 11, fontWeight: 600 }} tickFormatter={fmt} />
                 <YAxis
                   type="category"
                   dataKey="currency"
