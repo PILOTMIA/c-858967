@@ -35,20 +35,6 @@ const FALLBACK_DATA: Record<string, any> = {
   BTC: { netPosition: -7052, long: 4997, short: 12049, weeklyChange: 188, reportDate: "2026-08-11", source: "verified_8_11" },
 };
 
-// Verified fallback data — CFTC report 7/28/2026 (synced from cot_history)
-const FALLBACK_DATA: Record<string, any> = {
-  EUR: { netPosition: -72447, long: 204975, short: 277422, weeklyChange: -31109, reportDate: "2026-07-28", source: "verified_7_28" },
-  GBP: { netPosition: -64814, long: 61458, short: 126272, weeklyChange: -9253, reportDate: "2026-07-28", source: "verified_7_28" },
-  JPY: { netPosition: -163412, long: 101271, short: 264683, weeklyChange: -11287, reportDate: "2026-07-28", source: "verified_7_28" },
-  CHF: { netPosition: -33462, long: 10117, short: 43579, weeklyChange: 780, reportDate: "2026-07-28", source: "verified_7_28" },
-  AUD: { netPosition: -39964, long: 67819, short: 107783, weeklyChange: -2279, reportDate: "2026-07-28", source: "verified_7_28" },
-  CAD: { netPosition: -176310, long: 22500, short: 198810, weeklyChange: -1862, reportDate: "2026-07-28", source: "verified_7_28" },
-  NZD: { netPosition: -47668, long: 6841, short: 54509, weeklyChange: 2301, reportDate: "2026-07-28", source: "verified_7_28" },
-  MXN: { netPosition: 72528, long: 106487, short: 33959, weeklyChange: 829, reportDate: "2026-07-28", source: "verified_7_28" },
-  USD: { netPosition: 17197, long: 35339, short: 18142, weeklyChange: 1583, reportDate: "2026-07-28", source: "verified_7_28" },
-  XAU: { netPosition: 182070, long: 219622, short: 37552, weeklyChange: -1840, reportDate: "2026-07-28", source: "verified_7_28" },
-  BTC: { netPosition: 3904, long: 15572, short: 11668, weeklyChange: 850, reportDate: "2026-07-28", source: "verified_7_28" },
-};
 
 
 async function fetchFromCFTC(currency: string): Promise<any | null> {
