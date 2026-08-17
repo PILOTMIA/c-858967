@@ -4,8 +4,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, ArrowRight, Zap, Shield, Building2, BarChart3, Landmark } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, LineChart, Line, CartesianGrid, Legend } from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-// COT positions from CFTC report May 5, 2026 (as of April 28, 2026)
+// COT positions from CFTC TFF report, August 11, 2026 (Leveraged Funds)
 interface CurrencyPositioning {
   netPosition: number;
   long: number;
