@@ -3,6 +3,7 @@ import COTPairAnalyzer from "@/components/COTPairAnalyzer";
 import COTPairScorecard from "@/components/COTPairScorecard";
 import COTTradeThisNotThat from "@/components/COTTradeThisNotThat";
 import COTHistoryTrends from "@/components/COTHistoryTrends";
+import COTIndexPositioning from "@/components/COTIndexPositioning";
 import COTTradeRecommendations from "@/components/COTTradeRecommendations";
 import SyntheticCurrencyIndex from "@/components/SyntheticCurrencyIndex";
 import COTDataHealthBanner from "@/components/COTDataHealthBanner";
@@ -145,6 +146,7 @@ const COTAnalysisContent = () => {
             </TabsContent>
 
             <TabsContent value="positioning" className="mt-6 space-y-10 focus-visible:outline-none">
+              <COTIndexPositioning />
               <COTHistoryTrends />
               <SyntheticCurrencyIndex />
             </TabsContent>
