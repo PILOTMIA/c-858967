@@ -31,7 +31,7 @@ const fallbackPrices: Record<string, number> = {
   USDCAD: 1.4380,
   USDMXN: 20.35,
   NZDUSD: 0.5680,
-  XAUUSD: 2350.00,
+  XAUUSD: 4400.00,
   USDBRL: 5.8450,
   EURJPY: 154.90,
   GBPJPY: 183.65,
