@@ -50,7 +50,7 @@ const GoldLivePrice = () => {
     refetchInterval: 1000 * 60 * 30,
   });
 
-  const goldPrice = goldData?.rates?.XAUUSD?.rate ?? 2350;
+  const goldPrice = goldData?.rates?.XAUUSD?.rate ?? 4400;
   const goldSource = goldData?.rates?.XAUUSD?.source ?? "fallback";
   const us10y = yieldData?.us10y?.yield ?? 4.32;
   const us10yPrev = yieldData?.us10y?.previousYield ?? 4.40;

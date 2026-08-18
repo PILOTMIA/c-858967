@@ -31,7 +31,7 @@ const fallbackPrices: Record<string, number> = {
   USDCAD: 1.4380,
   USDMXN: 20.35,
   NZDUSD: 0.5680,
-  XAUUSD: 2350.00,
+  XAUUSD: 4400.00,
   USDBRL: 5.8450,
   EURJPY: 154.90,
   GBPJPY: 183.65,
@@ -116,6 +116,21 @@ serve(async (req) => {
 
     const resolvePair = async (pairCode: string): Promise<{ rate: number; source: string }> => {
       if (pairCode === 'XAUUSD') {
+        try {
+          const r = await fetchWithTimeout('https://api.gold-api.com/price/XAU');
+          if (r.ok) {
+            const d = await r.json();
+            if (typeof d?.price === 'number' && d.price > 0) return { rate: d.price, source: 'gold-api' };
+          }
+        } catch { /* next */ }
+        try {
+          const r = await fetchWithTimeout('https://api.coingecko.com/api/v3/simple/price?ids=tether-gold&vs_currencies=usd');
+          if (r.ok) {
+            const d = await r.json();
+            const p = d?.['tether-gold']?.usd;
+            if (typeof p === 'number' && p > 0) return { rate: p, source: 'coingecko-xaut' };
+          }
+        } catch { /* next */ }
         return { rate: fallbackPrices.XAUUSD, source: 'xauusd-fallback' };
       }
       try {
