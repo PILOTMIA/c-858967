@@ -21,6 +21,7 @@ import RiskDisclaimer from "./pages/RiskDisclaimer";
 import Metals from "./pages/Metals";
 import SentimentMatrix from "./pages/SentimentMatrix";
 import CurrencyFlow from "./pages/CurrencyFlow";
+import VixWatch from "./pages/VixWatch";
 import AppNavigation from "./components/AppNavigation";
 import TradingViewBanner from "./components/TradingViewBanner";
 import TermsAgreementModal from "./components/TermsAgreementModal";
