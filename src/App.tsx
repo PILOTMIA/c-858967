@@ -29,14 +29,14 @@ import FirstTimeUserTutorial from "./components/FirstTimeUserTutorial";
 import PageTransition from "./components/PageTransition";
 import ScrollToTop from "./components/ScrollToTop";
 
-// Global data policy: every API-backed query refreshes at least every 30 minutes.
-const THIRTY_MIN = 1000 * 60 * 30;
+// Global data policy: every API-backed query refreshes at least every 10 minutes.
+const TEN_MIN = 1000 * 60 * 10;
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: THIRTY_MIN,
-      gcTime: THIRTY_MIN * 2,
-      refetchInterval: THIRTY_MIN,
+      staleTime: TEN_MIN,
+      gcTime: TEN_MIN * 3,
+      refetchInterval: TEN_MIN,
       refetchIntervalInBackground: false,
       refetchOnWindowFocus: true,
       retry: 1,
