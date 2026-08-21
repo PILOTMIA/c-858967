@@ -80,6 +80,7 @@ const App = () => (
                 <Route path="/metals" element={<PageTransition><Metals /></PageTransition>} />
                 <Route path="/sentiment-matrix" element={<PageTransition><SentimentMatrix /></PageTransition>} />
                 <Route path="/currency-flow" element={<PageTransition><CurrencyFlow /></PageTransition>} />
+                <Route path="/vix-watch" element={<PageTransition><VixWatch /></PageTransition>} />
                 <Route path="/risk-disclaimer" element={<PageTransition><RiskDisclaimer /></PageTransition>} />
               </Routes>
             </div>
