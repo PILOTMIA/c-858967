@@ -13,6 +13,7 @@ const AppNavigation = () => {
     { path: '/cot-analysis', label: 'COT Analysis', icon: PieChart },
     { path: '/sentiment-matrix', label: 'Sentiment Matrix', icon: Compass },
     { path: '/currency-flow', label: 'Currency Flow', icon: Globe2 },
+    { path: '/vix-watch', label: 'VIX Watch', icon: Gauge },
     { path: '/economic-radar', label: 'Economic Radar', icon: Activity },
     { path: '/news', label: 'Market News', icon: Newspaper },
     { path: '/metals', label: 'Metals / Gold', icon: Gem },
