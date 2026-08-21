@@ -32,7 +32,11 @@ async function fetchSeries(symbol: string, range: string) {
     .filter((p) => typeof p.close === 'number' && Number.isFinite(p.close)) as { date: string; close: number }[];
   const m = r.meta || {};
   const price = Number(m.regularMarketPrice ?? history.at(-1)?.close);
-  const prev = Number(m.chartPreviousClose ?? m.previousClose ?? history.at(-2)?.close ?? price);
+  const lastBar = history.at(-1);
+  const sameBar = lastBar && Math.abs(lastBar.close - price) / price < 0.0001;
+  const prev = Number(
+    (sameBar ? history.at(-2)?.close : lastBar?.close) ?? m.chartPreviousClose ?? price
+  );
   return {
     price,
     previousClose: prev,
