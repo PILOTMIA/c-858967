@@ -61,7 +61,7 @@ const fetchFedData = async (): Promise<FedData> => {
 
     return {
       currentRate,
-      nextMeetingDate: "2024-12-18",
+      nextMeetingDate: nextFomcMeeting(),
       probabilities: calculateProbabilities(currentRate),
       sentiment: currentRate > 4.5 ? 'DOVISH' : currentRate < 2.0 ? 'HAWKISH' : 'NEUTRAL',
       nextRateChange: currentRate > 4.5 ? -0.25 : 0
@@ -70,7 +70,7 @@ const fetchFedData = async (): Promise<FedData> => {
     console.log('Using fallback data due to API limits');
     return {
       currentRate: 4.50,
-      nextMeetingDate: "2026-05-07",
+      nextMeetingDate: nextFomcMeeting(),
       probabilities: { rateCut: 38.5, rateHold: 55.2, rateHike: 6.3 },
       sentiment: 'NEUTRAL',
       nextRateChange: 0
@@ -185,7 +185,7 @@ const FedWatchTool = () => {
           </div>
           
           <div className="mt-4 text-sm text-muted-foreground">
-            Next Meeting: {fedData?.nextMeetingDate}
+            Next Meeting: {formatMeetingDate(fedData?.nextMeetingDate)}
           </div>
         </div>
       </div>
