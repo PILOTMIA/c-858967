@@ -142,6 +142,11 @@ function buildArticle(title: string, description: string, url: string, published
   const cleanTitle = cleanText(title);
   if (!cleanTitle || !url) return null;
   const combined = `${cleanTitle} ${description} ${domain}`;
+  if (!isRelevant(`${cleanTitle} ${cleanText(description)}`)) return null;
+  const published = Date.parse(publishedAt);
+  // Drop anything older than 72 hours so the feed always reads as current.
+  if (Number.isFinite(published) && Date.now() - published > 72 * 3600 * 1000) return null;
+
   const { currency, pairs } = inferCurrency(combined);
   const { sentiment, score } = inferSentiment(combined);
   const impact = inferImpact(combined);
