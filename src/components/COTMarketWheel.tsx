@@ -58,7 +58,7 @@ const COTMarketWheel = () => {
       'GBPAUD': { long: 274984, short: 188536, ncLong: 108569, ncShort: 114721 },
       'EURCAD': { long: 111775, short: 505286, ncLong: 190397, ncShort: 156664 },
       'NZDJPY': { long: 122007, short: 134206, ncLong: 147243, ncShort: 102195 },
-      'CADJPY': { long: 125913, short: 106034, ncLong: 94672, ncShort: 181224 }
+      'CADJPY': { long: 240895, short: 158903, ncLong: 170954, ncShort: 166004 }
     };
     
     const data = positionData[item.currency] || { long: 0, short: 0, ncLong: 0, ncShort: 0 };
@@ -69,7 +69,7 @@ const COTMarketWheel = () => {
       commercialShort: data.short,
       nonCommercialLong: data.ncLong,
       nonCommercialShort: data.ncShort,
-      reportDate: '2026-08-11T00:00:00Z',
+      reportDate: '2026-08-25T00:00:00Z',
       weeklyChange: item.weeklyChange
     };
     
