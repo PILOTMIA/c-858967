@@ -50,20 +50,40 @@ function cleanText(value: unknown): string {
     .trim();
 }
 
+// Headlines must be genuinely macro/FX relevant, otherwise they are dropped.
+const RELEVANCE_TERMS = [
+  'forex', 'fx ', 'currency', 'currencies', 'dollar', 'euro', 'yen', 'sterling', 'pound', 'franc', 'loonie', 'aussie', 'kiwi', 'peso', 'yuan',
+  'fed', 'federal reserve', 'powell', 'fomc', 'ecb', 'lagarde', 'boe', 'bank of england', 'boj', 'bank of japan', 'ueda', 'snb', 'rba', 'rbnz', 'bank of canada', 'central bank',
+  'interest rate', 'rate cut', 'rate hike', 'rates', 'yield', 'yields', 'treasury', 'bond', 'gilt', 'bund',
+  'inflation', 'cpi', 'ppi', 'pce', 'gdp', 'payroll', 'jobs report', 'unemployment', 'jobless',
+  'gold', 'bullion', 'xau', 'silver', 'oil', 'crude', 'bitcoin', 'tariff', 'stimulus', 'recession', 'trade deal',
+];
+
+function isRelevant(text: string): boolean {
+  const lower = text.toLowerCase();
+  return RELEVANCE_TERMS.some(term => lower.includes(term));
+}
+
 function inferCurrency(text: string): { currency: string; pairs: string[] } {
   const lower = text.toLowerCase();
-  const match = Object.entries(CURRENCY_RULES).find(([, rule]) => rule.terms.some(term => lower.includes(term)));
-  if (!match) return { currency: 'USD', pairs: ['EURUSD', 'GBPUSD', 'USDJPY'] };
-  return { currency: match[0], pairs: match[1].pairs };
+  // Score every currency and take the strongest match so a passing "Fed" mention
+  // does not override a headline that is clearly about CAD, JPY, gold, etc.
+  const ranked = Object.entries(CURRENCY_RULES)
+    .map(([code, rule]) => ({ code, pairs: rule.pairs, hits: rule.terms.filter(term => lower.includes(term)).length }))
+    .filter(entry => entry.hits > 0)
+    .sort((a, b) => b.hits - a.hits);
+  if (!ranked.length) return { currency: 'USD', pairs: ['EURUSD', 'GBPUSD', 'USDJPY'] };
+  return { currency: ranked[0].code, pairs: ranked[0].pairs };
 }
+
 
 function inferCategory(text: string): string {
   const lower = text.toLowerCase();
-  if (lower.includes('gold') || lower.includes('bullion') || lower.includes('oil') || lower.includes('commodit')) return 'Commodities';
-  if (lower.includes('jobs') || lower.includes('payroll') || lower.includes('employment') || lower.includes('unemployment')) return 'Employment';
   if (lower.includes('inflation') || lower.includes('cpi') || lower.includes('pce') || lower.includes('ppi')) return 'Inflation';
-  if (lower.includes('rate') || lower.includes('yield') || lower.includes('treasury') || lower.includes('bond')) return 'Interest Rates';
-  if (lower.includes('fed') || lower.includes('ecb') || lower.includes('boe') || lower.includes('boj') || lower.includes('central bank')) return 'Central Bank';
+  if (lower.includes('jobs') || lower.includes('payroll') || lower.includes('employment') || lower.includes('unemployment') || lower.includes('jobless')) return 'Employment';
+  if (lower.includes('fed') || lower.includes('ecb') || lower.includes('boe') || lower.includes('boj') || lower.includes('central bank') || lower.includes('rate cut') || lower.includes('rate hike')) return 'Central Bank';
+  if (lower.includes('rate') || lower.includes('yield') || lower.includes('treasury') || lower.includes('bond') || lower.includes('gilt')) return 'Interest Rates';
+  if (lower.includes('gold') || lower.includes('bullion') || lower.includes('oil') || lower.includes('commodit') || lower.includes('silver')) return 'Commodities';
   if (lower.includes('tariff') || lower.includes('war') || lower.includes('sanction') || lower.includes('geopolit')) return 'Geopolitical';
   return 'Currencies';
 }
@@ -127,6 +147,11 @@ function buildArticle(title: string, description: string, url: string, published
   const cleanTitle = cleanText(title);
   if (!cleanTitle || !url) return null;
   const combined = `${cleanTitle} ${description} ${domain}`;
+  if (!isRelevant(`${cleanTitle} ${cleanText(description)}`)) return null;
+  const published = Date.parse(publishedAt);
+  // Drop anything older than 72 hours so the feed always reads as current.
+  if (Number.isFinite(published) && Date.now() - published > 72 * 3600 * 1000) return null;
+
   const { currency, pairs } = inferCurrency(combined);
   const { sentiment, score } = inferSentiment(combined);
   const impact = inferImpact(combined);
@@ -328,9 +353,9 @@ Deno.serve(async (req) => {
       majorPairs,
       trend,
 
-      summary: `${articles.length} live market headlines aggregated from GDELT, Investing.com, ForexLive, FXStreet, MarketWatch, and WSJ. ${highImpact} high-impact items across USD pairs, central banks, yields, and gold.`,
+      summary: `${articles.length} live market headlines aggregated from GDELT, Investing.com, ForexLive, FXStreet, MarketWatch, and WSJ. ${highImpact} high-impact items across USD pairs, central banks, yields, and gold. Only macro-relevant headlines from the last 72 hours are shown.`,
 
-    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=600' } });
+    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
   } catch (error) {
     const articles = fallbackArticles();
     return new Response(JSON.stringify({
