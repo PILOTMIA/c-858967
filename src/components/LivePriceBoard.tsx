@@ -100,7 +100,7 @@ const LivePriceBoard = () => {
             <p className="ma-eyebrow">Live quotes</p>
             <h2 className="ma-serif text-xl sm:text-2xl font-bold text-foreground">Rate Board</h2>
             <p className="text-xs text-muted-foreground mt-1">
-              Real quotes from the price feed. Change is measured against the previous daily close — no simulated data.
+              Live quotes from the price feed. Daily change is measured against the previous official ECB reference close — no simulated data.
             </p>
           </div>
         </div>
