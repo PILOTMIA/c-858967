@@ -451,7 +451,7 @@ const CentralBankRates = () => {
             </CardTitle>
             <p className="text-sm text-muted-foreground font-medium mt-1 flex items-center gap-2">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse inline-block"></span>
-              Updated March 2026 — All rates reflect latest decisions
+              Updated {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} — rates reflect the latest decisions; meeting dates roll forward automatically
             </p>
           </div>
           <div className="flex gap-2">
