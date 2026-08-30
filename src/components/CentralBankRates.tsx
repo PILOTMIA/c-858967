@@ -83,11 +83,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         title: "FOMC Statement — July 28-29, 2026",
         summary: "The Fed held the target range at 4.25-4.50% again, extending the hold through the summer. Powell said the committee needs more evidence that tariff-driven price pressure is fading before easing, while flagging a gradual cooling in payrolls. Markets continue to price the first cut for the September 15-16 meeting.",
         keyTakeaways: [
-          "Rates held at 4.25-4.50% unanimously",
-          "GDP growth forecast revised down to 1.7% from 2.1%",
-          "Core PCE inflation raised to 2.8% for 2026",
-          "Tariff uncertainty is the primary risk factor",
-          "Two 25bp cuts still projected for later in 2026"
+          "Target range held at 4.25-4.50% for the fifth straight meeting",
+          "Powell: more evidence needed that tariff pass-through is fading",
+          "Payroll growth cooling but unemployment still near 4.3%",
+          "Core PCE tracking ~2.7% year-over-year",
+          "Markets price the first cut at the September 15-16 meeting"
         ],
         link: "https://www.federalreserve.gov/monetarypolicy/fomcpresconf20260318.htm",
         tone: 'neutral'
@@ -121,11 +121,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         title: "MPC Summary & Minutes — August 2026",
         summary: "The MPC held Bank Rate at 3.75% with a split vote, keeping the 'gradual and careful' language. Services inflation is easing more slowly than headline CPI, and the committee wants to see the autumn wage round before cutting again.",
         keyTakeaways: [
-          "Unanimous 9-0 vote to hold at 3.75%",
-          "First unanimous hold since September 2021",
-          "CPI rose to 3.0% vs 2.8% forecast",
-          "Governor Bailey stressed 'gradual and careful' approach",
-          "Global trade uncertainty cited as key downside risk"
+          "Bank Rate held at 3.75% on a split vote",
+          "Services inflation easing slower than headline CPI",
+          "Autumn wage settlements are the key input for the next cut",
+          "Growth running near 1% annualised",
+          "Guidance stays 'gradual and careful'"
         ],
         link: "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/march-2026",
         tone: 'neutral'
@@ -159,11 +159,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         title: "ECB Monetary Policy Decision — July 2026",
         summary: "The Governing Council left the deposit facility rate at 2.65% for a third meeting, judging policy to be in broadly neutral territory. Lagarde repeated that decisions stay meeting-by-meeting and data-dependent, with trade policy and euro strength the main disinflationary risks.",
         keyTakeaways: [
-          "Sixth consecutive 25bp rate cut to 2.65%",
-          "Inflation on track for 2% target by late 2026",
-          "Growth forecast cut to 0.9% for 2026",
-          "Defense and infrastructure spending to boost growth",
-          "US tariff risks dominate the outlook"
+          "Deposit rate unchanged at 2.65% for a third meeting",
+          "Policy judged to be around neutral",
+          "Headline HICP close to the 2% target",
+          "Euro strength adds to disinflation",
+          "Decisions remain meeting-by-meeting"
         ],
         link: "https://www.ecb.europa.eu/press/govcouncil/mopo/html/index.en.html",
         tone: 'dovish'
@@ -197,11 +197,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         title: "RBA Board Minutes — August 2026",
         summary: "The Board held the cash rate at 4.10%, saying the easing delivered earlier in the year is still working through the economy. Trimmed mean inflation is inside the upper half of the band and the labour market remains tight, so the Board is in no hurry to cut again.",
         keyTakeaways: [
-          "First rate cut in 4 years — 25bp to 4.10%",
-          "Governor Bullock: 'Not on a pre-set path'",
-          "Trimmed mean CPI at 3.2%, trending lower",
-          "Labor market remains tight",
-          "Next cut not guaranteed — data dependent"
+          "Cash rate held at 4.10%",
+          "Earlier easing still passing through the economy",
+          "Trimmed mean CPI in the upper half of the 2-3% band",
+          "Labour market remains tight",
+          "Board not on a pre-set path"
         ],
         link: "https://www.rba.gov.au/monetary-policy/rba-board-minutes/2026/2026-02-18.html",
         tone: 'neutral'
@@ -235,11 +235,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         title: "RBNZ Monetary Policy Statement — August 2026",
         summary: "The RBNZ left the OCR at 3.75%, close to its neutral estimate, after the front-loaded cuts of the previous cycle. The committee sees activity recovering modestly and inflation expectations anchored, leaving the next move genuinely two-sided.",
         keyTakeaways: [
-          "Third consecutive 50bp cut to 3.75%",
-          "OCR has dropped 175bp since August 2025",
-          "Economy exiting recession — GDP positive in Q4",
-          "Future cuts likely at a slower pace",
-          "Neutral rate estimated around 3.00%"
+          "OCR held at 3.75%, near the neutral estimate",
+          "Front-loaded cuts have done most of the work",
+          "Activity recovering modestly",
+          "Inflation expectations anchored near 2%",
+          "Next move is genuinely two-sided"
         ],
         link: "https://www.rbnz.govt.nz/monetary-policy/official-cash-rate-decisions",
         tone: 'dovish'
@@ -273,11 +273,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         title: "BoC Rate Decision & Deliberations — July 2026",
         summary: "The Bank of Canada held the policy rate at 2.75%. Governing Council said tariffs remain the dominant risk to growth but that inflation is tracking close to target, so the bar for further easing is a clear deterioration in the labour market.",
         keyTakeaways: [
-          "25bp cut to 2.75% — seventh consecutive cut",
-          "US tariffs the 'most significant' risk to outlook",
-          "GDP growth forecast cut to 1.0% for 2026",
-          "Inflation expected to remain near 2% target",
-          "Further cuts depend on trade war developments"
+          "Policy rate held at 2.75%",
+          "Tariffs remain the dominant growth risk",
+          "Inflation tracking close to the 2% target",
+          "Labour market softening would trigger further easing",
+          "Governing Council sees policy as roughly neutral"
         ],
         link: "https://www.bankofcanada.ca/core-functions/monetary-policy/key-interest-rate/",
         tone: 'dovish'
@@ -311,11 +311,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         title: "SNB Monetary Policy Assessment — June 2026",
         summary: "The SNB kept the policy rate at 0.00% and reiterated its willingness to intervene in FX markets as necessary. Inflation remains near the bottom of the price-stability range, keeping the risk of a return to negative rates on the table if the franc appreciates sharply.",
         keyTakeaways: [
-          "Rate held at 0.00% — at the lower bound",
-          "Inflation at just 0.3%, well below 2% target",
-          "CHF appreciation pressuring exporters",
-          "SNB 'willing to be active in FX market' if needed",
-          "Trade war uncertainty is primary external risk"
+          "Policy rate held at 0.00%",
+          "SNB ready to intervene in FX markets as needed",
+          "Inflation near the bottom of the price-stability range",
+          "Negative rates remain a tool if the franc surges",
+          "Next assessment is the September quarterly review"
         ],
         link: "https://www.snb.ch/en/the-snb/mandates-goals/monetary-policy/monetary-policy-strategy",
         tone: 'neutral'
@@ -349,11 +349,11 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         title: "BoJ Monetary Policy Decision — July 2026",
         summary: "The BoJ held the policy rate at 0.50% and lifted its core inflation forecast, keeping a hawkish bias. Ueda said another hike remains possible in the second half of the fiscal year provided wage momentum and services prices hold up.",
         keyTakeaways: [
-          "Rate held at 0.50% — but hawkish forward guidance",
-          "April hike remains 'on the table' — Ueda",
-          "Wage growth at 5.4% supports normalization",
-          "Services inflation rising as expected",
-          "New price indicator to debut at April meeting"
+          "Policy rate held at 0.50% with a hawkish bias",
+          "Core inflation forecast revised higher",
+          "Another hike possible later in the fiscal year",
+          "Wage momentum and services prices are the key tests",
+          "JGB purchase taper continues on schedule"
         ],
         link: "https://www.boj.or.jp/en/mopo/outline/index.htm",
         tone: 'hawkish'
