@@ -201,7 +201,12 @@ const GlobeCurrencyFlow = ({
     globe.pointsData(points).arcsData(arcs);
   }, [frame, visibleCodes]);
 
-  return <div ref={containerRef} className="h-full w-full cursor-grab active:cursor-grabbing" />;
+  return (
+    <div
+      ref={containerRef}
+      className="absolute inset-0 overflow-hidden cursor-grab active:cursor-grabbing [&>div]:!mx-auto"
+    />
+  );
 };
 
 export default GlobeCurrencyFlow;
