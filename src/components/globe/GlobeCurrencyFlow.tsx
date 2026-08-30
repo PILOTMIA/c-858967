@@ -107,17 +107,27 @@ const GlobeCurrencyFlow = ({
     globe.controls().autoRotateSpeed = 0.45;
     globe.controls().enableDamping = true;
     globe.controls().dampingFactor = 0.08;
-    globe.pointOfView({ lat: 25, lng: -20, altitude: 2.4 });
+    globe.pointOfView({ lat: 18, lng: 5, altitude: 2.5 });
     globeRef.current = globe;
 
     let raf = 0;
+    // Measure the *parent* box: the canvas injected inside `el` would otherwise
+    // grow the grid column (min-width:auto) and push the globe off-centre.
+    const measure = () => {
+      const host = el.parentElement ?? el;
+      const rect = host.getBoundingClientRect();
+      const w = Math.max(1, Math.round(rect.width));
+      const h = Math.max(1, Math.round(rect.height));
+      globe.width(w).height(h);
+      globe.pointOfView({ altitude: w < 640 ? 2.9 : 2.4 }, 0);
+    };
     const resize = () => {
       cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => globe.width(el.clientWidth).height(el.clientHeight));
+      raf = requestAnimationFrame(measure);
     };
     resize();
     const ro = new ResizeObserver(resize);
-    ro.observe(el);
+    ro.observe(el.parentElement ?? el);
 
     return () => {
       cancelAnimationFrame(raf);
@@ -191,7 +201,12 @@ const GlobeCurrencyFlow = ({
     globe.pointsData(points).arcsData(arcs);
   }, [frame, visibleCodes]);
 
-  return <div ref={containerRef} className="h-full w-full cursor-grab active:cursor-grabbing" />;
+  return (
+    <div
+      ref={containerRef}
+      className="absolute inset-0 overflow-hidden cursor-grab active:cursor-grabbing [&>div]:!mx-auto"
+    />
+  );
 };
 
 export default GlobeCurrencyFlow;
