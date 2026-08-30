@@ -50,12 +50,27 @@ function cleanText(value: unknown): string {
     .trim();
 }
 
+// Headlines must be genuinely macro/FX relevant, otherwise they are dropped.
+const RELEVANCE_TERMS = [
+  'forex', 'fx ', 'currency', 'currencies', 'dollar', 'euro', 'yen', 'sterling', 'pound', 'franc', 'loonie', 'aussie', 'kiwi', 'peso', 'yuan',
+  'fed', 'federal reserve', 'powell', 'fomc', 'ecb', 'lagarde', 'boe', 'bank of england', 'boj', 'bank of japan', 'ueda', 'snb', 'rba', 'rbnz', 'bank of canada', 'central bank',
+  'interest rate', 'rate cut', 'rate hike', 'rates', 'yield', 'yields', 'treasury', 'bond', 'gilt', 'bund',
+  'inflation', 'cpi', 'ppi', 'pce', 'gdp', 'payroll', 'jobs report', 'unemployment', 'jobless',
+  'gold', 'bullion', 'xau', 'silver', 'oil', 'crude', 'bitcoin', 'tariff', 'stimulus', 'recession', 'trade deal',
+];
+
+function isRelevant(text: string): boolean {
+  const lower = text.toLowerCase();
+  return RELEVANCE_TERMS.some(term => lower.includes(term));
+}
+
 function inferCurrency(text: string): { currency: string; pairs: string[] } {
   const lower = text.toLowerCase();
   const match = Object.entries(CURRENCY_RULES).find(([, rule]) => rule.terms.some(term => lower.includes(term)));
   if (!match) return { currency: 'USD', pairs: ['EURUSD', 'GBPUSD', 'USDJPY'] };
   return { currency: match[0], pairs: match[1].pairs };
 }
+
 
 function inferCategory(text: string): string {
   const lower = text.toLowerCase();
