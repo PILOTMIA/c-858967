@@ -22,6 +22,7 @@ import Metals from "./pages/Metals";
 import SentimentMatrix from "./pages/SentimentMatrix";
 import CurrencyFlow from "./pages/CurrencyFlow";
 import VixWatch from "./pages/VixWatch";
+import WeeklyPlaybookPage from "./pages/WeeklyPlaybook";
 import AppNavigation from "./components/AppNavigation";
 import TradingViewBanner from "./components/TradingViewBanner";
 import TermsAgreementModal from "./components/TermsAgreementModal";
@@ -67,6 +68,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<PageTransition><Index /></PageTransition>} />
                 <Route path="/market-analysis" element={<PageTransition><MarketAnalysis /></PageTransition>} />
+                <Route path="/weekly-playbook" element={<PageTransition><WeeklyPlaybookPage /></PageTransition>} />
                 <Route path="/cot-analysis" element={<PageTransition><COTAnalysis /></PageTransition>} />
                 <Route path="/economic-radar" element={<PageTransition><EconomicRadar /></PageTransition>} />
                 <Route path="/news" element={<PageTransition><News /></PageTransition>} />

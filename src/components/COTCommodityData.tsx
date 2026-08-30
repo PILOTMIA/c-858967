@@ -2,45 +2,70 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-// Source: CFTC Disaggregated Commitments of Traders – Futures Only, August 11, 2026
+// Source: CFTC Disaggregated Commitments of Traders – Futures Only, August 25, 2026
 // Speculator = Managed Money; Commercial = Producer/Merchant + Swap Dealers
 const commodityCOTData = [
   {
     name: "Gold",
     symbol: "GC",
-    nonCommercialLong: 148634,
-    nonCommercialShort: 10972,
-    commercialLong: 34808,
-    commercialShort: 287448,
-    weeklyChangeLong: 8825,
-    weeklyChangeShort: 1929,
-    openInterest: 400309,
-    reportDate: "August 11, 2026",
-    additionalInfo: "Managed Money net long expanded +6,896 WoW to +137,662 — fresh institutional accumulation"
+    nonCommercialLong: 159819,
+    nonCommercialShort: 15072,
+    commercialLong: 33517,
+    commercialShort: 313102,
+    weeklyChangeLong: 5224,
+    weeklyChangeShort: 2125,
+    openInterest: 427957,
+    reportDate: "August 25, 2026",
+    additionalInfo: "Managed Money net long grew +3,099 WoW to +144,747 — third straight week of accumulation"
   },
   {
     name: "Silver",
     symbol: "SI",
-    nonCommercialLong: 19956,
-    nonCommercialShort: 8798,
-    commercialLong: 27985,
-    commercialShort: 71959,
-    weeklyChangeLong: -509,
-    weeklyChangeShort: 307,
-    openInterest: 115127,
-    reportDate: "August 11, 2026"
+    nonCommercialLong: 21421,
+    nonCommercialShort: 7348,
+    commercialLong: 28353,
+    commercialShort: 73406,
+    weeklyChangeLong: 1888,
+    weeklyChangeShort: -490,
+    openInterest: 113801,
+    reportDate: "August 25, 2026"
   },
   {
     name: "Copper",
     symbol: "HG",
-    nonCommercialLong: 93911,
-    nonCommercialShort: 14884,
-    commercialLong: 83464,
-    commercialShort: 174710,
-    weeklyChangeLong: 738,
-    weeklyChangeShort: -2531,
-    openInterest: 297047,
-    reportDate: "August 11, 2026"
+    nonCommercialLong: 92107,
+    nonCommercialShort: 15836,
+    commercialLong: 78850,
+    commercialShort: 173899,
+    weeklyChangeLong: 10,
+    weeklyChangeShort: 2387,
+    openInterest: 283299,
+    reportDate: "August 25, 2026"
+  },
+  {
+    name: "Platinum",
+    symbol: "PL",
+    nonCommercialLong: 18664,
+    nonCommercialShort: 8436,
+    commercialLong: 18643,
+    commercialShort: 38223,
+    weeklyChangeLong: 3262,
+    weeklyChangeShort: 248,
+    openInterest: 64648,
+    reportDate: "August 25, 2026"
+  },
+  {
+    name: "Crude Oil (WTI)",
+    symbol: "CL",
+    nonCommercialLong: 14224,
+    nonCommercialShort: 24583,
+    commercialLong: 421875,
+    commercialShort: 409535,
+    weeklyChangeLong: 1408,
+    weeklyChangeShort: 1071,
+    openInterest: 778174,
+    reportDate: "August 25, 2026",
+    additionalInfo: "Managed Money still net short −10,359 — energy speculators remain defensive"
   }
 ];
 

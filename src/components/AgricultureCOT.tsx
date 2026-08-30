@@ -2,8 +2,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Wheat, Sparkles } from "lucide-react";
 
-// Managed Money (speculator) positions from CFTC Disaggregated COT — August 11, 2026
-// vs. August 4, 2026 (change in Managed Money net = change_long - change_short)
+// Managed Money (speculator) positions from CFTC Disaggregated COT — August 25, 2026
+// vs. August 18, 2026 (change in Managed Money net = change_long - change_short)
 type AgRow = {
   commodity: string;
   exchange: string;
@@ -16,15 +16,19 @@ type AgRow = {
 };
 
 const AG_DATA: AgRow[] = [
-  { commodity: "Corn", exchange: "CBOT", long: 312829, short: 186954, changeLong: 3112, changeShort: 22058, unit: "5,000 bu", note: "Shorts rebuilt +22.1k against modest long adds — net-long trimmed to +125.9k" },
-  { commodity: "Wheat SRW", exchange: "CBOT", long: 78009, short: 111409, changeLong: -2028, changeShort: 6502, unit: "5,000 bu", note: "Longs liquidating while shorts pile in — net-short widens to -33.4k" },
-  { commodity: "Wheat HRW", exchange: "CBOT", long: 63122, short: 37516, changeLong: -3834, changeShort: 2056, unit: "5,000 bu", note: "Bullish conviction fading — net-long down to +25.6k" },
-  { commodity: "Lean Hogs", exchange: "CME", long: 59057, short: 83420, changeLong: 2714, changeShort: 7898, unit: "40,000 lbs", note: "Both sides adding, shorts faster — net-short deepens to -24.4k" },
-  { commodity: "Live Cattle", exchange: "CME", long: 82466, short: 16517, changeLong: -772, changeShort: -1755, unit: "40,000 lbs", note: "Shorts covering faster than longs exit — net-long holds near +66.0k" },
-  { commodity: "Feeder Cattle", exchange: "CME", long: 17685, short: 6783, changeLong: -249, changeShort: -751, unit: "50,000 lbs", note: "Short covering lifts net-long to +10.9k — feeder complex firming" },
-  { commodity: "Soybeans", exchange: "CBOT", long: 169712, short: 60603, changeLong: -9787, changeShort: 13628, unit: "5,000 bu", note: "Heaviest bullish unwind in the complex — net-long cut -23.4k to +109.1k" },
-  { commodity: "Soybean Oil", exchange: "CBOT", long: 110018, short: 30734, changeLong: 3908, changeShort: 3657, unit: "60,000 lbs", note: "Two-way flow, net-long steady at +79.3k" },
-  { commodity: "Soybean Meal", exchange: "CBOT", long: 122391, short: 48701, changeLong: -4038, changeShort: 102, unit: "100 short tons", note: "Longs trimming — net-long eases to +73.7k" },
+  { commodity: "Corn", exchange: "CBOT", long: 411762, short: 94314, changeLong: 90287, changeShort: -45469, unit: "5,000 bu", note: "Explosive bullish rotation — net-long rockets +135.8k to +317.4k, the largest one-week build in the complex" },
+  { commodity: "Wheat SRW", exchange: "CBOT", long: 87501, short: 101098, changeLong: 8590, changeShort: -3141, unit: "5,000 bu", note: "Heavy short covering trims the net-short to -13.6k — bearish grip loosening" },
+  { commodity: "Wheat HRW", exchange: "CBOT", long: 76033, short: 33519, changeLong: 8523, changeShort: -2494, unit: "5,000 bu", note: "Longs added and shorts covered — net-long expands to +42.5k" },
+  { commodity: "Lean Hogs", exchange: "CME", long: 57511, short: 93609, changeLong: -2220, changeShort: 4881, unit: "40,000 lbs", note: "Bearish momentum builds — net-short deepens to -36.1k" },
+  { commodity: "Live Cattle", exchange: "CME", long: 84341, short: 24612, changeLong: 2471, changeShort: 5709, unit: "40,000 lbs", note: "Mild bullish unwind, but net-long still commanding at +59.7k" },
+  { commodity: "Feeder Cattle", exchange: "CME", long: 16011, short: 7125, changeLong: -1269, changeShort: 106, unit: "50,000 lbs", note: "Net-long eases to +8.9k as speculators take profit" },
+  { commodity: "Soybeans", exchange: "CBOT", long: 239335, short: 38656, changeLong: 41889, changeShort: -7008, unit: "5,000 bu", note: "Aggressive re-accumulation — net-long jumps +48.9k to +200.7k" },
+  { commodity: "Soybean Oil", exchange: "CBOT", long: 114248, short: 29132, changeLong: -2421, changeShort: 3696, unit: "60,000 lbs", note: "The one soft spot in beans — net-long trimmed to +85.1k" },
+  { commodity: "Soybean Meal", exchange: "CBOT", long: 129615, short: 33662, changeLong: 297, changeShort: -12341, unit: "100 short tons", note: "Longs build and shorts exit — net-long climbs to +96.0k" },
+  { commodity: "Sugar No. 11", exchange: "ICE", long: 297971, short: 99954, changeLong: 43674, changeShort: -15730, unit: "112,000 lbs", note: "Softs leadership — net-long surges +59.4k to +198.0k" },
+  { commodity: "Cotton No. 2", exchange: "ICE", long: 104495, short: 16202, changeLong: 12490, changeShort: -3131, unit: "50,000 lbs", note: "Strong bullish rotation — net-long widens to +88.3k" },
+  { commodity: "Coffee C", exchange: "ICE", long: 42216, short: 11028, changeLong: 578, changeShort: 1002, unit: "37,500 lbs", note: "Two-way trimming, net-long steady at +31.2k" },
+  { commodity: "Cocoa", exchange: "ICE", long: 21931, short: 32389, changeLong: 523, changeShort: 1610, unit: "10 tonnes", note: "Speculators still net-short -10.5k — bearish structure intact" },
 ];
 
 
@@ -55,7 +59,7 @@ const AgricultureCOT = () => {
           </div>
         </div>
         <div className="text-xs text-muted-foreground shrink-0">
-          <div>Report: <span className="text-foreground font-medium">Aug 11, 2026</span></div>
+          <div>Report: <span className="text-foreground font-medium">Aug 25, 2026</span></div>
           <div>Source: CFTC Disaggregated</div>
         </div>
       </div>
