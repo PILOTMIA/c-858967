@@ -129,7 +129,7 @@ export function buildFrames(rows: CotRow[]): WeekFrame[] {
         id: `${week}-${p.code}`,
         from: src.code,
         to: dst.code,
-        pair: `${p.code}USD`,
+        pair: usdPairLabel(p.code),
         magnitude: Math.abs(p.change),
         change: p.change,
         startLat: src.lat,
