@@ -14,6 +14,24 @@ interface FedData {
   nextRateChange: number;
 }
 
+// Scheduled FOMC meeting dates — the UI always shows the next one still ahead.
+const FOMC_MEETINGS = [
+  '2026-09-16', '2026-10-28', '2026-12-09',
+  '2027-01-27', '2027-03-17', '2027-04-28', '2027-06-16',
+];
+
+const nextFomcMeeting = (): string => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return (
+    FOMC_MEETINGS.find((d) => new Date(`${d}T00:00:00`).getTime() >= today.getTime()) ??
+    FOMC_MEETINGS[FOMC_MEETINGS.length - 1]
+  );
+};
+
+const formatMeetingDate = (iso?: string) =>
+  iso ? new Date(`${iso}T00:00:00`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—';
+
 const fetchFedData = async (): Promise<FedData> => {
   try {
     // Using FRED API for Fed Funds Rate (completely free)
@@ -43,7 +61,7 @@ const fetchFedData = async (): Promise<FedData> => {
 
     return {
       currentRate,
-      nextMeetingDate: "2024-12-18",
+      nextMeetingDate: nextFomcMeeting(),
       probabilities: calculateProbabilities(currentRate),
       sentiment: currentRate > 4.5 ? 'DOVISH' : currentRate < 2.0 ? 'HAWKISH' : 'NEUTRAL',
       nextRateChange: currentRate > 4.5 ? -0.25 : 0
@@ -52,7 +70,7 @@ const fetchFedData = async (): Promise<FedData> => {
     console.log('Using fallback data due to API limits');
     return {
       currentRate: 4.50,
-      nextMeetingDate: "2026-05-07",
+      nextMeetingDate: nextFomcMeeting(),
       probabilities: { rateCut: 38.5, rateHold: 55.2, rateHike: 6.3 },
       sentiment: 'NEUTRAL',
       nextRateChange: 0
@@ -167,7 +185,7 @@ const FedWatchTool = () => {
           </div>
           
           <div className="mt-4 text-sm text-muted-foreground">
-            Next Meeting: {fedData?.nextMeetingDate}
+            Next Meeting: {formatMeetingDate(fedData?.nextMeetingDate)}
           </div>
         </div>
       </div>

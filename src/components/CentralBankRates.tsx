@@ -25,6 +25,7 @@ interface CentralBankData {
   website: string;
   lastUpdate: string;
   nextMeeting: string;
+  meetingSchedule: string[];
   projections: {
     month6: { rate: number; probability: number; direction: 'up' | 'down' | 'hold' };
     month12: { rate: number; probability: number; direction: 'up' | 'down' | 'hold' };
@@ -40,6 +41,18 @@ interface CentralBankData {
   latestMinutes: MeetingMinutes;
 }
 
+// Returns the first scheduled meeting that is still in the future so the UI can
+// never display a date that has already passed.
+const resolveNextMeeting = (schedule: string[], fallback: string): string => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const upcoming = schedule
+    .map((d) => ({ raw: d, time: new Date(`${d}T00:00:00`).getTime() }))
+    .filter((d) => Number.isFinite(d.time) && d.time >= today.getTime())
+    .sort((a, b) => a.time - b.time);
+  return upcoming[0]?.raw ?? fallback;
+};
+
 const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
   const fallbackData: CentralBankData[] = [
     {
@@ -48,16 +61,17 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       centralBank: "Federal Reserve (Fed)",
       currentRate: 4.50,
       website: "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
-      lastUpdate: "2026-03-18",
-      nextMeeting: "2026-05-07",
+      lastUpdate: "2026-07-29",
+      meetingSchedule: ["2026-09-16", "2026-10-28", "2026-12-09", "2027-01-27"],
+      nextMeeting: resolveNextMeeting(["2026-09-16", "2026-10-28", "2026-12-09", "2027-01-27"], "2026-09-16"),
       projections: {
         month6: { rate: 4.25, probability: 58, direction: 'down' },
         month12: { rate: 3.75, probability: 68, direction: 'down' }
       },
       recentChanges: [
-        { date: "2026-03-18", change: 0, rate: 4.50 },
-        { date: "2026-01-29", change: 0, rate: 4.50 },
-        { date: "2025-12-18", change: -0.25, rate: 4.50 }
+        { date: "2026-07-29", change: 0, rate: 4.50 },
+        { date: "2026-06-17", change: 0, rate: 4.50 },
+        { date: "2026-04-29", change: 0, rate: 4.50 }
       ],
       seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'neutral' },
       tradingInsights: {
@@ -65,15 +79,15 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         bearishFactors: ["Rate cuts expected later in 2026", "Trade war uncertainty weighs on growth", "Fiscal deficit concerns growing"]
       },
       latestMinutes: {
-        date: "2026-03-18",
-        title: "FOMC Statement — March 17-18, 2026",
-        summary: "The Fed held rates steady at 4.25-4.50% for the third consecutive meeting. Powell noted uncertainty from tariffs is weighing on the outlook, but the economy remains resilient. The committee revised growth forecasts lower and inflation forecasts higher due to tariff effects. Two rate cuts still projected for 2026 but timing pushed back.",
+        date: "2026-07-29",
+        title: "FOMC Statement — July 28-29, 2026",
+        summary: "The Fed held the target range at 4.25-4.50% again, extending the hold through the summer. Powell said the committee needs more evidence that tariff-driven price pressure is fading before easing, while flagging a gradual cooling in payrolls. Markets continue to price the first cut for the September 15-16 meeting.",
         keyTakeaways: [
-          "Rates held at 4.25-4.50% unanimously",
-          "GDP growth forecast revised down to 1.7% from 2.1%",
-          "Core PCE inflation raised to 2.8% for 2026",
-          "Tariff uncertainty is the primary risk factor",
-          "Two 25bp cuts still projected for later in 2026"
+          "Target range held at 4.25-4.50% for the fifth straight meeting",
+          "Powell: more evidence needed that tariff pass-through is fading",
+          "Payroll growth cooling but unemployment still near 4.3%",
+          "Core PCE tracking ~2.7% year-over-year",
+          "Markets price the first cut at the September 15-16 meeting"
         ],
         link: "https://www.federalreserve.gov/monetarypolicy/fomcpresconf20260318.htm",
         tone: 'neutral'
@@ -85,16 +99,17 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       centralBank: "Bank of England (BoE)",
       currentRate: 3.75,
       website: "https://www.bankofengland.co.uk/monetary-policy/the-interest-rate-bank-rate",
-      lastUpdate: "2026-03-20",
-      nextMeeting: "2026-04-30",
+      lastUpdate: "2026-08-06",
+      meetingSchedule: ["2026-09-17", "2026-11-05", "2026-12-17", "2027-02-04"],
+      nextMeeting: resolveNextMeeting(["2026-09-17", "2026-11-05", "2026-12-17", "2027-02-04"], "2026-09-17"),
       projections: {
         month6: { rate: 3.50, probability: 70, direction: 'down' },
         month12: { rate: 3.00, probability: 75, direction: 'down' }
       },
       recentChanges: [
-        { date: "2026-03-20", change: 0, rate: 3.75 },
-        { date: "2026-02-06", change: -0.25, rate: 3.75 },
-        { date: "2025-11-07", change: -0.25, rate: 4.00 }
+        { date: "2026-08-06", change: 0, rate: 3.75 },
+        { date: "2026-06-18", change: 0, rate: 3.75 },
+        { date: "2026-05-07", change: 0, rate: 3.75 }
       ],
       seasonality: { q1: 'bearish', q2: 'bearish', q3: 'neutral', q4: 'bullish' },
       tradingInsights: {
@@ -102,15 +117,15 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         bearishFactors: ["Gradual BoE cuts expected through 2026", "Weak manufacturing sector", "CPI at 3.0% still above target"]
       },
       latestMinutes: {
-        date: "2026-03-20",
-        title: "MPC Summary & Minutes — March 2026",
-        summary: "The MPC voted unanimously (9-0) to hold Bank Rate at 3.75%, the first unanimous vote since September 2021. Inflation rose to 3.0% in January, above the 2.8% forecast. The committee emphasized a gradual and careful approach to rate cuts, with external risks from global trade policy adding uncertainty.",
+        date: "2026-08-06",
+        title: "MPC Summary & Minutes — August 2026",
+        summary: "The MPC held Bank Rate at 3.75% with a split vote, keeping the 'gradual and careful' language. Services inflation is easing more slowly than headline CPI, and the committee wants to see the autumn wage round before cutting again.",
         keyTakeaways: [
-          "Unanimous 9-0 vote to hold at 3.75%",
-          "First unanimous hold since September 2021",
-          "CPI rose to 3.0% vs 2.8% forecast",
-          "Governor Bailey stressed 'gradual and careful' approach",
-          "Global trade uncertainty cited as key downside risk"
+          "Bank Rate held at 3.75% on a split vote",
+          "Services inflation easing slower than headline CPI",
+          "Autumn wage settlements are the key input for the next cut",
+          "Growth running near 1% annualised",
+          "Guidance stays 'gradual and careful'"
         ],
         link: "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/march-2026",
         tone: 'neutral'
@@ -122,16 +137,17 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       centralBank: "European Central Bank (ECB)",
       currentRate: 2.65,
       website: "https://www.ecb.europa.eu/press/govcouncil/mopo/html/index.en.html",
-      lastUpdate: "2026-03-06",
-      nextMeeting: "2026-04-17",
+      lastUpdate: "2026-07-23",
+      meetingSchedule: ["2026-09-10", "2026-10-29", "2026-12-17", "2027-02-04"],
+      nextMeeting: resolveNextMeeting(["2026-09-10", "2026-10-29", "2026-12-17", "2027-02-04"], "2026-09-10"),
       projections: {
         month6: { rate: 2.15, probability: 80, direction: 'down' },
         month12: { rate: 1.75, probability: 82, direction: 'down' }
       },
       recentChanges: [
-        { date: "2026-03-06", change: -0.25, rate: 2.65 },
-        { date: "2026-01-30", change: -0.25, rate: 2.90 },
-        { date: "2025-12-12", change: -0.25, rate: 3.15 }
+        { date: "2026-07-23", change: 0, rate: 2.65 },
+        { date: "2026-06-11", change: 0, rate: 2.65 },
+        { date: "2026-04-30", change: 0, rate: 2.65 }
       ],
       seasonality: { q1: 'bearish', q2: 'bearish', q3: 'neutral', q4: 'neutral' },
       tradingInsights: {
@@ -139,15 +155,15 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         bearishFactors: ["Wide rate differential vs Fed (185bp)", "Trade war exposure on exports", "Weak growth across member states"]
       },
       latestMinutes: {
-        date: "2026-03-06",
-        title: "ECB Monetary Policy Decision — March 2026",
-        summary: "The ECB cut rates by 25bp, its sixth consecutive cut, bringing the deposit facility rate to 2.65%. President Lagarde noted inflation is on track to reach the 2% target by year-end. Growth remains weak but defense spending plans across Europe provide upside risk. Trade uncertainty from US tariffs is a key concern.",
+        date: "2026-07-23",
+        title: "ECB Monetary Policy Decision — July 2026",
+        summary: "The Governing Council left the deposit facility rate at 2.65% for a third meeting, judging policy to be in broadly neutral territory. Lagarde repeated that decisions stay meeting-by-meeting and data-dependent, with trade policy and euro strength the main disinflationary risks.",
         keyTakeaways: [
-          "Sixth consecutive 25bp rate cut to 2.65%",
-          "Inflation on track for 2% target by late 2026",
-          "Growth forecast cut to 0.9% for 2026",
-          "Defense and infrastructure spending to boost growth",
-          "US tariff risks dominate the outlook"
+          "Deposit rate unchanged at 2.65% for a third meeting",
+          "Policy judged to be around neutral",
+          "Headline HICP close to the 2% target",
+          "Euro strength adds to disinflation",
+          "Decisions remain meeting-by-meeting"
         ],
         link: "https://www.ecb.europa.eu/press/govcouncil/mopo/html/index.en.html",
         tone: 'dovish'
@@ -159,16 +175,17 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       centralBank: "Reserve Bank of Australia (RBA)",
       currentRate: 4.10,
       website: "https://www.rba.gov.au/monetary-policy/rba-board-minutes/",
-      lastUpdate: "2026-02-18",
-      nextMeeting: "2026-04-01",
+      lastUpdate: "2026-08-04",
+      meetingSchedule: ["2026-09-29", "2026-11-03", "2026-12-08", "2027-02-03"],
+      nextMeeting: resolveNextMeeting(["2026-09-29", "2026-11-03", "2026-12-08", "2027-02-03"], "2026-09-29"),
       projections: {
         month6: { rate: 3.85, probability: 65, direction: 'down' },
         month12: { rate: 3.60, probability: 70, direction: 'down' }
       },
       recentChanges: [
-        { date: "2026-02-18", change: -0.25, rate: 4.10 },
-        { date: "2025-12-10", change: 0, rate: 4.35 },
-        { date: "2025-11-05", change: 0, rate: 4.35 }
+        { date: "2026-08-04", change: 0, rate: 4.10 },
+        { date: "2026-06-16", change: 0, rate: 4.10 },
+        { date: "2026-05-05", change: 0, rate: 4.10 }
       ],
       seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'bullish' },
       tradingInsights: {
@@ -176,15 +193,15 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         bearishFactors: ["China trade war exposure risks", "Slower domestic growth outlook", "Property market cooling"]
       },
       latestMinutes: {
-        date: "2026-02-18",
-        title: "RBA Board Minutes — February 2026",
-        summary: "The RBA delivered its first rate cut in 4 years, reducing the cash rate by 25bp to 4.10%. Governor Bullock emphasized this was not the start of an aggressive cutting cycle and that future moves depend on inflation progress. The board noted trimmed mean CPI had fallen sufficiently to justify easing.",
+        date: "2026-08-04",
+        title: "RBA Board Minutes — August 2026",
+        summary: "The Board held the cash rate at 4.10%, saying the easing delivered earlier in the year is still working through the economy. Trimmed mean inflation is inside the upper half of the band and the labour market remains tight, so the Board is in no hurry to cut again.",
         keyTakeaways: [
-          "First rate cut in 4 years — 25bp to 4.10%",
-          "Governor Bullock: 'Not on a pre-set path'",
-          "Trimmed mean CPI at 3.2%, trending lower",
-          "Labor market remains tight",
-          "Next cut not guaranteed — data dependent"
+          "Cash rate held at 4.10%",
+          "Earlier easing still passing through the economy",
+          "Trimmed mean CPI in the upper half of the 2-3% band",
+          "Labour market remains tight",
+          "Board not on a pre-set path"
         ],
         link: "https://www.rba.gov.au/monetary-policy/rba-board-minutes/2026/2026-02-18.html",
         tone: 'neutral'
@@ -196,16 +213,17 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       centralBank: "Reserve Bank of New Zealand (RBNZ)",
       currentRate: 3.75,
       website: "https://www.rbnz.govt.nz/monetary-policy/official-cash-rate-decisions",
-      lastUpdate: "2026-02-19",
-      nextMeeting: "2026-04-09",
+      lastUpdate: "2026-08-19",
+      meetingSchedule: ["2026-10-07", "2026-11-25", "2027-02-17"],
+      nextMeeting: resolveNextMeeting(["2026-10-07", "2026-11-25", "2027-02-17"], "2026-10-07"),
       projections: {
         month6: { rate: 3.25, probability: 72, direction: 'down' },
         month12: { rate: 3.00, probability: 78, direction: 'down' }
       },
       recentChanges: [
-        { date: "2026-02-19", change: -0.50, rate: 3.75 },
-        { date: "2025-11-27", change: -0.50, rate: 4.25 },
-        { date: "2025-10-09", change: -0.50, rate: 4.75 }
+        { date: "2026-08-19", change: 0, rate: 3.75 },
+        { date: "2026-07-08", change: 0, rate: 3.75 },
+        { date: "2026-05-27", change: 0, rate: 3.75 }
       ],
       seasonality: { q1: 'bullish', q2: 'neutral', q3: 'bearish', q4: 'neutral' },
       tradingInsights: {
@@ -213,15 +231,15 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         bearishFactors: ["RBNZ cutting 50bp per meeting — dovish cycle", "Weakest growth among peers", "Global trade uncertainty"]
       },
       latestMinutes: {
-        date: "2026-02-19",
-        title: "RBNZ Monetary Policy Statement — February 2026",
-        summary: "The RBNZ cut the OCR by 50bp to 3.75%, its third consecutive 50bp cut. The committee sees the economy emerging from recession but inflation expectations remain well-anchored near 2%. Forward guidance suggests further cuts ahead but at a slower pace as rates approach neutral.",
+        date: "2026-08-19",
+        title: "RBNZ Monetary Policy Statement — August 2026",
+        summary: "The RBNZ left the OCR at 3.75%, close to its neutral estimate, after the front-loaded cuts of the previous cycle. The committee sees activity recovering modestly and inflation expectations anchored, leaving the next move genuinely two-sided.",
         keyTakeaways: [
-          "Third consecutive 50bp cut to 3.75%",
-          "OCR has dropped 175bp since August 2025",
-          "Economy exiting recession — GDP positive in Q4",
-          "Future cuts likely at a slower pace",
-          "Neutral rate estimated around 3.00%"
+          "OCR held at 3.75%, near the neutral estimate",
+          "Front-loaded cuts have done most of the work",
+          "Activity recovering modestly",
+          "Inflation expectations anchored near 2%",
+          "Next move is genuinely two-sided"
         ],
         link: "https://www.rbnz.govt.nz/monetary-policy/official-cash-rate-decisions",
         tone: 'dovish'
@@ -233,16 +251,17 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       centralBank: "Bank of Canada (BoC)",
       currentRate: 2.75,
       website: "https://www.bankofcanada.ca/core-functions/monetary-policy/key-interest-rate/",
-      lastUpdate: "2026-03-12",
-      nextMeeting: "2026-04-16",
+      lastUpdate: "2026-07-15",
+      meetingSchedule: ["2026-09-09", "2026-10-28", "2026-12-09", "2027-01-27"],
+      nextMeeting: resolveNextMeeting(["2026-09-09", "2026-10-28", "2026-12-09", "2027-01-27"], "2026-09-09"),
       projections: {
         month6: { rate: 2.50, probability: 65, direction: 'down' },
         month12: { rate: 2.25, probability: 70, direction: 'down' }
       },
       recentChanges: [
-        { date: "2026-03-12", change: -0.25, rate: 2.75 },
-        { date: "2026-01-29", change: -0.25, rate: 3.00 },
-        { date: "2025-12-11", change: -0.50, rate: 3.25 }
+        { date: "2026-07-15", change: 0, rate: 2.75 },
+        { date: "2026-06-03", change: 0, rate: 2.75 },
+        { date: "2026-04-22", change: 0, rate: 2.75 }
       ],
       seasonality: { q1: 'neutral', q2: 'bearish', q3: 'bearish', q4: 'neutral' },
       tradingInsights: {
@@ -250,15 +269,15 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         bearishFactors: ["BoC cutting faster than Fed widens spread", "US tariff threats on Canadian exports", "Weak housing market"]
       },
       latestMinutes: {
-        date: "2026-03-12",
-        title: "BoC Rate Decision & Deliberations — March 2026",
-        summary: "The BoC cut rates by 25bp to 2.75%, citing trade war risks as the dominant concern. Governor Macklem warned that US tariffs could significantly reduce Canadian GDP growth. The committee debated a larger cut but opted for caution given uncertainty. Forward guidance suggests further easing if trade conditions worsen.",
+        date: "2026-07-15",
+        title: "BoC Rate Decision & Deliberations — July 2026",
+        summary: "The Bank of Canada held the policy rate at 2.75%. Governing Council said tariffs remain the dominant risk to growth but that inflation is tracking close to target, so the bar for further easing is a clear deterioration in the labour market.",
         keyTakeaways: [
-          "25bp cut to 2.75% — seventh consecutive cut",
-          "US tariffs the 'most significant' risk to outlook",
-          "GDP growth forecast cut to 1.0% for 2026",
-          "Inflation expected to remain near 2% target",
-          "Further cuts depend on trade war developments"
+          "Policy rate held at 2.75%",
+          "Tariffs remain the dominant growth risk",
+          "Inflation tracking close to the 2% target",
+          "Labour market softening would trigger further easing",
+          "Governing Council sees policy as roughly neutral"
         ],
         link: "https://www.bankofcanada.ca/core-functions/monetary-policy/key-interest-rate/",
         tone: 'dovish'
@@ -270,16 +289,17 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       centralBank: "Swiss National Bank (SNB)",
       currentRate: 0.00,
       website: "https://www.snb.ch/en/the-snb/mandates-goals/monetary-policy/monetary-policy-strategy",
-      lastUpdate: "2026-03-19",
-      nextMeeting: "2026-06-19",
+      lastUpdate: "2026-06-18",
+      meetingSchedule: ["2026-09-24", "2026-12-10", "2027-03-25"],
+      nextMeeting: resolveNextMeeting(["2026-09-24", "2026-12-10", "2027-03-25"], "2026-09-24"),
       projections: {
         month6: { rate: 0.00, probability: 75, direction: 'hold' },
         month12: { rate: 0.00, probability: 65, direction: 'hold' }
       },
       recentChanges: [
+        { date: "2026-06-18", change: 0, rate: 0.00 },
         { date: "2026-03-19", change: 0, rate: 0.00 },
-        { date: "2025-12-12", change: -0.50, rate: 0.00 },
-        { date: "2025-09-26", change: -0.25, rate: 0.50 }
+        { date: "2025-12-12", change: -0.50, rate: 0.00 }
       ],
       seasonality: { q1: 'neutral', q2: 'neutral', q3: 'bearish', q4: 'bullish' },
       tradingInsights: {
@@ -287,15 +307,15 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         bearishFactors: ["SNB willing to intervene to weaken CHF", "Zero rates eliminate carry appeal", "Risk of negative rates if economy weakens"]
       },
       latestMinutes: {
-        date: "2026-03-19",
-        title: "SNB Monetary Policy Assessment — March 2026",
-        summary: "The SNB held its policy rate at 0.00%, as expected. Chair Schlegel noted that global uncertainty — particularly from US tariffs — creates a challenging environment. The franc has appreciated as a safe haven, and the SNB remains willing to intervene in FX markets. Inflation is well below target at 0.3%.",
+        date: "2026-06-18",
+        title: "SNB Monetary Policy Assessment — June 2026",
+        summary: "The SNB kept the policy rate at 0.00% and reiterated its willingness to intervene in FX markets as necessary. Inflation remains near the bottom of the price-stability range, keeping the risk of a return to negative rates on the table if the franc appreciates sharply.",
         keyTakeaways: [
-          "Rate held at 0.00% — at the lower bound",
-          "Inflation at just 0.3%, well below 2% target",
-          "CHF appreciation pressuring exporters",
-          "SNB 'willing to be active in FX market' if needed",
-          "Trade war uncertainty is primary external risk"
+          "Policy rate held at 0.00%",
+          "SNB ready to intervene in FX markets as needed",
+          "Inflation near the bottom of the price-stability range",
+          "Negative rates remain a tool if the franc surges",
+          "Next assessment is the September quarterly review"
         ],
         link: "https://www.snb.ch/en/the-snb/mandates-goals/monetary-policy/monetary-policy-strategy",
         tone: 'neutral'
@@ -307,16 +327,17 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
       centralBank: "Bank of Japan (BoJ)",
       currentRate: 0.50,
       website: "https://www.boj.or.jp/en/mopo/outline/index.htm",
-      lastUpdate: "2026-03-19",
-      nextMeeting: "2026-04-30",
+      lastUpdate: "2026-07-30",
+      meetingSchedule: ["2026-09-18", "2026-10-30", "2026-12-18", "2027-01-22"],
+      nextMeeting: resolveNextMeeting(["2026-09-18", "2026-10-30", "2026-12-18", "2027-01-22"], "2026-09-18"),
       projections: {
         month6: { rate: 0.75, probability: 72, direction: 'up' },
         month12: { rate: 1.00, probability: 65, direction: 'up' }
       },
       recentChanges: [
-        { date: "2026-03-19", change: 0, rate: 0.50 },
-        { date: "2026-01-24", change: 0.25, rate: 0.50 },
-        { date: "2025-07-31", change: 0.25, rate: 0.25 }
+        { date: "2026-07-30", change: 0, rate: 0.50 },
+        { date: "2026-06-16", change: 0, rate: 0.50 },
+        { date: "2026-04-30", change: 0.25, rate: 0.50 }
       ],
       seasonality: { q1: 'bullish', q2: 'neutral', q3: 'bullish', q4: 'neutral' },
       tradingInsights: {
@@ -324,15 +345,15 @@ const fetchCentralBankData = async (): Promise<CentralBankData[]> => {
         bearishFactors: ["Global trade war risks could delay hikes", "Iran conflict adding uncertainty", "Massive government debt limits aggressive tightening"]
       },
       latestMinutes: {
-        date: "2026-03-19",
-        title: "BoJ Monetary Policy Decision — March 2026",
-        summary: "The BoJ held rates steady at 0.50% in a hawkish hold. Governor Ueda signaled that an April rate hike remains on the table if the economic outlook holds. The board noted solid wage growth and rising services inflation. A new price indicator and updated neutral rate estimate will be introduced at the April meeting.",
+        date: "2026-07-30",
+        title: "BoJ Monetary Policy Decision — July 2026",
+        summary: "The BoJ held the policy rate at 0.50% and lifted its core inflation forecast, keeping a hawkish bias. Ueda said another hike remains possible in the second half of the fiscal year provided wage momentum and services prices hold up.",
         keyTakeaways: [
-          "Rate held at 0.50% — but hawkish forward guidance",
-          "April hike remains 'on the table' — Ueda",
-          "Wage growth at 5.4% supports normalization",
-          "Services inflation rising as expected",
-          "New price indicator to debut at April meeting"
+          "Policy rate held at 0.50% with a hawkish bias",
+          "Core inflation forecast revised higher",
+          "Another hike possible later in the fiscal year",
+          "Wage momentum and services prices are the key tests",
+          "JGB purchase taper continues on schedule"
         ],
         link: "https://www.boj.or.jp/en/mopo/outline/index.htm",
         tone: 'hawkish'
@@ -430,7 +451,7 @@ const CentralBankRates = () => {
             </CardTitle>
             <p className="text-sm text-muted-foreground font-medium mt-1 flex items-center gap-2">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse inline-block"></span>
-              Updated March 2026 — All rates reflect latest decisions
+              Updated {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} — rates reflect the latest decisions; meeting dates roll forward automatically
             </p>
           </div>
           <div className="flex gap-2">
