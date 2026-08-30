@@ -20,19 +20,19 @@ const CFTC_CODES: Record<string, { name: string; code: string }> = {
   BTC: { name: "BITCOIN", code: "133741" },
 };
 
-// Verified fallback data — CFTC TFF report 8/11/2026 (Leveraged Funds, synced from cot_history)
+// Verified fallback data — CFTC TFF report 8/25/2026 (Leveraged Funds; XAU = Managed Money)
 const FALLBACK_DATA: Record<string, any> = {
-  EUR: { netPosition: -60600, long: 86753, short: 147353, weeklyChange: -8395, reportDate: "2026-08-11", source: "verified_8_11" },
-  GBP: { netPosition: 40670, long: 67627, short: 26957, weeklyChange: 2496, reportDate: "2026-08-11", source: "verified_8_11" },
-  JPY: { netPosition: -53070, long: 74973, short: 128043, weeklyChange: 7755, reportDate: "2026-08-11", source: "verified_8_11" },
-  CHF: { netPosition: -11432, long: 10165, short: 21597, weeklyChange: -1348, reportDate: "2026-08-11", source: "verified_8_11" },
-  AUD: { netPosition: 48541, long: 72166, short: 23625, weeklyChange: 7904, reportDate: "2026-08-11", source: "verified_8_11" },
-  CAD: { netPosition: -92005, long: 26511, short: 118516, weeklyChange: 9743, reportDate: "2026-08-11", source: "verified_8_11" },
-  NZD: { netPosition: -33461, long: 2520, short: 35981, weeklyChange: -3171, reportDate: "2026-08-11", source: "verified_8_11" },
-  MXN: { netPosition: 76282, long: 130485, short: 54203, weeklyChange: 8575, reportDate: "2026-08-11", source: "verified_8_11" },
-  USD: { netPosition: 5772, long: 15398, short: 9626, weeklyChange: 1923, reportDate: "2026-08-11", source: "verified_8_11" },
-  XAU: { netPosition: 137662, long: 148634, short: 10972, weeklyChange: 6896, reportDate: "2026-08-11", source: "verified_8_11" },
-  BTC: { netPosition: -7052, long: 4997, short: 12049, weeklyChange: 188, reportDate: "2026-08-11", source: "verified_8_11" },
+  EUR: { netPosition: -38359, long: 90921, short: 129280, weeklyChange: 19357, reportDate: "2026-08-25", source: "verified_8_25" },
+  GBP: { netPosition: 47909, long: 81286, short: 33377, weeklyChange: 5032, reportDate: "2026-08-25", source: "verified_8_25" },
+  JPY: { netPosition: -77042, long: 66528, short: 143570, weeklyChange: -9071, reportDate: "2026-08-25", source: "verified_8_25" },
+  CHF: { netPosition: -8825, long: 12353, short: 21178, weeklyChange: 246, reportDate: "2026-08-25", source: "verified_8_25" },
+  AUD: { netPosition: 54061, long: 81344, short: 27283, weeklyChange: 1953, reportDate: "2026-08-25", source: "verified_8_25" },
+  CAD: { netPosition: -72092, long: 27384, short: 99476, weeklyChange: 16805, reportDate: "2026-08-25", source: "verified_8_25" },
+  NZD: { netPosition: -31994, long: 3673, short: 35667, weeklyChange: -5188, reportDate: "2026-08-25", source: "verified_8_25" },
+  MXN: { netPosition: 68904, long: 131529, short: 62625, weeklyChange: 3574, reportDate: "2026-08-25", source: "verified_8_25" },
+  USD: { netPosition: 9189, long: 16343, short: 7154, weeklyChange: 1077, reportDate: "2026-08-25", source: "verified_8_25" },
+  XAU: { netPosition: 144747, long: 159819, short: 15072, weeklyChange: 3099, reportDate: "2026-08-25", source: "verified_8_25" },
+  BTC: { netPosition: -8089, long: 3181, short: 11270, weeklyChange: -650, reportDate: "2026-08-25", source: "verified_8_25" },
 };
 
 
