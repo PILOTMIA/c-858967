@@ -40,7 +40,7 @@ const CurrencyFlowGlobeWidget = ({ height = 620 }: { height?: number }) => {
   const [frames, setFrames] = useState<WeekFrame[]>([]);
   const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(0);
-  const [playing, setPlaying] = useState(true);
+  const [playing, setPlaying] = useState(false);
   const [autoRotate, setAutoRotate] = useState(true);
   const [colorMode, setColorMode] = useState<"currency" | "direction">("direction");
   const [filter, setFilter] = useState<Filter>("all");
@@ -73,8 +73,14 @@ const CurrencyFlowGlobeWidget = ({ height = 620 }: { height?: number }) => {
   useEffect(() => {
     if (!playing || frames.length === 0) return;
     const id = setInterval(() => {
-      setIndex((i) => (i + 1 >= frames.length ? 0 : i + 1));
-    }, 2600);
+      setIndex((i) => {
+        if (i + 1 >= frames.length) {
+          setPlaying(false); // rest on the latest release instead of snapping back
+          return frames.length - 1;
+        }
+        return i + 1;
+      });
+    }, 2200);
     return () => clearInterval(id);
   }, [playing, frames.length]);
 
@@ -312,7 +318,12 @@ const CurrencyFlowGlobeWidget = ({ height = 620 }: { height?: number }) => {
             size="icon"
             variant="outline"
             className="h-8 w-8 shrink-0"
-            onClick={() => setPlaying((p) => !p)}
+            onClick={() =>
+              setPlaying((p) => {
+                if (!p && index >= frames.length - 1) setIndex(0); // replay from the start
+                return !p;
+              })
+            }
             aria-label={playing ? "Pause timeline" : "Play timeline"}
             title={playing ? "Pause timeline" : "Play timeline"}
           >
