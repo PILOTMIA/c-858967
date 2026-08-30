@@ -21,7 +21,10 @@ export const CENTRAL_BANKS: CentralBank[] = [
   { code: "NZD", bank: "Reserve Bank of New Zealand", city: "Wellington", country: "New Zealand", lat: -41.2785, lng: 174.7762, color: "#4de3e3", major: true },
   { code: "CNY", bank: "People's Bank of China", city: "Beijing", country: "China", lat: 39.9075, lng: 116.3972, color: "#ff2e63", major: false },
   { code: "MXN", bank: "Banco de México", city: "Mexico City", country: "Mexico", lat: 19.4344, lng: -99.1416, color: "#7dff6b", major: false },
+  { code: "XAU", bank: "COMEX Gold", city: "New York", country: "United States", lat: 40.7069, lng: -74.0113, color: "#ffc94d", major: false },
+  { code: "BTC", bank: "CME Bitcoin Futures", city: "Chicago", country: "United States", lat: 41.8781, lng: -87.6298, color: "#f7931a", major: false },
 ];
+
 
 export const BANK_BY_CODE: Record<string, CentralBank> = Object.fromEntries(
   CENTRAL_BANKS.map((b) => [b.code, b]),
