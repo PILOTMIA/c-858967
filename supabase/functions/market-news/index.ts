@@ -74,11 +74,11 @@ function inferCurrency(text: string): { currency: string; pairs: string[] } {
 
 function inferCategory(text: string): string {
   const lower = text.toLowerCase();
-  if (lower.includes('gold') || lower.includes('bullion') || lower.includes('oil') || lower.includes('commodit')) return 'Commodities';
-  if (lower.includes('jobs') || lower.includes('payroll') || lower.includes('employment') || lower.includes('unemployment')) return 'Employment';
   if (lower.includes('inflation') || lower.includes('cpi') || lower.includes('pce') || lower.includes('ppi')) return 'Inflation';
-  if (lower.includes('rate') || lower.includes('yield') || lower.includes('treasury') || lower.includes('bond')) return 'Interest Rates';
-  if (lower.includes('fed') || lower.includes('ecb') || lower.includes('boe') || lower.includes('boj') || lower.includes('central bank')) return 'Central Bank';
+  if (lower.includes('jobs') || lower.includes('payroll') || lower.includes('employment') || lower.includes('unemployment') || lower.includes('jobless')) return 'Employment';
+  if (lower.includes('fed') || lower.includes('ecb') || lower.includes('boe') || lower.includes('boj') || lower.includes('central bank') || lower.includes('rate cut') || lower.includes('rate hike')) return 'Central Bank';
+  if (lower.includes('rate') || lower.includes('yield') || lower.includes('treasury') || lower.includes('bond') || lower.includes('gilt')) return 'Interest Rates';
+  if (lower.includes('gold') || lower.includes('bullion') || lower.includes('oil') || lower.includes('commodit') || lower.includes('silver')) return 'Commodities';
   if (lower.includes('tariff') || lower.includes('war') || lower.includes('sanction') || lower.includes('geopolit')) return 'Geopolitical';
   return 'Currencies';
 }
@@ -348,9 +348,9 @@ Deno.serve(async (req) => {
       majorPairs,
       trend,
 
-      summary: `${articles.length} live market headlines aggregated from GDELT, Investing.com, ForexLive, FXStreet, MarketWatch, and WSJ. ${highImpact} high-impact items across USD pairs, central banks, yields, and gold.`,
+      summary: `${articles.length} live market headlines aggregated from GDELT, Investing.com, ForexLive, FXStreet, MarketWatch, and WSJ. ${highImpact} high-impact items across USD pairs, central banks, yields, and gold. Only macro-relevant headlines from the last 72 hours are shown.`,
 
-    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=600' } });
+    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
   } catch (error) {
     const articles = fallbackArticles();
     return new Response(JSON.stringify({
