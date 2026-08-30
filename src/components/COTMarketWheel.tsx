@@ -80,29 +80,29 @@ const COTMarketWheel = () => {
 
   // Generate data from uploaded COT data or fallback to mock data
   const generateData = (): WheelDataItem[] => {
-    // CFTC TFF report, August 11, 2026 (Leveraged Funds) — VERIFIED from official PDF
+    // CFTC TFF report, August 25, 2026 (Leveraged Funds) — VERIFIED from official PDF
     const majorPairs: WheelDataItem[] = [
-      { currency: 'EUR', netPosition: -60600, strength: 60600, bias: 'BEARISH', weeklyChange: -8395, color: '#EF4444', type: 'major' },
-      { currency: 'GBP', netPosition: 40670, strength: 40670, bias: 'BULLISH', weeklyChange: 2496, color: '#7EBF8E', type: 'major' },
-      { currency: 'JPY', netPosition: -53070, strength: 53070, bias: 'BEARISH', weeklyChange: 7755, color: '#EF4444', type: 'major' },
-      { currency: 'CHF', netPosition: -11432, strength: 11432, bias: 'BEARISH', weeklyChange: -1348, color: '#EF4444', type: 'major' },
-      { currency: 'AUD', netPosition: 48541, strength: 48541, bias: 'BULLISH', weeklyChange: 7904, color: '#7EBF8E', type: 'major' },
-      { currency: 'CAD', netPosition: -92005, strength: 92005, bias: 'BEARISH', weeklyChange: 9743, color: '#EF4444', type: 'major' },
-      { currency: 'MXN', netPosition: 76282, strength: 76282, bias: 'BULLISH', weeklyChange: 8575, color: '#7EBF8E', type: 'major' },
-      { currency: 'NZD', netPosition: -33461, strength: 33461, bias: 'BEARISH', weeklyChange: -3171, color: '#EF4444', type: 'major' }
+      { currency: 'EUR', netPosition: -38359, strength: 38359, bias: 'BEARISH', weeklyChange: 19357, color: '#EF4444', type: 'major' },
+      { currency: 'GBP', netPosition: 47909, strength: 47909, bias: 'BULLISH', weeklyChange: 5032, color: '#7EBF8E', type: 'major' },
+      { currency: 'JPY', netPosition: -77042, strength: 77042, bias: 'BEARISH', weeklyChange: -9071, color: '#EF4444', type: 'major' },
+      { currency: 'CHF', netPosition: -8825, strength: 8825, bias: 'BEARISH', weeklyChange: 246, color: '#EF4444', type: 'major' },
+      { currency: 'AUD', netPosition: 54061, strength: 54061, bias: 'BULLISH', weeklyChange: 1953, color: '#7EBF8E', type: 'major' },
+      { currency: 'CAD', netPosition: -72092, strength: 72092, bias: 'BEARISH', weeklyChange: 16805, color: '#EF4444', type: 'major' },
+      { currency: 'MXN', netPosition: 68904, strength: 68904, bias: 'BULLISH', weeklyChange: 3574, color: '#7EBF8E', type: 'major' },
+      { currency: 'NZD', netPosition: -31994, strength: 31994, bias: 'BEARISH', weeklyChange: -5188, color: '#EF4444', type: 'major' }
     ];
 
     const crossPairs: WheelDataItem[] = [
-      { currency: 'EURJPY', netPosition: -7530, strength: 7530, bias: 'BEARISH', weeklyChange: -16150, color: '#EF4444', type: 'cross' },
-      { currency: 'GBPJPY', netPosition: 93740, strength: 93740, bias: 'BULLISH', weeklyChange: -5259, color: '#7EBF8E', type: 'cross' },
-      { currency: 'EURGBP', netPosition: -101270, strength: 101270, bias: 'BEARISH', weeklyChange: -10891, color: '#EF4444', type: 'cross' },
-      { currency: 'GBPCAD', netPosition: 132675, strength: 132675, bias: 'BULLISH', weeklyChange: -7247, color: '#7EBF8E', type: 'cross' },
-      { currency: 'AUDJPY', netPosition: 101611, strength: 101611, bias: 'BULLISH', weeklyChange: 149, color: '#7EBF8E', type: 'cross' },
-      { currency: 'EURAUD', netPosition: -109141, strength: 109141, bias: 'BEARISH', weeklyChange: -16299, color: '#EF4444', type: 'cross' },
-      { currency: 'GBPAUD', netPosition: -7871, strength: 7871, bias: 'BEARISH', weeklyChange: -5408, color: '#EF4444', type: 'cross' },
-      { currency: 'EURCAD', netPosition: 31405, strength: 31405, bias: 'BULLISH', weeklyChange: -18138, color: '#7EBF8E', type: 'cross' },
-      { currency: 'NZDJPY', netPosition: 19609, strength: 19609, bias: 'BULLISH', weeklyChange: -10926, color: '#7EBF8E', type: 'cross' },
-      { currency: 'CADJPY', netPosition: -38935, strength: 38935, bias: 'BEARISH', weeklyChange: 1988, color: '#EF4444', type: 'cross' }
+      { currency: 'EURJPY', netPosition: 38683, strength: 38683, bias: 'BULLISH', weeklyChange: 28428, color: '#7EBF8E', type: 'cross' },
+      { currency: 'GBPJPY', netPosition: 124951, strength: 124951, bias: 'BULLISH', weeklyChange: 14103, color: '#7EBF8E', type: 'cross' },
+      { currency: 'EURGBP', netPosition: -86268, strength: 86268, bias: 'BEARISH', weeklyChange: 14325, color: '#EF4444', type: 'cross' },
+      { currency: 'GBPCAD', netPosition: 120001, strength: 120001, bias: 'BULLISH', weeklyChange: -11773, color: '#7EBF8E', type: 'cross' },
+      { currency: 'AUDJPY', netPosition: 131103, strength: 131103, bias: 'BULLISH', weeklyChange: 11024, color: '#7EBF8E', type: 'cross' },
+      { currency: 'EURAUD', netPosition: -92420, strength: 92420, bias: 'BEARISH', weeklyChange: 17404, color: '#EF4444', type: 'cross' },
+      { currency: 'GBPAUD', netPosition: -6152, strength: 6152, bias: 'BEARISH', weeklyChange: 3079, color: '#EF4444', type: 'cross' },
+      { currency: 'EURCAD', netPosition: 33733, strength: 33733, bias: 'BULLISH', weeklyChange: 2552, color: '#7EBF8E', type: 'cross' },
+      { currency: 'NZDJPY', netPosition: 45048, strength: 45048, bias: 'BULLISH', weeklyChange: 3883, color: '#7EBF8E', type: 'cross' },
+      { currency: 'CADJPY', netPosition: 4950, strength: 4950, bias: 'BULLISH', weeklyChange: 25876, color: '#7EBF8E', type: 'cross' }
     ];
 
     return [...majorPairs, ...crossPairs];
