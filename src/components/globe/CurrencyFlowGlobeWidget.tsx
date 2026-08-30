@@ -176,8 +176,11 @@ const CurrencyFlowGlobeWidget = ({ height = 620 }: { height?: number }) => {
         </div>
       </div>
 
-      <div className="grid gap-0 lg:grid-cols-[1fr_300px]">
-        <div className="relative" style={{ height }}>
+      <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div
+          className="relative min-w-0 overflow-hidden h-[420px] sm:h-[520px] lg:h-[--globe-h]"
+          style={{ ["--globe-h" as string]: `${height}px` }}
+        >
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(60,110,255,0.18),transparent_65%)]" />
           {loading ? (
             <GlobeSkeleton />
