@@ -32,7 +32,7 @@ const MONTH_NAMES = [
 
 interface Candle { t: number; o: number; h: number; l: number; c: number }
 
-async function fetchCandles(symbol: string): Promise<Candle[]> {
+async function fetchCandles(symbol: string): Promise<{ candles: Candle[]; gmtoffset: number }> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=10y&interval=1d`;
   const res = await fetch(url, {
     headers: { "User-Agent": "Mozilla/5.0", Accept: "application/json" },
@@ -42,6 +42,7 @@ async function fetchCandles(symbol: string): Promise<Candle[]> {
   const json = await res.json();
   const result = json?.chart?.result?.[0];
   if (!result?.timestamp) throw new Error(`No candles for ${symbol}`);
+  const gmtoffset = Number(result.meta?.gmtoffset ?? 0);
   const q = result.indicators.quote[0];
   const out: Candle[] = [];
   for (let i = 0; i < result.timestamp.length; i++) {
@@ -49,7 +50,7 @@ async function fetchCandles(symbol: string): Promise<Candle[]> {
     if ([o, h, l, c].some((v) => v == null || !isFinite(v) || v <= 0)) continue;
     out.push({ t: result.timestamp[i] * 1000, o, h, l, c });
   }
-  return out;
+  return { candles: out, gmtoffset };
 }
 
 function round(n: number, d = 3) {
@@ -57,17 +58,21 @@ function round(n: number, d = 3) {
   return Math.round(n * f) / f;
 }
 
-function analyse(candles: Candle[]) {
+function analyse(candles: Candle[], gmtoffset: number) {
+  // Close-to-close returns keyed to the exchange-local session date
+  const dayIndex = (t: number) => new Date(t + gmtoffset * 1000).getUTCDay();
   // ── 20-month day-of-week rhythm ──────────────────────────────────────────
   const cutoff = Date.now() - 20 * 30.44 * 24 * 3600 * 1000;
   const recent = candles.filter((c) => c.t >= cutoff);
 
   const buckets: Record<number, { pct: number[]; range: number[] }> = {};
-  for (const c of recent) {
-    const dow = new Date(c.t).getUTCDay();
+  for (let i = 1; i < recent.length; i++) {
+    const c = recent[i];
+    const prevClose = recent[i - 1].c;
+    const dow = dayIndex(c.t);
     if (dow === 0 || dow === 6) continue; // skip weekend candles (crypto)
-    const pct = ((c.c - c.o) / c.o) * 100;
-    const range = ((c.h - c.l) / c.o) * 100;
+    const pct = ((c.c - prevClose) / prevClose) * 100;
+    const range = ((c.h - c.l) / prevClose) * 100;
     if (!isFinite(pct) || !isFinite(range)) continue;
     buckets[dow] ??= { pct: [], range: [] };
     buckets[dow].pct.push(pct);
@@ -106,7 +111,7 @@ function analyse(candles: Candle[]) {
     else byYear[y].last = c;
   }
   const monthReturns = Object.entries(byYear)
-    .map(([y, v]) => ({ year: Number(y), pct: round(((v.last.c - v.first.o) / v.first.o) * 100, 2) }))
+    .map(([y, v]) => ({ year: Number(y), pct: round(((v.last.c - v.first.c) / v.first.c) * 100, 2) }))
     .sort((a, b) => a.year - b.year);
   const closed = monthReturns.filter((m) => m.year !== new Date().getUTCFullYear());
   const seasonalAvg = closed.length
@@ -120,7 +125,7 @@ function analyse(candles: Candle[]) {
   const last = candles[candles.length - 1];
   const back20 = candles[Math.max(0, candles.length - 21)];
   const back60 = candles[Math.max(0, candles.length - 61)];
-  const vol20 = candles.slice(-20).reduce((a, c) => a + ((c.h - c.l) / c.o) * 100, 0) / Math.min(20, candles.length);
+  const vol20 = candles.slice(-20).reduce((a, c) => a + ((c.h - c.l) / c.c) * 100, 0) / Math.min(20, candles.length);
 
   return {
     lastClose: round(last.c, 5),
@@ -151,8 +156,8 @@ serve(async (req) => {
     const results = await Promise.all(
       UNIVERSE.map(async (inst) => {
         try {
-          const candles = await fetchCandles(inst.symbol);
-          return { ...inst, ok: true, ...analyse(candles) };
+          const { candles, gmtoffset } = await fetchCandles(inst.symbol);
+          return { ...inst, ok: true, ...analyse(candles, gmtoffset) };
         } catch (e) {
           console.error(`market-rhythm ${inst.pair}:`, (e as Error).message);
           return { ...inst, ok: false, error: (e as Error).message };
