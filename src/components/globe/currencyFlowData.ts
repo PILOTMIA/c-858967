@@ -68,6 +68,20 @@ export interface WeekFrame {
 }
 
 /**
+ * Market-standard quoting convention: USD is the BASE currency for these,
+ * so the label must read USDJPY / USDCHF / USDCAD — never JPYUSD.
+ */
+const USD_BASE_QUOTED = new Set(["JPY", "CHF", "CAD", "MXN", "CNY"]);
+
+/** Format a currency code against USD using the conventional pair order. */
+export const usdPairLabel = (code: string): string => {
+  if (code === "USD") return "DXY";
+  if (code === "XAU") return "XAUUSD";
+  if (code === "BTC") return "BTCUSD";
+  return USD_BASE_QUOTED.has(code) ? `USD${code}` : `${code}USD`;
+};
+
+/**
  * Turn raw weekly COT rows (schema: { week_ending/report_date, currency,
  * net_position, change_from_prior_week }) into globe frames.
  * Flow direction: capital rotating OUT of the currency whose speculative net
@@ -115,7 +129,7 @@ export function buildFrames(rows: CotRow[]): WeekFrame[] {
         id: `${week}-${p.code}`,
         from: src.code,
         to: dst.code,
-        pair: `${p.code}USD`,
+        pair: usdPairLabel(p.code),
         magnitude: Math.abs(p.change),
         change: p.change,
         startLat: src.lat,

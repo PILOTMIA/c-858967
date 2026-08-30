@@ -23,7 +23,7 @@ const getPairCode = (currency: string): string => {
   if (currency.length === 6) return currency;
   
   // USD pairs - determine base/quote order
-  const usdBasePairs = ['JPY', 'CAD', 'MXN', 'CHF'];
+  const usdBasePairs = ['JPY', 'CAD', 'MXN', 'CHF', 'CNY'];
   if (usdBasePairs.includes(currency)) {
     return `USD${currency}`;
   }
