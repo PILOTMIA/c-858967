@@ -66,9 +66,14 @@ function isRelevant(text: string): boolean {
 
 function inferCurrency(text: string): { currency: string; pairs: string[] } {
   const lower = text.toLowerCase();
-  const match = Object.entries(CURRENCY_RULES).find(([, rule]) => rule.terms.some(term => lower.includes(term)));
-  if (!match) return { currency: 'USD', pairs: ['EURUSD', 'GBPUSD', 'USDJPY'] };
-  return { currency: match[0], pairs: match[1].pairs };
+  // Score every currency and take the strongest match so a passing "Fed" mention
+  // does not override a headline that is clearly about CAD, JPY, gold, etc.
+  const ranked = Object.entries(CURRENCY_RULES)
+    .map(([code, rule]) => ({ code, pairs: rule.pairs, hits: rule.terms.filter(term => lower.includes(term)).length }))
+    .filter(entry => entry.hits > 0)
+    .sort((a, b) => b.hits - a.hits);
+  if (!ranked.length) return { currency: 'USD', pairs: ['EURUSD', 'GBPUSD', 'USDJPY'] };
+  return { currency: ranked[0].code, pairs: ranked[0].pairs };
 }
 
 
