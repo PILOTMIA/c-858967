@@ -22,28 +22,57 @@ export interface LiveBoard {
   latencyMs: number;
 }
 
+/** Real prior official close per pair, derived from Frankfurter (ECB reference rates). */
+async function fetchPrevCloses(): Promise<Record<string, number>> {
+  const end = new Date();
+  const start = new Date(Date.now() - 12 * 86400000);
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  try {
+    const res = await fetch(
+      `https://api.frankfurter.dev/v1/${iso(start)}..${iso(end)}?base=USD&symbols=EUR,GBP,JPY,CHF,AUD,CAD,NZD`
+    );
+    if (!res.ok) return {};
+    const json = await res.json();
+    const dates = Object.keys(json?.rates ?? {}).sort();
+    if (dates.length < 2) return {};
+    const prev = json.rates[dates[dates.length - 2]] as Record<string, number>;
+    const perUsd = (c: string) => (c === "USD" ? 1 : prev[c]); // units of c per 1 USD
+    const out: Record<string, number> = {};
+    for (const pair of BOARD_PAIRS) {
+      const base = pair.slice(0, 3);
+      const quote = pair.slice(3);
+      const b = perUsd(base);
+      const q = perUsd(quote);
+      if (Number.isFinite(b) && Number.isFinite(q) && b) out[pair] = q / b;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
 export async function fetchLiveBoard(): Promise<LiveBoard> {
   const started = performance.now();
-  const url = `https://${PROJECT}.supabase.co/functions/v1/forex-prices?pairs=${BOARD_PAIRS.join(",")}&history=true`;
-  const res = await fetch(url, {
-    cache: "no-store",
-    headers: { apikey: ANON, Authorization: `Bearer ${ANON}` },
-  });
+  const url = `https://${PROJECT}.supabase.co/functions/v1/forex-prices?pairs=${BOARD_PAIRS.join(",")}`;
+  const [res, prevCloses] = await Promise.all([
+    fetch(url, { cache: "no-store", headers: { apikey: ANON, Authorization: `Bearer ${ANON}` } }),
+    fetchPrevCloses(),
+  ]);
   if (!res.ok) throw new Error(`Price feed returned ${res.status}`);
   const json = await res.json();
   const rates: Record<string, LiveRate> = {};
   for (const pair of BOARD_PAIRS) {
     const r = json?.rates?.[pair];
     if (!r || !Number.isFinite(Number(r.rate))) continue;
-    const hist = json?.history?.[pair] as { date: string; close: number }[] | undefined;
     rates[pair] = {
       pair,
       rate: Number(r.rate),
-      prevClose: hist && hist.length > 1 ? Number(hist[hist.length - 2].close) : undefined,
+      prevClose: prevCloses[pair],
       source: r.source ?? "unknown",
     };
   }
   return { rates, fetchedAt: Date.now(), latencyMs: Math.round(performance.now() - started) };
+
 }
 
 export function useLiveBoard() {
