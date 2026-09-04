@@ -25,22 +25,29 @@ const JOBS_DATA: JobsEntry[] = [
   { country: 'New Zealand', flag: '🇳🇿', currency: 'NZD', unemployment: 5.4, previous: 5.1, wageGrowth: 2.8, source: 'StatsNZ' },
 ];
 
-const US_NFP_HISTORY = [
-  { month: 'Oct', value: 184 },
+const US_NFP_HISTORY_FALLBACK = [
+  { month: 'Sep', value: 254 },
+  { month: 'Oct', value: 36 },
   { month: 'Nov', value: 212 },
   { month: 'Dec', value: 256 },
   { month: 'Jan', value: 143 },
   { month: 'Feb', value: 151 },
-  { month: 'Mar', value: 228 },
 ];
 
-const fetchLiveJobs = async (): Promise<JobsEntry[]> => {
+interface JobsResult {
+  entries: JobsEntry[];
+  nfpHistory: { month: string; value: number }[];
+  nfpSource: string;
+}
+
+const fetchLiveJobs = async (): Promise<JobsResult> => {
   try {
     const currencies = JOBS_DATA.map(j => j.currency).join(',');
     const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
     const res = await fetch(
-      `https://${projectId}.supabase.co/functions/v1/macro-data?currencies=${currencies}`,
+      `https://${projectId}.supabase.co/functions/v1/macro-data?currencies=${currencies}&nfp=true`,
       {
+        cache: 'no-store',
         headers: {
           'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
@@ -50,13 +57,17 @@ const fetchLiveJobs = async (): Promise<JobsEntry[]> => {
     );
     if (!res.ok) throw new Error('Failed');
     const result = await res.json();
-    return JOBS_DATA.map(entry => ({
-      ...entry,
-      unemployment: result.data?.[entry.currency]?.unemployment ?? entry.unemployment,
-      source: result.data?.[entry.currency]?.source === 'fred' ? 'FRED API 🟢' : entry.source,
-    }));
+    return {
+      entries: JOBS_DATA.map(entry => ({
+        ...entry,
+        unemployment: result.data?.[entry.currency]?.unemployment ?? entry.unemployment,
+        source: result.data?.[entry.currency]?.source === 'fred' ? 'FRED API (live)' : entry.source,
+      })),
+      nfpHistory: result.nfp?.history?.length ? result.nfp.history : US_NFP_HISTORY_FALLBACK,
+      nfpSource: result.nfp?.source === 'fred' ? 'FRED / BLS (live)' : 'BLS (cached)',
+    };
   } catch {
-    return JOBS_DATA;
+    return { entries: JOBS_DATA, nfpHistory: US_NFP_HISTORY_FALLBACK, nfpSource: 'BLS (cached)' };
   }
 };
 
@@ -67,7 +78,10 @@ const JobsRadar = () => {
     refetchInterval: 6 * 60 * 60 * 1000,
   });
 
-  const entries = jobsData || JOBS_DATA;
+  const entries = jobsData?.entries || JOBS_DATA;
+  const nfpHistory = jobsData?.nfpHistory || US_NFP_HISTORY_FALLBACK;
+  const latestNfp = nfpHistory[nfpHistory.length - 1]?.value ?? 0;
+  const avgNfp = Math.round(nfpHistory.reduce((s, m) => s + m.value, 0) / (nfpHistory.length || 1));
   const chartData = entries.map(e => ({ name: e.currency, rate: e.unemployment }));
 
   if (isLoading) {
