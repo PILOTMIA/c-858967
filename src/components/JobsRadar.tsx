@@ -235,6 +235,30 @@ const JobsRadar = () => {
         })}
       </div>
 
+      {/* Why NFP Matters */}
+      <div className="rounded-2xl border border-primary/30 bg-primary/5 backdrop-blur-sm p-5">
+        <h3 className="font-bold text-foreground text-sm mb-3 flex items-center gap-2">
+          <Users className="w-4 h-4 text-primary" /> Why Non-Farm Payrolls (NFP) Is Worth Knowing
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
+          <div>
+            <span className="font-semibold text-foreground">It moves the Dollar instantly.</span> NFP is the single most-watched US data release. A strong print (jobs added above forecast) usually sends USD up within seconds; a weak print sends it down. Spreads widen and volatility spikes at 8:30 AM ET on release day.
+          </div>
+          <div>
+            <span className="font-semibold text-foreground">It drives Fed policy.</span> The Federal Reserve's mandate is maximum employment and stable prices. Consistently strong payrolls give the Fed room to keep rates higher for longer — bullish USD. Weak payrolls raise rate-cut expectations — bearish USD.
+          </div>
+          <div>
+            <span className="font-semibold text-foreground">It sets the tone for every pair.</span> Because USD is one side of most major pairs (EURUSD, USDJPY, GBPUSD), NFP reshapes the entire FX board at once — not just one market.
+          </div>
+          <div>
+            <span className="font-semibold text-foreground">How to use it.</span> Compare the actual number vs. the forecast, watch wage growth for inflation clues, and note revisions to prior months — big revisions can flip the initial market reaction. Many traders wait 15–30 minutes after release for spreads to normalize before entering.
+          </div>
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-3">
+          Source: Bureau of Labor Statistics via FRED • Released the first Friday of each month at 8:30 AM ET
+        </p>
+      </div>
+
       {/* Insights */}
       <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-5">
         <h3 className="font-bold text-foreground text-sm mb-3 flex items-center gap-2">
@@ -242,20 +266,20 @@ const JobsRadar = () => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
           <div>
-            <span className="font-semibold text-foreground">🇺🇸 NFP +228K</span> — Strong labor market beat supports Fed's patient stance. USD bullish on tight employment.
+            <span className="font-semibold text-foreground">🇺🇸 Latest NFP {latestNfp >= 0 ? '+' : ''}{latestNfp}K</span> — {latestNfp >= avgNfp ? 'Above the 12-month trend — labor momentum supports a patient Fed and a firmer USD.' : 'Below the 12-month trend — cooling hiring raises rate-cut expectations, pressuring USD.'}
           </div>
           <div>
             <span className="font-semibold text-foreground">🇯🇵 Wages +5.4%</span> — Japan's strongest wage growth in decades supports BoJ normalization and JPY strength.
           </div>
           <div>
-            <span className="font-semibold text-foreground">🇨🇦 6.7% Unemployment</span> — Canada's rising joblessness justifies BoC's aggressive cutting cycle. Bearish CAD.
+            <span className="font-semibold text-foreground">🇨🇦 6.7% Unemployment</span> — Canada's elevated joblessness keeps the BoC biased toward easing. Bearish CAD.
           </div>
           <div>
-            <span className="font-semibold text-foreground">🇬🇧 Wages +4.8%</span> — UK wage stickiness at 4.8% keeps BoE cautious. GBP supported by slow easing pace.
+            <span className="font-semibold text-foreground">🇬🇧 Wages +4.8%</span> — UK wage stickiness keeps BoE cautious. GBP supported by slow easing pace.
           </div>
         </div>
         <p className="text-[10px] text-muted-foreground mt-3">
-          Source: Bureau of Labor Statistics, FRED, Eurostat, ONS, Statistics Bureau Japan, ABS, StatCan • NFP released April 4, 2026
+          Source: Bureau of Labor Statistics, FRED, Eurostat, ONS, Statistics Bureau Japan, ABS, StatCan
         </p>
       </div>
     </div>
