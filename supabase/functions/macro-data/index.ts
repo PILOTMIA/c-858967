@@ -113,6 +113,7 @@ Deno.serve(async (req) => {
   const url = new URL(req.url);
   const currencies = url.searchParams.get('currencies')?.split(',') || ['USD', 'EUR', 'GBP', 'JPY'];
   const includeUS10Y = url.searchParams.get('us10y') === 'true';
+  const includeNFP = url.searchParams.get('nfp') === 'true';
 
   const apiKey = Deno.env.get('FRED_API_KEY');
   if (!apiKey) {
@@ -123,6 +124,7 @@ Deno.serve(async (req) => {
     }
     const response: any = { data: result, source: 'fallback' };
     if (includeUS10Y) response.us10y = US10Y_FALLBACK;
+    if (includeNFP) response.nfp = null;
     return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
