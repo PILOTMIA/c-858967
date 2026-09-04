@@ -1,84 +1,75 @@
-
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Clock } from "lucide-react";
+import { fetchMarketNews } from "@/services/MarketNewsService";
 
-interface SentimentData {
-  pair: string;
-  bullish: number;
-  bearish: number;
-  neutral: number;
-  overall: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
-}
+const getSentimentIcon = (sentiment: string) => {
+  switch (sentiment) {
+    case "BULLISH":
+      return <TrendingUp className="w-4 h-4 text-success" />;
+    case "BEARISH":
+      return <TrendingDown className="w-4 h-4 text-destructive" />;
+    default:
+      return <Minus className="w-4 h-4 text-muted-foreground" />;
+  }
+};
 
-const fetchSentimentData = async (): Promise<SentimentData[]> => {
-  // Current sentiment data as of March 19, 2026
-  // Reflects Fed hold at 4.50%, ECB cuts to 2.75%, BoJ normalization to 0.75%, tariff uncertainty
-  return [
-    { pair: 'EURUSD', bullish: 45, bearish: 42, neutral: 13, overall: 'NEUTRAL' },
-    { pair: 'GBPUSD', bullish: 55, bearish: 35, neutral: 10, overall: 'BULLISH' },
-    { pair: 'USDJPY', bullish: 30, bearish: 62, neutral: 8, overall: 'BEARISH' },
-    { pair: 'USDCHF', bullish: 40, bearish: 50, neutral: 10, overall: 'BEARISH' },
-    { pair: 'AUDUSD', bullish: 52, bearish: 38, neutral: 10, overall: 'BULLISH' },
-    { pair: 'NZDUSD', bullish: 32, bearish: 58, neutral: 10, overall: 'BEARISH' },
-    { pair: 'USDCAD', bullish: 48, bearish: 44, neutral: 8, overall: 'BULLISH' },
-  ];
+const getSentimentColor = (sentiment: string) => {
+  switch (sentiment) {
+    case "BULLISH":
+      return "text-success";
+    case "BEARISH":
+      return "text-destructive";
+    default:
+      return "text-muted-foreground";
+  }
 };
 
 const SentimentWidget = () => {
-  const { data: sentimentData, isLoading } = useQuery({
-    queryKey: ['sentimentData'],
-    queryFn: fetchSentimentData,
-    refetchInterval: 300000, // 5 minutes
+  const { data, isLoading, dataUpdatedAt } = useQuery({
+    queryKey: ["marketNewsLive"],
+    queryFn: fetchMarketNews,
+    staleTime: 1000 * 60,
+    refetchInterval: 1000 * 60 * 5,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 
-  const getSentimentIcon = (sentiment: string) => {
-    switch (sentiment) {
-      case 'BULLISH':
-        return <TrendingUp className="w-4 h-4 text-success" />;
-      case 'BEARISH':
-        return <TrendingDown className="w-4 h-4 text-destructive" />;
-      default:
-        return <Minus className="w-4 h-4 text-muted-foreground" />;
-    }
-  };
-
-  const getSentimentColor = (sentiment: string) => {
-    switch (sentiment) {
-      case 'BULLISH':
-        return 'text-success';
-      case 'BEARISH':
-        return 'text-destructive';
-      default:
-        return 'text-muted-foreground';
-    }
-  };
+  const entries = Object.entries(data?.majorPairs || {});
 
   return (
     <div className="bg-card p-6 rounded-lg border border-border">
-      <h3 className="text-lg font-bold text-foreground mb-4">Market Sentiment</h3>
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <h3 className="text-lg font-bold text-foreground">Market Sentiment — Live</h3>
+        {dataUpdatedAt > 0 && (
+          <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+            <Clock className="w-3 h-3" />
+            {new Date(dataUpdatedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+          </span>
+        )}
+      </div>
       {isLoading ? (
         <div className="animate-pulse space-y-2">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-4 bg-muted rounded"></div>
+            <div key={i} className="h-4 bg-muted rounded" />
           ))}
         </div>
+      ) : entries.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Live sentiment feed is refreshing. Values appear once headlines are scored.</p>
       ) : (
         <div className="space-y-3">
-          {sentimentData?.map((item) => (
-            <div key={item.pair} className="flex items-center justify-between">
-              <span className="text-foreground text-sm font-medium">{item.pair}</span>
+          {entries.map(([pair, item]) => (
+            <div key={pair} className="flex items-center justify-between">
+              <span className="text-foreground text-sm font-medium font-mono">{pair}</span>
               <div className="flex items-center gap-2">
-                {getSentimentIcon(item.overall)}
-                <span className={`text-sm font-bold ${getSentimentColor(item.overall)}`}>
-                  {item.overall}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {item.overall === 'BULLISH' ? item.bullish : item.bearish}%
-                </span>
+                {getSentimentIcon(item.sentiment)}
+                <span className={`text-sm font-bold ${getSentimentColor(item.sentiment)}`}>{item.sentiment}</span>
+                <span className="text-xs text-muted-foreground">{Math.round(item.score * 100)}%</span>
               </div>
             </div>
           ))}
+          <p className="pt-2 text-[11px] text-muted-foreground border-t border-border">
+            Scored from live macro headlines (GDELT, Investing.com, ForexLive, FXStreet, WSJ), last 72 hours.
+          </p>
         </div>
       )}
     </div>
