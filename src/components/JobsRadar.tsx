@@ -25,22 +25,29 @@ const JOBS_DATA: JobsEntry[] = [
   { country: 'New Zealand', flag: '🇳🇿', currency: 'NZD', unemployment: 5.4, previous: 5.1, wageGrowth: 2.8, source: 'StatsNZ' },
 ];
 
-const US_NFP_HISTORY = [
-  { month: 'Oct', value: 184 },
+const US_NFP_HISTORY_FALLBACK = [
+  { month: 'Sep', value: 254 },
+  { month: 'Oct', value: 36 },
   { month: 'Nov', value: 212 },
   { month: 'Dec', value: 256 },
   { month: 'Jan', value: 143 },
   { month: 'Feb', value: 151 },
-  { month: 'Mar', value: 228 },
 ];
 
-const fetchLiveJobs = async (): Promise<JobsEntry[]> => {
+interface JobsResult {
+  entries: JobsEntry[];
+  nfpHistory: { month: string; value: number }[];
+  nfpSource: string;
+}
+
+const fetchLiveJobs = async (): Promise<JobsResult> => {
   try {
     const currencies = JOBS_DATA.map(j => j.currency).join(',');
     const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
     const res = await fetch(
-      `https://${projectId}.supabase.co/functions/v1/macro-data?currencies=${currencies}`,
+      `https://${projectId}.supabase.co/functions/v1/macro-data?currencies=${currencies}&nfp=true`,
       {
+        cache: 'no-store',
         headers: {
           'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
@@ -50,13 +57,17 @@ const fetchLiveJobs = async (): Promise<JobsEntry[]> => {
     );
     if (!res.ok) throw new Error('Failed');
     const result = await res.json();
-    return JOBS_DATA.map(entry => ({
-      ...entry,
-      unemployment: result.data?.[entry.currency]?.unemployment ?? entry.unemployment,
-      source: result.data?.[entry.currency]?.source === 'fred' ? 'FRED API 🟢' : entry.source,
-    }));
+    return {
+      entries: JOBS_DATA.map(entry => ({
+        ...entry,
+        unemployment: result.data?.[entry.currency]?.unemployment ?? entry.unemployment,
+        source: result.data?.[entry.currency]?.source === 'fred' ? 'FRED API (live)' : entry.source,
+      })),
+      nfpHistory: result.nfp?.history?.length ? result.nfp.history : US_NFP_HISTORY_FALLBACK,
+      nfpSource: result.nfp?.source === 'fred' ? 'FRED / BLS (live)' : 'BLS (cached)',
+    };
   } catch {
-    return JOBS_DATA;
+    return { entries: JOBS_DATA, nfpHistory: US_NFP_HISTORY_FALLBACK, nfpSource: 'BLS (cached)' };
   }
 };
 
@@ -67,7 +78,10 @@ const JobsRadar = () => {
     refetchInterval: 6 * 60 * 60 * 1000,
   });
 
-  const entries = jobsData || JOBS_DATA;
+  const entries = jobsData?.entries || JOBS_DATA;
+  const nfpHistory = jobsData?.nfpHistory || US_NFP_HISTORY_FALLBACK;
+  const latestNfp = nfpHistory[nfpHistory.length - 1]?.value ?? 0;
+  const avgNfp = Math.round(nfpHistory.reduce((s, m) => s + m.value, 0) / (nfpHistory.length || 1));
   const chartData = entries.map(e => ({ name: e.currency, rate: e.unemployment }));
 
   if (isLoading) {
@@ -92,7 +106,7 @@ const JobsRadar = () => {
           </p>
         </div>
         <Badge variant="outline" className="text-xs">
-          <Activity className="w-3 h-3 mr-1" /> March 2026
+          <Activity className="w-3 h-3 mr-1" /> {new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' })}
         </Badge>
       </div>
 
@@ -103,16 +117,18 @@ const JobsRadar = () => {
           <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="font-bold text-foreground text-sm">🇺🇸 US Non-Farm Payrolls (K)</h3>
-              <p className="text-[10px] text-muted-foreground">Monthly job additions • Source: BLS</p>
+              <p className="text-[10px] text-muted-foreground">Monthly job additions • Source: {jobsData?.nfpSource || 'BLS (cached)'}</p>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-foreground">+228K</div>
-              <div className="text-xs text-success">Beat est. 135K</div>
+              <div className={`text-2xl font-bold ${latestNfp >= 0 ? 'text-success' : 'text-destructive'}`}>
+                {latestNfp >= 0 ? '+' : ''}{latestNfp}K
+              </div>
+              <div className="text-xs text-muted-foreground">12-mo avg {avgNfp >= 0 ? '+' : ''}{avgNfp}K</div>
             </div>
           </div>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={US_NFP_HISTORY}>
+              <BarChart data={nfpHistory}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
@@ -123,16 +139,23 @@ const JobsRadar = () => {
                     borderRadius: '12px',
                     fontSize: '12px',
                   }}
-                  formatter={(v: number) => [`+${v}K`, 'NFP']}
+                  formatter={(v: number) => [`${v >= 0 ? '+' : ''}${v}K`, 'NFP']}
                 />
                 <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                  {US_NFP_HISTORY.map((_, idx) => (
-                    <Cell key={idx} fill={idx === US_NFP_HISTORY.length - 1 ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))'} opacity={idx === US_NFP_HISTORY.length - 1 ? 1 : 0.4} />
+                  {nfpHistory.map((entry, idx) => (
+                    <Cell
+                      key={idx}
+                      fill={entry.value < 0 ? 'hsl(var(--destructive))' : idx === nfpHistory.length - 1 ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))'}
+                      opacity={idx === nfpHistory.length - 1 || entry.value < 0 ? 1 : 0.4}
+                    />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
+          <p className="text-[10px] text-muted-foreground mt-2">
+            Released first Friday of each month, 8:30 AM ET, covering the prior month.
+          </p>
         </div>
 
         {/* Unemployment Comparison */}
@@ -212,6 +235,30 @@ const JobsRadar = () => {
         })}
       </div>
 
+      {/* Why NFP Matters */}
+      <div className="rounded-2xl border border-primary/30 bg-primary/5 backdrop-blur-sm p-5">
+        <h3 className="font-bold text-foreground text-sm mb-3 flex items-center gap-2">
+          <Users className="w-4 h-4 text-primary" /> Why Non-Farm Payrolls (NFP) Is Worth Knowing
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
+          <div>
+            <span className="font-semibold text-foreground">It moves the Dollar instantly.</span> NFP is the single most-watched US data release. A strong print (jobs added above forecast) usually sends USD up within seconds; a weak print sends it down. Spreads widen and volatility spikes at 8:30 AM ET on release day.
+          </div>
+          <div>
+            <span className="font-semibold text-foreground">It drives Fed policy.</span> The Federal Reserve's mandate is maximum employment and stable prices. Consistently strong payrolls give the Fed room to keep rates higher for longer — bullish USD. Weak payrolls raise rate-cut expectations — bearish USD.
+          </div>
+          <div>
+            <span className="font-semibold text-foreground">It sets the tone for every pair.</span> Because USD is one side of most major pairs (EURUSD, USDJPY, GBPUSD), NFP reshapes the entire FX board at once — not just one market.
+          </div>
+          <div>
+            <span className="font-semibold text-foreground">How to use it.</span> Compare the actual number vs. the forecast, watch wage growth for inflation clues, and note revisions to prior months — big revisions can flip the initial market reaction. Many traders wait 15–30 minutes after release for spreads to normalize before entering.
+          </div>
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-3">
+          Source: Bureau of Labor Statistics via FRED • Released the first Friday of each month at 8:30 AM ET
+        </p>
+      </div>
+
       {/* Insights */}
       <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-5">
         <h3 className="font-bold text-foreground text-sm mb-3 flex items-center gap-2">
@@ -219,20 +266,20 @@ const JobsRadar = () => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
           <div>
-            <span className="font-semibold text-foreground">🇺🇸 NFP +228K</span> — Strong labor market beat supports Fed's patient stance. USD bullish on tight employment.
+            <span className="font-semibold text-foreground">🇺🇸 Latest NFP {latestNfp >= 0 ? '+' : ''}{latestNfp}K</span> — {latestNfp >= avgNfp ? 'Above the 12-month trend — labor momentum supports a patient Fed and a firmer USD.' : 'Below the 12-month trend — cooling hiring raises rate-cut expectations, pressuring USD.'}
           </div>
           <div>
             <span className="font-semibold text-foreground">🇯🇵 Wages +5.4%</span> — Japan's strongest wage growth in decades supports BoJ normalization and JPY strength.
           </div>
           <div>
-            <span className="font-semibold text-foreground">🇨🇦 6.7% Unemployment</span> — Canada's rising joblessness justifies BoC's aggressive cutting cycle. Bearish CAD.
+            <span className="font-semibold text-foreground">🇨🇦 6.7% Unemployment</span> — Canada's elevated joblessness keeps the BoC biased toward easing. Bearish CAD.
           </div>
           <div>
-            <span className="font-semibold text-foreground">🇬🇧 Wages +4.8%</span> — UK wage stickiness at 4.8% keeps BoE cautious. GBP supported by slow easing pace.
+            <span className="font-semibold text-foreground">🇬🇧 Wages +4.8%</span> — UK wage stickiness keeps BoE cautious. GBP supported by slow easing pace.
           </div>
         </div>
         <p className="text-[10px] text-muted-foreground mt-3">
-          Source: Bureau of Labor Statistics, FRED, Eurostat, ONS, Statistics Bureau Japan, ABS, StatCan • NFP released April 4, 2026
+          Source: Bureau of Labor Statistics, FRED, Eurostat, ONS, Statistics Bureau Japan, ABS, StatCan
         </p>
       </div>
     </div>

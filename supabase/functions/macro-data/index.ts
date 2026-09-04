@@ -38,12 +38,16 @@ async function fetchFredSeries(seriesId: string, apiKey: string): Promise<number
   try {
     const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${apiKey}&file_type=json&sort_order=desc&limit=1`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn(`FRED ${seriesId} HTTP ${res.status}`);
+      return null;
+    }
     const data = await res.json();
     const val = data?.observations?.[0]?.value;
     if (!val || val === '.') return null;
     return parseFloat(val);
-  } catch {
+  } catch (e) {
+    console.warn(`FRED ${seriesId} error: ${(e as Error)?.message}`);
     return null;
   }
 }
@@ -82,6 +86,29 @@ async function fetchUS10Y(apiKey: string): Promise<{ yield: number; previousYiel
   }
 }
 
+// US Non-Farm Payrolls: PAYEMS level in thousands; compute monthly changes for last 12 months
+async function fetchNFP(apiKey: string): Promise<{ history: { month: string; value: number }[]; latest: number; source: 'fred' | 'fallback' } | null> {
+  try {
+    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=PAYEMS&api_key=${apiKey}&file_type=json&sort_order=desc&limit=13`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const observations = (data?.observations || [])
+      .filter((o: any) => o.value && o.value !== '.')
+      .map((o: any) => ({ date: o.date as string, level: parseFloat(o.value) }));
+    if (observations.length < 2) return null;
+    const history: { month: string; value: number }[] = [];
+    for (let i = observations.length - 1; i >= 1; i--) {
+      const diff = Math.round(observations[i].level - observations[i - 1].level);
+      const month = new Date(observations[i].date + 'T00:00:00Z').toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+      history.push({ month, value: diff });
+    }
+    return { history, latest: history[history.length - 1].value, source: 'fred' };
+  } catch {
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -90,6 +117,7 @@ Deno.serve(async (req) => {
   const url = new URL(req.url);
   const currencies = url.searchParams.get('currencies')?.split(',') || ['USD', 'EUR', 'GBP', 'JPY'];
   const includeUS10Y = url.searchParams.get('us10y') === 'true';
+  const includeNFP = url.searchParams.get('nfp') === 'true';
 
   const apiKey = Deno.env.get('FRED_API_KEY');
   if (!apiKey) {
@@ -100,6 +128,7 @@ Deno.serve(async (req) => {
     }
     const response: any = { data: result, source: 'fallback' };
     if (includeUS10Y) response.us10y = US10Y_FALLBACK;
+    if (includeNFP) response.nfp = null;
     return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -132,11 +161,13 @@ Deno.serve(async (req) => {
   }));
 
   const us10yPromise = includeUS10Y ? fetchUS10Y(apiKey) : Promise.resolve(null);
+  const nfpPromise = includeNFP ? fetchNFP(apiKey) : Promise.resolve(null);
 
-  const [, us10yData] = await Promise.all([macroPromise, us10yPromise]);
+  const [, us10yData, nfpData] = await Promise.all([macroPromise, us10yPromise, nfpPromise]);
 
   const response: any = { data: result, timestamp: Date.now() };
   if (us10yData) response.us10y = us10yData;
+  if (nfpData) response.nfp = nfpData;
 
   return new Response(JSON.stringify(response), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
