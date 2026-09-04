@@ -133,30 +133,35 @@ serve(async (req) => {
         } catch { /* next */ }
         return { rate: fallbackPrices.XAUUSD, source: 'xauusd-fallback' };
       }
+      const base = pairCode.substring(0, 3);
+      const quote = pairCode.substring(3);
+
+      // Frankfurter (ECB) first: full precision reference rates
       try {
-        const r = await fetchWithTimeout(`https://www.freeforexapi.com/api/live?pairs=${pairCode}`);
+        const r = await fetchWithTimeout(`https://api.frankfurter.dev/v1/latest?base=${base}&symbols=${quote}`);
         if (r.ok) {
           const d = await r.json();
-          if (d?.rates?.[pairCode]?.rate) return { rate: d.rates[pairCode].rate, source: 'freeforexapi' };
+          const v = Number(d?.rates?.[quote]);
+          if (Number.isFinite(v) && v > 0) return { rate: v, source: 'frankfurter-ecb' };
         }
       } catch { /* next */ }
 
-      const base = pairCode.substring(0, 3);
-      const quote = pairCode.substring(3);
+      // open.er-api: 6-decimal precision, updates daily
+      try {
+        const r = await fetchWithTimeout(`https://open.er-api.com/v6/latest/${base}`);
+        if (r.ok) {
+          const d = await r.json();
+          const v = Number(d?.rates?.[quote]);
+          if (Number.isFinite(v) && v > 0) return { rate: v, source: 'open-er-api' };
+        }
+      } catch { /* next */ }
 
       try {
         const r = await fetchWithTimeout(`https://api.exchangerate-api.com/v4/latest/${base}`);
         if (r.ok) {
           const d = await r.json();
-          if (d?.rates?.[quote]) return { rate: d.rates[quote], source: 'exchangerate-api' };
-        }
-      } catch { /* next */ }
-
-      try {
-        const r = await fetchWithTimeout(`https://api.frankfurter.app/latest?from=${base}&to=${quote}`);
-        if (r.ok) {
-          const d = await r.json();
-          if (d?.rates?.[quote]) return { rate: d.rates[quote], source: 'frankfurter' };
+          const v = Number(d?.rates?.[quote]);
+          if (Number.isFinite(v) && v > 0) return { rate: v, source: 'exchangerate-api' };
         }
       } catch { /* next */ }
 
