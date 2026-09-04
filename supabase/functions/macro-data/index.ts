@@ -82,6 +82,29 @@ async function fetchUS10Y(apiKey: string): Promise<{ yield: number; previousYiel
   }
 }
 
+// US Non-Farm Payrolls: PAYEMS level in thousands; compute monthly changes for last 12 months
+async function fetchNFP(apiKey: string): Promise<{ history: { month: string; value: number }[]; latest: number; source: 'fred' | 'fallback' } | null> {
+  try {
+    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=PAYEMS&api_key=${apiKey}&file_type=json&sort_order=desc&limit=13`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const observations = (data?.observations || [])
+      .filter((o: any) => o.value && o.value !== '.')
+      .map((o: any) => ({ date: o.date as string, level: parseFloat(o.value) }));
+    if (observations.length < 2) return null;
+    const history: { month: string; value: number }[] = [];
+    for (let i = observations.length - 1; i >= 1; i--) {
+      const diff = Math.round(observations[i].level - observations[i - 1].level);
+      const month = new Date(observations[i].date + 'T00:00:00Z').toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+      history.push({ month, value: diff });
+    }
+    return { history, latest: history[history.length - 1].value, source: 'fred' };
+  } catch {
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
