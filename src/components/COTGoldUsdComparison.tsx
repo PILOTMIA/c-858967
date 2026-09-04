@@ -65,8 +65,8 @@ const COTGoldUsdComparison = () => {
     staleTime: 1000 * 60 * 15,
   });
 
-  const xauHistory = data?.history?.XAUUSD?.length ? data.history.XAUUSD : fallbackHistory(2350, 1);
-  const pairHistory = data?.history?.[pair]?.length ? data.history[pair] : fallbackHistory(pair.startsWith("USD") ? 150 : 1.08, pair.startsWith("USD") ? 1 : -1);
+  const xauHistory = data?.history?.XAUUSD?.length ? data.history.XAUUSD : fallbackHistory(4476.2, 1);
+  const pairHistory = data?.history?.[pair]?.length ? data.history[pair] : fallbackHistory(pair.startsWith("USD") ? 156.01 : 1.16, pair.startsWith("USD") ? 1 : -1);
 
   const chartData = useMemo(() => {
     const count = Math.min(xauHistory.length, pairHistory.length, 45);

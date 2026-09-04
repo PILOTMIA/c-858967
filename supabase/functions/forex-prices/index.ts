@@ -21,28 +21,38 @@ function getCorsHeaders(origin: string | null): Record<string, string> {
   };
 }
 
-// Fallback prices if all APIs fail - Updated March 19, 2026 (accurate market levels)
+// Fallback prices if all APIs fail - Updated September 3, 2026 (ECB reference close)
 const fallbackPrices: Record<string, number> = {
-  EURUSD: 1.0340,
-  GBPUSD: 1.2260,
-  USDJPY: 149.80,
-  USDCHF: 0.8985,
-  AUDUSD: 0.6310,
-  USDCAD: 1.4380,
-  USDMXN: 20.35,
-  NZDUSD: 0.5680,
-  XAUUSD: 4400.00,
-  USDBRL: 5.8450,
-  EURJPY: 154.90,
-  GBPJPY: 183.65,
-  EURGBP: 0.8435,
-  GBPCAD: 1.7630,
-  AUDJPY: 94.50,
-  EURAUD: 1.6390,
-  GBPAUD: 1.9430,
-  EURCAD: 1.4870,
-  NZDJPY: 85.10,
-  CADJPY: 104.20,
+  EURUSD: 1.16149,
+  GBPUSD: 1.34971,
+  USDJPY: 156.01,
+  USDCHF: 0.80844,
+  AUDUSD: 0.71932,
+  USDCAD: 1.3792,
+  USDMXN: 18.42,
+  NZDUSD: 0.5872,
+  XAUUSD: 4476.20,
+  USDBRL: 5.3850,
+  EURJPY: 181.205,
+  GBPJPY: 210.568,
+  EURGBP: 0.86055,
+  GBPCAD: 1.86152,
+  AUDJPY: 112.221,
+  EURAUD: 1.61471,
+  GBPAUD: 1.87637,
+  EURCAD: 1.60193,
+  NZDJPY: 91.609,
+  CADJPY: 113.116,
+  EURCHF: 0.93900,
+  GBPCHF: 1.09116,
+  AUDNZD: 1.22500,
+  AUDCAD: 0.99209,
+  AUDCHF: 0.58153,
+  NZDCAD: 0.80986,
+  NZDCHF: 0.47472,
+  CADCHF: 0.58617,
+  GBPNZD: 2.29856,
+  EURNZD: 1.97802,
 };
 
 serve(async (req) => {
@@ -133,30 +143,35 @@ serve(async (req) => {
         } catch { /* next */ }
         return { rate: fallbackPrices.XAUUSD, source: 'xauusd-fallback' };
       }
+      const base = pairCode.substring(0, 3);
+      const quote = pairCode.substring(3);
+
+      // Frankfurter (ECB) first: full precision reference rates
       try {
-        const r = await fetchWithTimeout(`https://www.freeforexapi.com/api/live?pairs=${pairCode}`);
+        const r = await fetchWithTimeout(`https://api.frankfurter.dev/v1/latest?base=${base}&symbols=${quote}`);
         if (r.ok) {
           const d = await r.json();
-          if (d?.rates?.[pairCode]?.rate) return { rate: d.rates[pairCode].rate, source: 'freeforexapi' };
+          const v = Number(d?.rates?.[quote]);
+          if (Number.isFinite(v) && v > 0) return { rate: v, source: 'frankfurter-ecb' };
         }
       } catch { /* next */ }
 
-      const base = pairCode.substring(0, 3);
-      const quote = pairCode.substring(3);
+      // open.er-api: 6-decimal precision, updates daily
+      try {
+        const r = await fetchWithTimeout(`https://open.er-api.com/v6/latest/${base}`);
+        if (r.ok) {
+          const d = await r.json();
+          const v = Number(d?.rates?.[quote]);
+          if (Number.isFinite(v) && v > 0) return { rate: v, source: 'open-er-api' };
+        }
+      } catch { /* next */ }
 
       try {
         const r = await fetchWithTimeout(`https://api.exchangerate-api.com/v4/latest/${base}`);
         if (r.ok) {
           const d = await r.json();
-          if (d?.rates?.[quote]) return { rate: d.rates[quote], source: 'exchangerate-api' };
-        }
-      } catch { /* next */ }
-
-      try {
-        const r = await fetchWithTimeout(`https://api.frankfurter.app/latest?from=${base}&to=${quote}`);
-        if (r.ok) {
-          const d = await r.json();
-          if (d?.rates?.[quote]) return { rate: d.rates[quote], source: 'frankfurter' };
+          const v = Number(d?.rates?.[quote]);
+          if (Number.isFinite(v) && v > 0) return { rate: v, source: 'exchangerate-api' };
         }
       } catch { /* next */ }
 
