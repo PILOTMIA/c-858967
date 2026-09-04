@@ -26,21 +26,49 @@ const JOBS_DATA: JobsEntry[] = [
 ];
 
 const US_NFP_HISTORY_FALLBACK = [
-  { month: 'Sep', value: 254 },
-  { month: 'Oct', value: 36 },
-  { month: 'Nov', value: 212 },
-  { month: 'Dec', value: 256 },
-  { month: 'Jan', value: 143 },
-  { month: 'Feb', value: 151 },
+  { month: 'Sep', year: 2025, value: 76 },
+  { month: 'Oct', year: 2025, value: -140 },
+  { month: 'Nov', year: 2025, value: 41 },
+  { month: 'Dec', year: 2025, value: -17 },
+  { month: 'Jan', year: 2026, value: 160 },
+  { month: 'Feb', year: 2026, value: -156 },
+  { month: 'Mar', year: 2026, value: 214 },
+  { month: 'Apr', year: 2026, value: 148 },
+  { month: 'May', year: 2026, value: 63 },
+  { month: 'Jun', year: 2026, value: 31 },
+  { month: 'Jul', year: 2026, value: 21 },
+  { month: 'Aug', year: 2026, value: 162 },
 ];
+
+// First Friday of the month after the latest released reference month
+const nextNfpRelease = () => {
+  const now = new Date();
+  const findFirstFriday = (y: number, m: number) => {
+    const d = new Date(Date.UTC(y, m, 1));
+    while (d.getUTCDay() !== 5) d.setUTCDate(d.getUTCDate() + 1);
+    return d;
+  };
+  let rel = findFirstFriday(now.getUTCFullYear(), now.getUTCMonth());
+  if (rel.getTime() <= now.getTime()) rel = findFirstFriday(now.getUTCFullYear(), now.getUTCMonth() + 1);
+  return rel.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+};
 
 interface JobsResult {
   entries: JobsEntry[];
-  nfpHistory: { month: string; value: number }[];
+  nfpHistory: { month: string; year?: number; value: number }[];
   nfpSource: string;
+  nfpLatestMonth: string;
+  nfpPrevious: number | null;
 }
 
 const fetchLiveJobs = async (): Promise<JobsResult> => {
+  const fallback: JobsResult = {
+    entries: JOBS_DATA,
+    nfpHistory: US_NFP_HISTORY_FALLBACK,
+    nfpSource: 'BLS (cached)',
+    nfpLatestMonth: 'Aug 2026',
+    nfpPrevious: 21,
+  };
   try {
     const currencies = JOBS_DATA.map(j => j.currency).join(',');
     const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
@@ -57,17 +85,25 @@ const fetchLiveJobs = async (): Promise<JobsResult> => {
     );
     if (!res.ok) throw new Error('Failed');
     const result = await res.json();
+    const nfp = result.nfp;
     return {
       entries: JOBS_DATA.map(entry => ({
         ...entry,
         unemployment: result.data?.[entry.currency]?.unemployment ?? entry.unemployment,
         source: result.data?.[entry.currency]?.source === 'fred' ? 'FRED API (live)' : entry.source,
       })),
-      nfpHistory: result.nfp?.history?.length ? result.nfp.history : US_NFP_HISTORY_FALLBACK,
-      nfpSource: result.nfp?.source === 'fred' ? 'FRED / BLS (live)' : 'BLS (cached)',
+      nfpHistory: nfp?.history?.length ? nfp.history : fallback.nfpHistory,
+      nfpSource:
+        nfp?.source === 'bls'
+          ? 'BLS Public API (live)'
+          : nfp?.source === 'fred'
+            ? 'FRED / BLS (live)'
+            : 'BLS (cached)',
+      nfpLatestMonth: nfp?.latestMonth ?? fallback.nfpLatestMonth,
+      nfpPrevious: typeof nfp?.previous === 'number' ? nfp.previous : fallback.nfpPrevious,
     };
   } catch {
-    return { entries: JOBS_DATA, nfpHistory: US_NFP_HISTORY_FALLBACK, nfpSource: 'BLS (cached)' };
+    return fallback;
   }
 };
 
@@ -75,13 +111,16 @@ const JobsRadar = () => {
   const { data: jobsData, isLoading } = useQuery({
     queryKey: ['jobsRadar'],
     queryFn: fetchLiveJobs,
-    refetchInterval: 6 * 60 * 60 * 1000,
+    refetchInterval: 30 * 60 * 1000,
   });
 
   const entries = jobsData?.entries || JOBS_DATA;
   const nfpHistory = jobsData?.nfpHistory || US_NFP_HISTORY_FALLBACK;
   const latestNfp = nfpHistory[nfpHistory.length - 1]?.value ?? 0;
+  const previousNfp = jobsData?.nfpPrevious ?? nfpHistory[nfpHistory.length - 2]?.value ?? 0;
+  const latestMonthLabel = jobsData?.nfpLatestMonth || 'Latest';
   const avgNfp = Math.round(nfpHistory.reduce((s, m) => s + m.value, 0) / (nfpHistory.length || 1));
+
   const chartData = entries.map(e => ({ name: e.currency, rate: e.unemployment }));
 
   if (isLoading) {
