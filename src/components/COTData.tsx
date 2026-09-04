@@ -259,7 +259,7 @@ const COTData = () => {
     };
 
     const historicalData = historicalCOT[currency] || [];
-    const basePrice = currency === 'EUR' ? 1.0340 : currency === 'GBP' ? 1.2260 : currency === 'JPY' ? 149.80 : currency === 'AUD' ? 0.6310 : currency === 'CAD' ? 1.4380 : currency === 'MXN' ? 20.35 : currency === 'NZD' ? 0.5680 : currency === 'CHF' ? 0.8985 : 1.0;
+    const basePrice = currency === 'EUR' ? 1.16149 : currency === 'GBP' ? 1.34971 : currency === 'JPY' ? 156.01 : currency === 'AUD' ? 0.71932 : currency === 'CAD' ? 1.3792 : currency === 'MXN' ? 18.42 : currency === 'NZD' ? 0.5872 : currency === 'CHF' ? 0.80844 : 1.0;
     
     return historicalData.map((point, i) => ({
       date: point.date,

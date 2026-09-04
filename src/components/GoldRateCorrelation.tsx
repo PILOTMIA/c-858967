@@ -39,7 +39,7 @@ const GoldRateCorrelation = () => {
     if (!goldHist?.length) {
       return Array.from({ length: 30 }, (_, i) => {
         const yieldVal = 4.5 - Math.sin(i / 5) * 0.3;
-        const goldVal = 2350 + Math.sin(i / 5) * 80;
+        const goldVal = 4476 + Math.sin(i / 5) * 80;
         return { date: `D${i + 1}`, gold: Math.round(goldVal), yield10y: Number(yieldVal.toFixed(2)) };
       });
     }
