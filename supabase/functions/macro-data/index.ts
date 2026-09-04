@@ -86,28 +86,98 @@ async function fetchUS10Y(apiKey: string): Promise<{ yield: number; previousYiel
   }
 }
 
-// US Non-Farm Payrolls: PAYEMS level in thousands; compute monthly changes for last 12 months
-async function fetchNFP(apiKey: string): Promise<{ history: { month: string; value: number }[]; latest: number; source: 'fred' | 'fallback' } | null> {
+// US Non-Farm Payrolls from BLS Public API (series CES0000000001, total nonfarm employment, thousands).
+// No API key required. Released first Friday of each month at 8:30 AM ET.
+async function fetchNFP(): Promise<{
+  history: { month: string; year: number; value: number }[];
+  latest: number;
+  latestMonth: string;
+  previous: number;
+  source: 'bls' | 'fred';
+  releaseNote: string;
+} | null> {
+  const parse = (rows: { year: number; month: number; label: string; level: number }[]) => {
+    rows.sort((a, b) => a.year - b.year || a.month - b.month);
+    const history: { month: string; year: number; value: number }[] = [];
+    for (let i = 1; i < rows.length; i++) {
+      history.push({ month: rows[i].label, year: rows[i].year, value: Math.round(rows[i].level - rows[i - 1].level) });
+    }
+    return history.slice(-12);
+  };
+
+  // Primary: BLS
   try {
-    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=PAYEMS&api_key=${apiKey}&file_type=json&sort_order=desc&limit=13`;
+    const now = new Date().getUTCFullYear();
+    const res = await fetch('https://api.bls.gov/publicAPI/v1/timeseries/data/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ seriesid: ['CES0000000001'], startyear: String(now - 2), endyear: String(now) }),
+      signal: AbortSignal.timeout(9000),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const series = json?.Results?.series?.[0]?.data || [];
+      const rows = series
+        .filter((d: any) => /^M(0[1-9]|1[0-2])$/.test(d.period))
+        .map((d: any) => ({
+          year: Number(d.year),
+          month: Number(d.period.slice(1)),
+          label: String(d.periodName).slice(0, 3),
+          level: parseFloat(d.value),
+        }))
+        .filter((r: any) => Number.isFinite(r.level));
+      const history = parse(rows);
+      if (history.length >= 2) {
+        return {
+          history,
+          latest: history[history.length - 1].value,
+          latestMonth: `${history[history.length - 1].month} ${history[history.length - 1].year}`,
+          previous: history[history.length - 2].value,
+          source: 'bls',
+          releaseNote: 'Bureau of Labor Statistics — Current Employment Statistics (CES0000000001)',
+        };
+      }
+    } else {
+      console.warn('BLS NFP request failed', res.status);
+    }
+  } catch (e) {
+    console.warn('BLS NFP error', String(e));
+  }
+
+  // Fallback: FRED PAYEMS (needs key)
+  const apiKey = Deno.env.get('FRED_API_KEY');
+  if (!apiKey) return null;
+  try {
+    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=PAYEMS&api_key=${apiKey}&file_type=json&sort_order=desc&limit=14`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
     if (!res.ok) return null;
     const data = await res.json();
-    const observations = (data?.observations || [])
+    const rows = (data?.observations || [])
       .filter((o: any) => o.value && o.value !== '.')
-      .map((o: any) => ({ date: o.date as string, level: parseFloat(o.value) }));
-    if (observations.length < 2) return null;
-    const history: { month: string; value: number }[] = [];
-    for (let i = observations.length - 1; i >= 1; i--) {
-      const diff = Math.round(observations[i].level - observations[i - 1].level);
-      const month = new Date(observations[i].date + 'T00:00:00Z').toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
-      history.push({ month, value: diff });
-    }
-    return { history, latest: history[history.length - 1].value, source: 'fred' };
+      .map((o: any) => {
+        const d = new Date(o.date + 'T00:00:00Z');
+        return {
+          year: d.getUTCFullYear(),
+          month: d.getUTCMonth() + 1,
+          label: d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }),
+          level: parseFloat(o.value),
+        };
+      });
+    const history = parse(rows);
+    if (history.length < 2) return null;
+    return {
+      history,
+      latest: history[history.length - 1].value,
+      latestMonth: `${history[history.length - 1].month} ${history[history.length - 1].year}`,
+      previous: history[history.length - 2].value,
+      source: 'fred',
+      releaseNote: 'FRED (PAYEMS) — St. Louis Fed mirror of BLS data',
+    };
   } catch {
     return null;
   }
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -121,18 +191,19 @@ Deno.serve(async (req) => {
 
   const apiKey = Deno.env.get('FRED_API_KEY');
   if (!apiKey) {
-    console.warn('FRED_API_KEY not set, returning fallback data');
+    console.warn('FRED_API_KEY not set, returning fallback macro data (NFP still live via BLS)');
     const result: Record<string, any> = {};
     for (const c of currencies) {
       result[c] = { ...FALLBACK[c], source: 'fallback' };
     }
-    const response: any = { data: result, source: 'fallback' };
+    const response: any = { data: result, source: 'fallback', timestamp: Date.now() };
     if (includeUS10Y) response.us10y = US10Y_FALLBACK;
-    if (includeNFP) response.nfp = null;
+    if (includeNFP) response.nfp = await fetchNFP();
     return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
+
 
   const result: Record<string, any> = {};
 
@@ -161,7 +232,7 @@ Deno.serve(async (req) => {
   }));
 
   const us10yPromise = includeUS10Y ? fetchUS10Y(apiKey) : Promise.resolve(null);
-  const nfpPromise = includeNFP ? fetchNFP(apiKey) : Promise.resolve(null);
+  const nfpPromise = includeNFP ? fetchNFP() : Promise.resolve(null);
 
   const [, us10yData, nfpData] = await Promise.all([macroPromise, us10yPromise, nfpPromise]);
 
