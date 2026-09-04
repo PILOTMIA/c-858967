@@ -191,18 +191,19 @@ Deno.serve(async (req) => {
 
   const apiKey = Deno.env.get('FRED_API_KEY');
   if (!apiKey) {
-    console.warn('FRED_API_KEY not set, returning fallback data');
+    console.warn('FRED_API_KEY not set, returning fallback macro data (NFP still live via BLS)');
     const result: Record<string, any> = {};
     for (const c of currencies) {
       result[c] = { ...FALLBACK[c], source: 'fallback' };
     }
-    const response: any = { data: result, source: 'fallback' };
+    const response: any = { data: result, source: 'fallback', timestamp: Date.now() };
     if (includeUS10Y) response.us10y = US10Y_FALLBACK;
-    if (includeNFP) response.nfp = null;
+    if (includeNFP) response.nfp = await fetchNFP();
     return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
+
 
   const result: Record<string, any> = {};
 
