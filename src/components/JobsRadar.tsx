@@ -198,8 +198,11 @@ const JobsRadar = () => {
             </ResponsiveContainer>
           </div>
           <p className="text-[10px] text-muted-foreground mt-2">
-            Released first Friday of each month, 8:30 AM ET, covering the prior month.
+            Released the first Friday of each month at 8:30 AM ET (5:30 AM MST), covering the prior month.
+            Next release: <span className="text-foreground font-semibold">{nextNfpRelease()}</span>. Data pulled automatically from the
+            Bureau of Labor Statistics each time this page loads, and refreshed every 30 minutes.
           </p>
+
         </div>
 
         {/* Unemployment Comparison */}
