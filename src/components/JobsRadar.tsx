@@ -153,18 +153,23 @@ const JobsRadar = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* US NFP Trend */}
         <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-5">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-start justify-between mb-3 gap-3">
             <div>
               <h3 className="font-bold text-foreground text-sm">🇺🇸 US Non-Farm Payrolls (K)</h3>
-              <p className="text-[10px] text-muted-foreground">Monthly job additions • Source: {jobsData?.nfpSource || 'BLS (cached)'}</p>
+              <p className="text-[10px] text-muted-foreground">
+                {latestMonthLabel} report • Source: {jobsData?.nfpSource || 'BLS (cached)'}
+              </p>
             </div>
             <div className="text-right">
               <div className={`text-2xl font-bold ${latestNfp >= 0 ? 'text-success' : 'text-destructive'}`}>
                 {latestNfp >= 0 ? '+' : ''}{latestNfp}K
               </div>
-              <div className="text-xs text-muted-foreground">12-mo avg {avgNfp >= 0 ? '+' : ''}{avgNfp}K</div>
+              <div className="text-xs text-muted-foreground">
+                prior {previousNfp >= 0 ? '+' : ''}{previousNfp}K • 12-mo avg {avgNfp >= 0 ? '+' : ''}{avgNfp}K
+              </div>
             </div>
           </div>
+
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={nfpHistory}>
