@@ -106,7 +106,7 @@ const JobsRadar = () => {
           </p>
         </div>
         <Badge variant="outline" className="text-xs">
-          <Activity className="w-3 h-3 mr-1" /> March 2026
+          <Activity className="w-3 h-3 mr-1" /> {new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' })}
         </Badge>
       </div>
 
