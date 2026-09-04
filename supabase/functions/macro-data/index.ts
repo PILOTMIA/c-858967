@@ -232,7 +232,7 @@ Deno.serve(async (req) => {
   }));
 
   const us10yPromise = includeUS10Y ? fetchUS10Y(apiKey) : Promise.resolve(null);
-  const nfpPromise = includeNFP ? fetchNFP(apiKey) : Promise.resolve(null);
+  const nfpPromise = includeNFP ? fetchNFP() : Promise.resolve(null);
 
   const [, us10yData, nfpData] = await Promise.all([macroPromise, us10yPromise, nfpPromise]);
 
