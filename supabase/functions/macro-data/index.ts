@@ -157,11 +157,13 @@ Deno.serve(async (req) => {
   }));
 
   const us10yPromise = includeUS10Y ? fetchUS10Y(apiKey) : Promise.resolve(null);
+  const nfpPromise = includeNFP ? fetchNFP(apiKey) : Promise.resolve(null);
 
-  const [, us10yData] = await Promise.all([macroPromise, us10yPromise]);
+  const [, us10yData, nfpData] = await Promise.all([macroPromise, us10yPromise, nfpPromise]);
 
   const response: any = { data: result, timestamp: Date.now() };
   if (us10yData) response.us10y = us10yData;
+  if (nfpData) response.nfp = nfpData;
 
   return new Response(JSON.stringify(response), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
