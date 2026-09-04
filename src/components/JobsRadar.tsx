@@ -117,16 +117,18 @@ const JobsRadar = () => {
           <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="font-bold text-foreground text-sm">🇺🇸 US Non-Farm Payrolls (K)</h3>
-              <p className="text-[10px] text-muted-foreground">Monthly job additions • Source: BLS</p>
+              <p className="text-[10px] text-muted-foreground">Monthly job additions • Source: {jobsData?.nfpSource || 'BLS (cached)'}</p>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-foreground">+228K</div>
-              <div className="text-xs text-success">Beat est. 135K</div>
+              <div className={`text-2xl font-bold ${latestNfp >= 0 ? 'text-success' : 'text-destructive'}`}>
+                {latestNfp >= 0 ? '+' : ''}{latestNfp}K
+              </div>
+              <div className="text-xs text-muted-foreground">12-mo avg {avgNfp >= 0 ? '+' : ''}{avgNfp}K</div>
             </div>
           </div>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={US_NFP_HISTORY}>
+              <BarChart data={nfpHistory}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
@@ -137,16 +139,23 @@ const JobsRadar = () => {
                     borderRadius: '12px',
                     fontSize: '12px',
                   }}
-                  formatter={(v: number) => [`+${v}K`, 'NFP']}
+                  formatter={(v: number) => [`${v >= 0 ? '+' : ''}${v}K`, 'NFP']}
                 />
                 <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                  {US_NFP_HISTORY.map((_, idx) => (
-                    <Cell key={idx} fill={idx === US_NFP_HISTORY.length - 1 ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))'} opacity={idx === US_NFP_HISTORY.length - 1 ? 1 : 0.4} />
+                  {nfpHistory.map((entry, idx) => (
+                    <Cell
+                      key={idx}
+                      fill={entry.value < 0 ? 'hsl(var(--destructive))' : idx === nfpHistory.length - 1 ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))'}
+                      opacity={idx === nfpHistory.length - 1 || entry.value < 0 ? 1 : 0.4}
+                    />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
+          <p className="text-[10px] text-muted-foreground mt-2">
+            Released first Friday of each month, 8:30 AM ET, covering the prior month.
+          </p>
         </div>
 
         {/* Unemployment Comparison */}
