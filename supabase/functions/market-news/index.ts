@@ -105,20 +105,53 @@ function inferImpact(text: string): Impact {
   return 'Low';
 }
 
+// Directional pair sentiment: score each currency independently from the headlines
+// tagged to it, then read the pair as base bias minus quote bias. USD is always the
+// counter-currency for the majors, so a bullish USD tape pushes EURUSD bearish.
+const PAIR_LEGS: Record<string, [string, string]> = {
+  EURUSD: ['EUR', 'USD'],
+  GBPUSD: ['GBP', 'USD'],
+  USDJPY: ['USD', 'JPY'],
+  USDCAD: ['USD', 'CAD'],
+  AUDUSD: ['AUD', 'USD'],
+  GBPJPY: ['GBP', 'JPY'],
+  XAUUSD: ['XAU', 'USD'],
+};
+
+function currencyBias(articles: Article[]) {
+  const bias: Record<string, { net: number; weight: number; mentions: number }> = {};
+  for (const article of articles) {
+    const code = article.currency === 'GOLD' ? 'XAU' : article.currency;
+    const impactWeight = article.impact === 'High' ? 1.5 : article.impact === 'Medium' ? 1.1 : 0.8;
+    const dir = article.sentiment === 'bullish' ? 1 : article.sentiment === 'bearish' ? -1 : 0;
+    const entry = bias[code] ?? (bias[code] = { net: 0, weight: 0, mentions: 0 });
+    entry.net += dir * article.score * impactWeight;
+    entry.weight += impactWeight;
+    entry.mentions += 1;
+  }
+  return bias;
+}
+
 function pairSentiment(articles: Article[]) {
-  const pairs = ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCAD', 'AUDUSD', 'GBPJPY', 'XAUUSD'];
+  const bias = currencyBias(articles);
+  const norm = (code: string) => {
+    const entry = bias[code];
+    return entry && entry.weight > 0 ? entry.net / entry.weight : 0;
+  };
   const result: Record<string, { sentiment: 'BULLISH' | 'BEARISH' | 'NEUTRAL'; score: number; mentions: number }> = {};
-  for (const pair of pairs) {
-    const matches = articles.filter(article => article.pairs.includes(pair));
-    const bull = matches.filter(article => article.sentiment === 'bullish');
-    const bear = matches.filter(article => article.sentiment === 'bearish');
-    const sentiment = bull.length > bear.length ? 'BULLISH' : bear.length > bull.length ? 'BEARISH' : 'NEUTRAL';
-    const scored = sentiment === 'BULLISH' ? bull : sentiment === 'BEARISH' ? bear : matches;
-    const score = scored.length ? scored.reduce((sum, article) => sum + article.score, 0) / scored.length : 0.5;
-    result[pair] = { sentiment, score, mentions: matches.length };
+  for (const [pair, [base, quote]] of Object.entries(PAIR_LEGS)) {
+    const delta = norm(base) - norm(quote);
+    const sentiment = delta > 0.08 ? 'BULLISH' : delta < -0.08 ? 'BEARISH' : 'NEUTRAL';
+    const mentions = (bias[base]?.mentions ?? 0) + (bias[quote]?.mentions ?? 0);
+    result[pair] = {
+      sentiment,
+      score: Math.min(0.97, 0.5 + Math.abs(delta) / 2),
+      mentions,
+    };
   }
   return result;
 }
+
 
 function fallbackArticles(): Article[] {
   const now = new Date().toISOString();
