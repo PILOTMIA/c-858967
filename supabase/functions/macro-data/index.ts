@@ -38,12 +38,16 @@ async function fetchFredSeries(seriesId: string, apiKey: string): Promise<number
   try {
     const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${apiKey}&file_type=json&sort_order=desc&limit=1`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn(`FRED ${seriesId} HTTP ${res.status}`);
+      return null;
+    }
     const data = await res.json();
     const val = data?.observations?.[0]?.value;
     if (!val || val === '.') return null;
     return parseFloat(val);
-  } catch {
+  } catch (e) {
+    console.warn(`FRED ${seriesId} error: ${(e as Error)?.message}`);
     return null;
   }
 }
