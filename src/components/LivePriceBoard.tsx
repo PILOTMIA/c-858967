@@ -140,11 +140,17 @@ const LivePriceBoard = () => {
               r.prevClose && r.prevClose > 0 ? ((r.rate - r.prevClose) / r.prevClose) * 100 : undefined;
             const up = (change ?? 0) > 0;
             const flat = change === undefined || Math.abs(change) < 0.01;
+            const isFallback = r.source.includes("fallback");
             return (
               <div
                 key={r.pair}
-                className="rounded-xl border border-[hsl(var(--ma-elev)/0.6)] bg-[hsl(var(--ma-bg)/0.55)] p-4 hover:border-primary/40 transition-colors"
+                className="group relative overflow-hidden rounded-xl border border-[hsl(var(--ma-elev)/0.6)] bg-[hsl(var(--ma-bg)/0.55)] p-4 transition-all duration-300 hover:border-primary/50 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-12px_hsl(var(--primary)/0.55)]"
               >
+                <div
+                  className={`absolute inset-x-0 top-0 h-px opacity-70 ${
+                    flat ? "bg-muted-foreground/30" : up ? "bg-emerald-400/70" : "bg-rose-400/70"
+                  }`}
+                />
                 <div className="flex items-center justify-between">
                   <span className="ma-mono text-xs tracking-wider text-muted-foreground">{r.pair}</span>
                   {flat ? (
@@ -155,18 +161,27 @@ const LivePriceBoard = () => {
                     <ArrowDownRight className="h-3.5 w-3.5 text-rose-400" />
                   )}
                 </div>
-                <p className="ma-mono text-lg font-semibold text-foreground mt-2">
+                <p className="ma-mono text-lg font-semibold text-foreground mt-2 tabular-nums">
                   {r.rate.toFixed(decimals(r.pair))}
                 </p>
-                <div className="flex items-center justify-between mt-1">
+                <div className="flex items-center justify-between mt-1.5 gap-2">
                   <span
-                    className={`ma-mono text-[11px] ${
-                      flat ? "text-muted-foreground" : up ? "text-emerald-400" : "text-rose-400"
+                    className={`ma-mono text-[11px] rounded px-1.5 py-0.5 tabular-nums ${
+                      flat
+                        ? "text-muted-foreground bg-muted/20"
+                        : up
+                        ? "text-emerald-300 bg-emerald-500/10"
+                        : "text-rose-300 bg-rose-500/10"
                     }`}
                   >
                     {change === undefined ? "—" : `${up ? "+" : ""}${change.toFixed(2)}%`}
                   </span>
-                  <span className="text-[10px] text-muted-foreground truncate ml-2">{r.source}</span>
+                  <span
+                    className={`text-[10px] truncate ${isFallback ? "text-amber-400" : "text-muted-foreground"}`}
+                    title={`Source: ${r.source}`}
+                  >
+                    {isFallback ? "cached" : r.source}
+                  </span>
                 </div>
               </div>
             );
