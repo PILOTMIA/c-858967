@@ -63,6 +63,9 @@ const MarketAnalysis = () => {
           </div>
         </header>
 
+        {/* Live rate ticker with freshness indicator */}
+        <LiveRateTicker />
+
         {/* Sessions */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {sessions.map((s) => (
