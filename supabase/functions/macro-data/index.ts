@@ -268,6 +268,7 @@ Deno.serve(async (req) => {
   const currencies = url.searchParams.get('currencies')?.split(',') || ['USD', 'EUR', 'GBP', 'JPY'];
   const includeUS10Y = url.searchParams.get('us10y') === 'true';
   const includeNFP = url.searchParams.get('nfp') === 'true';
+  const includeInflation = url.searchParams.get('inflation') === 'true';
 
   const apiKey = Deno.env.get('FRED_API_KEY');
   if (!apiKey) {
@@ -279,6 +280,7 @@ Deno.serve(async (req) => {
     const response: any = { data: result, source: 'fallback', timestamp: Date.now() };
     if (includeUS10Y) response.us10y = US10Y_FALLBACK;
     if (includeNFP) response.nfp = await fetchNFP();
+    if (includeInflation) response.inflation = await fetchInflation();
     return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -313,12 +315,14 @@ Deno.serve(async (req) => {
 
   const us10yPromise = includeUS10Y ? fetchUS10Y(apiKey) : Promise.resolve(null);
   const nfpPromise = includeNFP ? fetchNFP() : Promise.resolve(null);
+  const inflationPromise = includeInflation ? fetchInflation() : Promise.resolve(null);
 
-  const [, us10yData, nfpData] = await Promise.all([macroPromise, us10yPromise, nfpPromise]);
+  const [, us10yData, nfpData, inflationData] = await Promise.all([macroPromise, us10yPromise, nfpPromise, inflationPromise]);
 
   const response: any = { data: result, timestamp: Date.now() };
   if (us10yData) response.us10y = us10yData;
   if (nfpData) response.nfp = nfpData;
+  if (inflationData) response.inflation = inflationData;
 
   return new Response(JSON.stringify(response), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
