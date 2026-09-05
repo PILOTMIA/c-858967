@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUpRight, BarChart3, Activity, Newspaper, LineChart, Circle, ShieldCheck } from "lucide-react";
 import LivePriceBoard from "@/components/LivePriceBoard";
+import LiveRateTicker from "@/components/LiveRateTicker";
 import PipCalculator from "@/components/PipCalculator";
 
 /**
