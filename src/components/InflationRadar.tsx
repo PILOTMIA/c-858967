@@ -145,7 +145,16 @@ const InflationRadar = () => {
                 <LineChart data={d.history}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={10} interval="preserveStartEnd" />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} domain={['dataMin - 0.5', 'dataMax + 0.5']} />
+                  <YAxis
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={10}
+                    domain={[
+                      (min: number) => Math.floor((min - 0.5) * 10) / 10,
+                      (max: number) => Math.ceil((max + 0.5) * 10) / 10,
+                    ]}
+                    tickFormatter={(v: number) => `${v.toFixed(1)}%`}
+                    width={46}
+                  />
                   <ReferenceLine y={2} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
                   <Tooltip
                     contentStyle={{
