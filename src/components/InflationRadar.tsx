@@ -1,121 +1,189 @@
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { TrendingUp, TrendingDown, Minus, Calendar } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { TrendingUp, TrendingDown, Minus, Calendar, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-interface CPIData {
+const PROJECT = import.meta.env.VITE_SUPABASE_PROJECT_ID as string;
+const ANON = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+
+interface Point {
   date: string;
   value: number;
 }
 
 interface IndicatorData {
   current: number;
-  trend: string;
-  projectionLow: number;
-  projectionHigh: number;
-  nextRelease: string;
-  historicalData: CPIData[];
-  yoyChange?: number;
+  previous: number | null;
+  latestPeriod: string;
+  history: Point[];
   source: string;
 }
 
-interface InflationData {
-  cpi: IndicatorData;
-  coreCPI: IndicatorData;
-  ppi: IndicatorData;
-  exportPriceIndex: IndicatorData;
-}
+type InflationKey = 'cpi' | 'coreCPI' | 'ppi' | 'exportPriceIndex';
 
-const FALLBACK: InflationData = {
-  cpi: { current: 2.8, trend: "Stable inflation trend", projectionLow: 2.6, projectionHigh: 3.0, nextRelease: "Apr 10, 2026", historicalData: [], yoyChange: 2.8, source: 'Fallback' },
-  coreCPI: { current: 3.0, trend: "Stable inflation trend", projectionLow: 2.8, projectionHigh: 3.2, nextRelease: "Apr 10, 2026", historicalData: [], yoyChange: 3.0, source: 'Fallback' },
-  ppi: { current: 2.4, trend: "Declining trend", projectionLow: 2.1, projectionHigh: 2.7, nextRelease: "Apr 11, 2026", historicalData: [], yoyChange: 2.4, source: 'Fallback' },
-  exportPriceIndex: { current: 1.5, trend: "Declining trend", projectionLow: 1.2, projectionHigh: 1.8, nextRelease: "Apr 14, 2026", historicalData: [], yoyChange: 1.5, source: 'Fallback' },
+export type InflationPayload = Partial<Record<InflationKey, IndicatorData>> & { fetchedAt: number };
+
+/** Next BLS CPI release: roughly the 10th-13th business day of the following month. */
+const nextCpiRelease = () => {
+  const now = new Date();
+  const candidate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 12));
+  const rel = candidate.getTime() > now.getTime()
+    ? candidate
+    : new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 12));
+  return rel.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 };
 
-const fetchInflationData = async (): Promise<InflationData> => {
-  try {
-    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-    const res = await fetch(
-      `https://${projectId}.supabase.co/functions/v1/fred-proxy?series=CPIAUCSL,CPILFESL,PPIACO,IQ&limit=24&units=pc1`,
-      {
-        headers: {
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    if (!res.ok) throw new Error('API error');
-    const result = await res.json();
-    const d = result.data;
-
-    const buildIndicator = (seriesId: string, fallback: IndicatorData): IndicatorData => {
-      const obs = d[seriesId]?.observations;
-      if (!obs || obs.length === 0) return fallback;
-      const current = parseFloat(parseFloat(obs[0].value).toFixed(1));
-      const prev = obs.length > 1 ? parseFloat(obs[1].value) : current;
-      const older = obs.length > 2 ? parseFloat(obs[2].value) : prev;
-      const recentChange = current - prev;
-      const priorChange = prev - older;
-      let trend = "Stable inflation trend with minimal change";
-      if (recentChange > 0.1 && priorChange > 0.1) trend = "Rising inflation trend, up recently";
-      else if (recentChange < -0.1 && priorChange < -0.1) trend = "Declining inflation trend, down recently";
-
-      const historicalData: CPIData[] = obs.slice().reverse().map((o: any) => ({
-        date: new Date(o.date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-        value: parseFloat(parseFloat(o.value).toFixed(2)),
-      }));
-
-      const today = new Date();
-      const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 15);
-      const nextRelease = nextMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-
-      return {
-        current,
-        trend,
-        projectionLow: parseFloat((current - 0.2).toFixed(1)),
-        projectionHigh: parseFloat((current + 0.2).toFixed(1)),
-        nextRelease,
-        historicalData,
-        yoyChange: current,
-        source: 'FRED API 🟢',
-      };
+export const fetchInflation = async (): Promise<InflationPayload> => {
+  const res = await fetch(
+    `https://${PROJECT}.supabase.co/functions/v1/macro-data?currencies=USD&inflation=true`,
+    {
+      cache: 'no-store',
+      headers: { apikey: ANON, Authorization: `Bearer ${ANON}`, 'Content-Type': 'application/json' },
+    }
+  );
+  if (!res.ok) throw new Error(`Inflation feed returned ${res.status}`);
+  const json = await res.json();
+  const raw = json?.inflation ?? {};
+  const out: InflationPayload = { fetchedAt: Date.now() };
+  (['cpi', 'coreCPI', 'ppi', 'exportPriceIndex'] as InflationKey[]).forEach((key) => {
+    const d = raw[key];
+    if (!d || !Number.isFinite(Number(d.current))) return;
+    out[key] = {
+      current: Number(d.current),
+      previous: Number.isFinite(Number(d.previous)) ? Number(d.previous) : null,
+      latestPeriod: d.latestPeriod ?? '',
+      history: Array.isArray(d.history) ? d.history : [],
+      source: d.source === 'bls' ? 'BLS live' : String(d.source ?? 'unknown'),
     };
-
-    return {
-      cpi: buildIndicator('CPIAUCSL', FALLBACK.cpi),
-      coreCPI: buildIndicator('CPILFESL', FALLBACK.coreCPI),
-      ppi: buildIndicator('PPIACO', FALLBACK.ppi),
-      exportPriceIndex: buildIndicator('IQ', FALLBACK.exportPriceIndex),
-    };
-  } catch (error) {
-    console.error('Error fetching inflation data:', error);
-    return FALLBACK;
-  }
+  });
+  return out;
 };
 
-const InflationRadar = () => {
-  const { data, isLoading } = useQuery({
-    queryKey: ['inflationData'],
-    queryFn: fetchInflationData,
-    refetchInterval: 6 * 60 * 60 * 1000,
+export const useInflation = () =>
+  useQuery({
+    queryKey: ['inflationLive'],
+    queryFn: fetchInflation,
+    refetchInterval: 30 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
   });
 
-  const getTrendIcon = (trend: string) => {
-    if (trend.includes('Rising')) return <TrendingUp className="w-4 h-4 text-destructive" />;
-    if (trend.includes('Declining')) return <TrendingDown className="w-4 h-4 text-success" />;
-    return <Minus className="w-4 h-4 text-muted-foreground" />;
+const InflationRadar = () => {
+  const { data, isLoading, isFetching, error, refetch } = useInflation();
+
+  const trendOf = (d: IndicatorData) => {
+    if (d.previous === null) return { label: 'No prior reading available', dir: 'flat' as const };
+    const diff = d.current - d.previous;
+    if (diff > 0.1) return { label: `Accelerating — up ${diff.toFixed(1)}pp vs prior month`, dir: 'up' as const };
+    if (diff < -0.1) return { label: `Cooling — down ${Math.abs(diff).toFixed(1)}pp vs prior month`, dir: 'down' as const };
+    return { label: 'Broadly stable versus the prior month', dir: 'flat' as const };
   };
 
-  const getTrendColor = (trend: string) => {
-    if (trend.includes('Rising')) return "text-destructive";
-    if (trend.includes('Declining')) return "text-success";
-    return "text-muted-foreground";
+  const icon = (dir: 'up' | 'down' | 'flat') =>
+    dir === 'up' ? <TrendingUp className="w-4 h-4 text-destructive" />
+      : dir === 'down' ? <TrendingDown className="w-4 h-4 text-success" />
+      : <Minus className="w-4 h-4 text-muted-foreground" />;
+
+  const renderCard = (title: string, description: string, d?: IndicatorData) => {
+    if (!d) {
+      return (
+        <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-5">
+          <h3 className="text-base font-bold text-foreground">{title}</h3>
+          <p className="text-xs text-muted-foreground mt-2">
+            This reading is unavailable from the official feed right now — nothing shown rather than an out-of-date number.
+          </p>
+        </div>
+      );
+    }
+    const t = trendOf(d);
+    return (
+      <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm overflow-hidden">
+        <div className="p-4 sm:p-5">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-1">
+            <h3 className="text-base sm:text-lg font-bold text-foreground">{title}</h3>
+            <Badge variant="outline" className="text-[10px]">{d.source}</Badge>
+          </div>
+          <p className="text-xs text-muted-foreground">{description}</p>
+        </div>
+        <div className="px-4 sm:px-5 pb-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground">Latest reading (year over year) · {d.latestPeriod}</p>
+              <p className="text-3xl font-bold text-foreground tabular-nums">{d.current.toFixed(1)}%</p>
+            </div>
+            {icon(t.dir)}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-muted/30 p-3 rounded-xl">
+              <p className="text-[10px] text-muted-foreground">Prior month</p>
+              <p className="text-base font-bold text-foreground tabular-nums">
+                {d.previous === null ? '—' : `${d.previous.toFixed(1)}%`}
+              </p>
+            </div>
+            <div className="bg-muted/30 p-3 rounded-xl">
+              <p className="text-[10px] text-muted-foreground">Change</p>
+              <p className={`text-base font-bold tabular-nums ${t.dir === 'up' ? 'text-destructive' : t.dir === 'down' ? 'text-success' : 'text-muted-foreground'}`}>
+                {d.previous === null ? '—' : `${d.current - d.previous >= 0 ? '+' : ''}${(d.current - d.previous).toFixed(1)}pp`}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-muted/30 p-3 rounded-xl">
+            <p className={`text-xs font-medium ${t.dir === 'up' ? 'text-destructive' : t.dir === 'down' ? 'text-success' : 'text-muted-foreground'}`}>
+              {t.label}
+            </p>
+          </div>
+
+          <div className="border border-border/30 rounded-xl p-3 flex items-center gap-2">
+            <Calendar className="w-3 h-3 text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">Next scheduled release: <span className="text-foreground font-semibold">{nextCpiRelease()}</span></p>
+          </div>
+
+          {d.history.length > 1 && (
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={d.history}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={10} interval="preserveStartEnd" />
+                  <YAxis
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={10}
+                    domain={[
+                      (min: number) => Math.floor((min - 0.5) * 10) / 10,
+                      (max: number) => Math.ceil((max + 0.5) * 10) / 10,
+                    ]}
+                    tickFormatter={(v: number) => `${v.toFixed(1)}%`}
+                    width={46}
+                  />
+                  <ReferenceLine y={2} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      color: 'hsl(var(--foreground))',
+                    }}
+                    formatter={(v: number) => [`${v.toFixed(2)}%`, title]}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    dot={{ fill: 'hsl(var(--primary))', r: 2.5 }}
+                    name={title}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
-  if (isLoading || !data) {
+  if (isLoading) {
     return (
       <div className="space-y-4 p-3 sm:p-6">
         <div className="h-8 bg-muted rounded animate-pulse" />
@@ -127,106 +195,46 @@ const InflationRadar = () => {
     );
   }
 
-  const renderIndicatorCard = (
-    title: string,
-    description: string,
-    indicatorData: IndicatorData,
-    color: string = "red"
-  ) => (
-    <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm overflow-hidden">
-      <div className="p-4 sm:p-5">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-1">
-          <h3 className="text-base sm:text-lg font-bold text-foreground">{title}</h3>
-          <Badge variant="outline" className="text-[10px]">
-            {indicatorData.source}
-          </Badge>
-        </div>
-        <p className="text-xs text-muted-foreground">{description}</p>
-      </div>
-      <div className="px-4 sm:px-5 pb-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs text-muted-foreground">Current Rate (YoY)</p>
-            <p className="text-3xl font-bold text-foreground">{indicatorData.current}%</p>
-          </div>
-          {getTrendIcon(indicatorData.trend)}
-        </div>
-
-        <div className="bg-muted/30 p-3 rounded-xl">
-          <p className={`text-xs font-medium ${getTrendColor(indicatorData.trend)}`}>
-            {indicatorData.trend}
-          </p>
-        </div>
-
-        <div className="border border-border/30 rounded-xl p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <Calendar className="w-3 h-3 text-muted-foreground" />
-            <p className="text-xs font-semibold text-foreground">Next Release Projection</p>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <p className="text-[10px] text-muted-foreground">Low</p>
-              <p className="text-base font-bold text-success">{indicatorData.projectionLow}%</p>
-            </div>
-            <div>
-              <p className="text-[10px] text-muted-foreground">High</p>
-              <p className="text-base font-bold text-destructive">{indicatorData.projectionHigh}%</p>
-            </div>
-          </div>
-          <p className="text-[10px] text-muted-foreground mt-2">Next: {indicatorData.nextRelease}</p>
-        </div>
-
-        {indicatorData.historicalData.length > 0 && (
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={indicatorData.historicalData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={10} interval="preserveStartEnd" />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} domain={['dataMin - 0.5', 'dataMax + 0.5']} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '12px',
-                    fontSize: '12px',
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2}
-                  dot={{ fill: 'hsl(var(--primary))', r: 3 }}
-                  name={title}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-4 sm:space-y-6 p-3 sm:p-6">
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex flex-wrap items-end justify-between gap-3 mb-2">
         <div>
           <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <TrendingUp className="w-6 h-6 text-primary" /> Inflation Monitor
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            US inflation indicators from FRED — CPI, Core CPI, PPI, Export Price Index
+            US price data pulled live from the Bureau of Labor Statistics — the same official source as the payrolls report.
           </p>
         </div>
+        <div className="flex items-center gap-2">
+          {data && (
+            <span className="text-[10px] text-muted-foreground">
+              Updated {new Date(data.fetchedAt).toLocaleTimeString()}
+            </span>
+          )}
+          <button
+            onClick={() => refetch()}
+            className="inline-flex items-center gap-1.5 rounded-full border border-border/50 px-3 py-1.5 text-[11px] text-foreground hover:border-primary/50 transition-colors"
+          >
+            <RefreshCw className={`h-3 w-3 ${isFetching ? 'animate-spin' : ''}`} /> Refresh
+          </button>
+        </div>
       </div>
+
+      {error && (
+        <p className="text-xs text-destructive">
+          The official inflation feed is unreachable right now. Try refreshing in a moment.
+        </p>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {renderIndicatorCard("Consumer Price Index (CPI)", "Average change in prices paid by urban consumers", data.cpi)}
-        {renderIndicatorCard("Core CPI", "CPI excluding volatile food and energy prices", data.coreCPI)}
-        {renderIndicatorCard("Producer Price Index (PPI)", "Average change in prices received by domestic producers", data.ppi)}
-        {renderIndicatorCard("Export Price Index", "Change in prices of goods exported from the US", data.exportPriceIndex)}
+        {renderCard("Consumer Price Index (CPI)", "Average change in prices paid by urban consumers", data?.cpi)}
+        {renderCard("Core CPI", "CPI excluding volatile food and energy prices", data?.coreCPI)}
+        {renderCard("Producer Price Index (PPI)", "Final demand prices received by domestic producers", data?.ppi)}
+        {renderCard("Export Price Index", "Change in prices of goods exported from the US", data?.exportPriceIndex)}
       </div>
       <p className="text-[10px] text-muted-foreground text-center">
-        Source: Federal Reserve Economic Data (FRED) — St. Louis Fed • Data refreshes every 6 hours
+        Source: US Bureau of Labor Statistics public data API • Refreshes every 30 minutes • Dashed line marks the Fed's 2% target
       </p>
     </div>
   );

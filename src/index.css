@@ -373,3 +373,17 @@
   box-shadow: 0 0 8px hsl(142 76% 55% / 0.7);
   animation: pulse-slow 2s ease-in-out infinite;
 }
+
+/* Seamless live rate ticker (duplicated content scrolls by 50%) */
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-ticker {
+  animation: ticker-scroll 45s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-ticker { animation: none; }
+}

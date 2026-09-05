@@ -179,6 +179,86 @@ async function fetchNFP(): Promise<{
 }
 
 
+// ---------------------------------------------------------------------------
+// US inflation from the BLS Public API (same source family as NFP, no API key).
+// CPI (CUUR0000SA0), Core CPI (CUUR0000SA0L1E), PPI final demand (WPUFD4),
+// Export Price Index (EIUIQ). Year-over-year percentages computed from levels.
+// ---------------------------------------------------------------------------
+const BLS_INFLATION_SERIES: Record<string, string> = {
+  cpi: 'CUUR0000SA0',
+  coreCPI: 'CUUR0000SA0L1E',
+  ppi: 'WPUFD4',
+  exportPriceIndex: 'EIUIQ',
+};
+
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+type InflationIndicator = {
+  current: number;
+  previous: number | null;
+  latestPeriod: string;
+  history: { date: string; value: number }[];
+  source: 'bls';
+};
+
+async function fetchInflation(): Promise<Record<string, InflationIndicator> | null> {
+  try {
+    const year = new Date().getUTCFullYear();
+    const res = await fetch('https://api.bls.gov/publicAPI/v1/timeseries/data/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        seriesid: Object.values(BLS_INFLATION_SERIES),
+        startyear: String(year - 3),
+        endyear: String(year),
+      }),
+      signal: AbortSignal.timeout(9000),
+    });
+    if (!res.ok) {
+      console.warn('BLS inflation request failed', res.status);
+      return null;
+    }
+    const json = await res.json();
+    const seriesList = json?.Results?.series || [];
+    const byId: Record<string, { year: number; month: number; level: number }[]> = {};
+    for (const s of seriesList) {
+      byId[s.seriesID] = (s.data || [])
+        .filter((d: any) => /^M(0[1-9]|1[0-2])$/.test(d.period) && d.value && d.value !== '.')
+        .map((d: any) => ({ year: Number(d.year), month: Number(d.period.slice(1)), level: parseFloat(d.value) }))
+        .filter((r: any) => Number.isFinite(r.level))
+        .sort((a: any, b: any) => a.year - b.year || a.month - b.month);
+    }
+
+    const out: Record<string, InflationIndicator> = {};
+    for (const [key, seriesId] of Object.entries(BLS_INFLATION_SERIES)) {
+      const rows = byId[seriesId];
+      if (!rows || rows.length < 14) continue;
+      const yoy: { date: string; value: number }[] = [];
+      for (let i = 12; i < rows.length; i++) {
+        const base = rows[i - 12].level;
+        if (!base) continue;
+        yoy.push({
+          date: `${MONTHS_SHORT[rows[i].month - 1]} ${String(rows[i].year).slice(2)}`,
+          value: parseFloat((((rows[i].level - base) / base) * 100).toFixed(2)),
+        });
+      }
+      if (yoy.length < 2) continue;
+      const last = rows[rows.length - 1];
+      out[key] = {
+        current: parseFloat(yoy[yoy.length - 1].value.toFixed(1)),
+        previous: parseFloat(yoy[yoy.length - 2].value.toFixed(1)),
+        latestPeriod: `${MONTHS_SHORT[last.month - 1]} ${last.year}`,
+        history: yoy.slice(-24),
+        source: 'bls',
+      };
+    }
+    return Object.keys(out).length ? out : null;
+  } catch (e) {
+    console.warn('BLS inflation error', String(e));
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -188,6 +268,7 @@ Deno.serve(async (req) => {
   const currencies = url.searchParams.get('currencies')?.split(',') || ['USD', 'EUR', 'GBP', 'JPY'];
   const includeUS10Y = url.searchParams.get('us10y') === 'true';
   const includeNFP = url.searchParams.get('nfp') === 'true';
+  const includeInflation = url.searchParams.get('inflation') === 'true';
 
   const apiKey = Deno.env.get('FRED_API_KEY');
   if (!apiKey) {
@@ -199,6 +280,7 @@ Deno.serve(async (req) => {
     const response: any = { data: result, source: 'fallback', timestamp: Date.now() };
     if (includeUS10Y) response.us10y = US10Y_FALLBACK;
     if (includeNFP) response.nfp = await fetchNFP();
+    if (includeInflation) response.inflation = await fetchInflation();
     return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -233,12 +315,14 @@ Deno.serve(async (req) => {
 
   const us10yPromise = includeUS10Y ? fetchUS10Y(apiKey) : Promise.resolve(null);
   const nfpPromise = includeNFP ? fetchNFP() : Promise.resolve(null);
+  const inflationPromise = includeInflation ? fetchInflation() : Promise.resolve(null);
 
-  const [, us10yData, nfpData] = await Promise.all([macroPromise, us10yPromise, nfpPromise]);
+  const [, us10yData, nfpData, inflationData] = await Promise.all([macroPromise, us10yPromise, nfpPromise, inflationPromise]);
 
   const response: any = { data: result, timestamp: Date.now() };
   if (us10yData) response.us10y = us10yData;
   if (nfpData) response.nfp = nfpData;
+  if (inflationData) response.inflation = inflationData;
 
   return new Response(JSON.stringify(response), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUpRight, BarChart3, Activity, Newspaper, LineChart, Circle, ShieldCheck } from "lucide-react";
 import LivePriceBoard from "@/components/LivePriceBoard";
+import LiveRateTicker from "@/components/LiveRateTicker";
 import PipCalculator from "@/components/PipCalculator";
 
 /**
@@ -61,6 +62,9 @@ const MarketAnalysis = () => {
             </div>
           </div>
         </header>
+
+        {/* Live rate ticker with freshness indicator */}
+        <LiveRateTicker />
 
         {/* Sessions */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
