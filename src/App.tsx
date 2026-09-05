@@ -72,6 +72,7 @@ const App = () => (
                 <Route path="/weekly-playbook" element={<PageTransition><WeeklyPlaybookPage /></PageTransition>} />
                 <Route path="/cot-analysis" element={<PageTransition><COTAnalysis /></PageTransition>} />
                 <Route path="/economic-radar" element={<PageTransition><EconomicRadar /></PageTransition>} />
+                <Route path="/economic-calendar" element={<PageTransition><EconomicCalendar /></PageTransition>} />
                 <Route path="/news" element={<PageTransition><News /></PageTransition>} />
                 <Route path="/education" element={<PageTransition><Education /></PageTransition>} />
                 <Route path="/community" element={<PageTransition><Community /></PageTransition>} />
