@@ -14,6 +14,7 @@ import Tools from "./pages/Tools";
 import Profile from "./pages/Profile";
 import CentralBankRates from "./pages/CentralBankRates";
 import EconomicRadar from "./pages/EconomicRadar";
+import EconomicCalendar from "./pages/EconomicCalendar";
 import News from "./pages/News";
 import Auth from "./pages/Auth";
 import Charts from "./pages/Charts";

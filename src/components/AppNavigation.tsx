@@ -16,6 +16,7 @@ const AppNavigation = () => {
     { path: '/currency-flow', label: 'Currency Flow', icon: Globe2 },
     { path: '/vix-watch', label: 'VIX Watch', icon: Gauge },
     { path: '/economic-radar', label: 'Economic Radar', icon: Activity },
+    { path: '/economic-calendar', label: 'Economic Calendar', icon: Calendar },
     { path: '/news', label: 'Market News', icon: Newspaper },
     { path: '/metals', label: 'Metals / Gold', icon: Gem },
     { path: '/education', label: 'Education', icon: BookOpen },
