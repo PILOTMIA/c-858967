@@ -22,17 +22,17 @@ interface CurrencyPositioning {
   assetManagerWeeklyChange: number;
 }
 
-// CFTC TFF report, August 25, 2026 (Leveraged Funds) — verified from official PDF
+// CFTC TFF report, September 1, 2026 (Leveraged Funds) — verified from CFTC Socrata API
 const COT_POSITIONS: Record<string, CurrencyPositioning> = {
-  EUR: { netPosition: -38359, long: 90921, short: 129280, sentiment: 'BEARISH', weeklyChange: 19357, dealerLong: 52864, dealerShort: 321445, dealerWeeklyChange: -44309, assetManagerLong: 461805, assetManagerShort: 200379, assetManagerWeeklyChange: 24000 },
-  GBP: { netPosition: 47909, long: 81286, short: 33377, sentiment: 'BULLISH', weeklyChange: 5032, dealerLong: 135405, dealerShort: 87000, dealerWeeklyChange: -20160, assetManagerLong: 45799, assetManagerShort: 150290, assetManagerWeeklyChange: 12749 },
-  JPY: { netPosition: -77042, long: 66528, short: 143570, sentiment: 'BEARISH', weeklyChange: -9071, dealerLong: 99992, dealerShort: 57054, dealerWeeklyChange: -1032, assetManagerLong: 71421, assetManagerShort: 91537, assetManagerWeeklyChange: 5627 },
-  CHF: { netPosition: -8825, long: 12353, short: 21178, sentiment: 'BEARISH', weeklyChange: 246, dealerLong: 57751, dealerShort: 9050, dealerWeeklyChange: -9646, assetManagerLong: 12676, assetManagerShort: 41331, assetManagerWeeklyChange: 8415 },
-  AUD: { netPosition: 54061, long: 81344, short: 27283, sentiment: 'BULLISH', weeklyChange: 1953, dealerLong: 101536, dealerShort: 139579, dealerWeeklyChange: -7876, assetManagerLong: 97445, assetManagerShort: 142872, assetManagerWeeklyChange: 2639 },
-  CAD: { netPosition: -72092, long: 27384, short: 99476, sentiment: 'BEARISH', weeklyChange: 16805, dealerLong: 183841, dealerShort: 58911, dealerWeeklyChange: -47735, assetManagerLong: 55489, assetManagerShort: 114432, assetManagerWeeklyChange: 30552 },
-  MXN: { netPosition: 68904, long: 131529, short: 62625, sentiment: 'BULLISH', weeklyChange: 3574, dealerLong: 19497, dealerShort: 139574, dealerWeeklyChange: -11087, assetManagerLong: 115633, assetManagerShort: 47043, assetManagerWeeklyChange: 6438 },
-  NZD: { netPosition: -31994, long: 3673, short: 35667, sentiment: 'BEARISH', weeklyChange: -5188, dealerLong: 64953, dealerShort: 34214, dealerWeeklyChange: -21623, assetManagerLong: 12235, assetManagerShort: 11805, assetManagerWeeklyChange: 25889 },
-  USD: { netPosition: 9189, long: 16343, short: 7154, sentiment: 'BULLISH', weeklyChange: 1077, dealerLong: 6047, dealerShort: 33200, dealerWeeklyChange: 104, assetManagerLong: 15863, assetManagerShort: 1845, assetManagerWeeklyChange: -980 },
+  EUR: { netPosition: -38173, long: 96137, short: 134310, sentiment: 'BEARISH', weeklyChange: 186, dealerLong: 54643, dealerShort: 322221, dealerWeeklyChange: 1003, assetManagerLong: 468254, assetManagerShort: 205001, assetManagerWeeklyChange: 1827 },
+  GBP: { netPosition: 43167, long: 77117, short: 33950, sentiment: 'BULLISH', weeklyChange: -4742, dealerLong: 133142, dealerShort: 73939, dealerWeeklyChange: 10798, assetManagerLong: 43569, assetManagerShort: 150902, assetManagerWeeklyChange: -2842 },
+  JPY: { netPosition: -102188, long: 58529, short: 160717, sentiment: 'BEARISH', weeklyChange: -25146, dealerLong: 116682, dealerShort: 37361, dealerWeeklyChange: 36383, assetManagerLong: 70419, assetManagerShort: 94940, assetManagerWeeklyChange: -4405 },
+  CHF: { netPosition: -10298, long: 12305, short: 22603, sentiment: 'BEARISH', weeklyChange: -1473, dealerLong: 64678, dealerShort: 8935, dealerWeeklyChange: 7042, assetManagerLong: 12689, assetManagerShort: 44806, assetManagerWeeklyChange: -3462 },
+  AUD: { netPosition: 49662, long: 78498, short: 28836, sentiment: 'BULLISH', weeklyChange: -4399, dealerLong: 104022, dealerShort: 147478, dealerWeeklyChange: -5413, assetManagerLong: 108835, assetManagerShort: 139302, assetManagerWeeklyChange: 14960 },
+  CAD: { netPosition: -68750, long: 27845, short: 96595, sentiment: 'BEARISH', weeklyChange: 3342, dealerLong: 180223, dealerShort: 62264, dealerWeeklyChange: -6971, assetManagerLong: 59172, assetManagerShort: 108716, assetManagerWeeklyChange: 9399 },
+  MXN: { netPosition: 74362, long: 140084, short: 65722, sentiment: 'BULLISH', weeklyChange: 5458, dealerLong: 22083, dealerShort: 146774, dealerWeeklyChange: -4614, assetManagerLong: 117879, assetManagerShort: 49802, assetManagerWeeklyChange: -513 },
+  NZD: { netPosition: -22338, long: 5216, short: 27554, sentiment: 'BEARISH', weeklyChange: 9656, dealerLong: 54532, dealerShort: 36175, dealerWeeklyChange: -12382, assetManagerLong: 12931, assetManagerShort: 9972, assetManagerWeeklyChange: 2529 },
+  USD: { netPosition: 7133, long: 16024, short: 8891, sentiment: 'BULLISH', weeklyChange: -2056, dealerLong: 5796, dealerShort: 32811, dealerWeeklyChange: 138, assetManagerLong: 17667, assetManagerShort: 1426, assetManagerWeeklyChange: 2223 },
 };
 
 
