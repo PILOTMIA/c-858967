@@ -3,13 +3,14 @@ import { CheckCircle2, XCircle, ArrowRight, Zap, Shield } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const POSITIONS: Record<string, { net: number; weekly: number }> = {
-  EUR: { net: 11594, weekly: -8723 },
-  GBP: { net: 28882, weekly: -255 },
-  JPY: { net: -75802, weekly: -7305 },
-  CAD: { net: -53828, weekly: 10387 },
-  AUD: { net: 47855, weekly: -470 },
-  NZD: { net: -16833, weekly: 1229 },
-  CHF: { net: -5174, weekly: -1408 },
+  EUR: { net: -38173, weekly: 186 },
+  GBP: { net: 43167, weekly: -4742 },
+  JPY: { net: -102188, weekly: -25146 },
+  CAD: { net: -68750, weekly: 3342 },
+  AUD: { net: 49662, weekly: -4399 },
+  NZD: { net: -22338, weekly: 9656 },
+  CHF: { net: -10298, weekly: -1473 },
+  USD: { net: 7133, weekly: -2056 },
 };
 
 interface TradeIdea {
@@ -177,7 +178,7 @@ const COTTradeThisNotThat = () => {
 
       <div className="px-6 py-3 border-t border-border bg-muted/30">
         <p className="text-[10px] text-muted-foreground text-center">
-          Based on CFTC Disaggregated Report (April 28, 2026) • Leveraged fund net positioning & weekly flow alignment • Not financial advice
+          Based on CFTC Traders in Financial Futures Report (September 1, 2026) • Leveraged fund net positioning & weekly flow alignment • Not financial advice
         </p>
       </div>
     </div>
