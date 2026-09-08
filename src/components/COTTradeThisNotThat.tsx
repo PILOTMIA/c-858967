@@ -124,7 +124,7 @@ const COTTradeThisNotThat = () => {
 
     return { tradeThis, notThat };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [spot]);
+  }, [spot, positions]);
 
   const convictionColor = (c: string) =>
     c === "High" ? "bg-success/15 text-success border-success/30" :
