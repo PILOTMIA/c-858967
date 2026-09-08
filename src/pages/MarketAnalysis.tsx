@@ -4,6 +4,7 @@ import { ArrowUpRight, BarChart3, Activity, Newspaper, LineChart, Circle, Shield
 import LivePriceBoard from "@/components/LivePriceBoard";
 import LiveRateTicker from "@/components/LiveRateTicker";
 import PipCalculator from "@/components/PipCalculator";
+import YenStrengthWatch from "@/components/YenStrengthWatch";
 
 /**
  * Market Analysis — live rate board, session status and an accurate pip calculator.
@@ -89,6 +90,9 @@ const MarketAnalysis = () => {
 
         {/* Live rate board */}
         <LivePriceBoard />
+
+        {/* Yen spotlight */}
+        <YenStrengthWatch />
 
         {/* Pip calculator */}
         <PipCalculator />
