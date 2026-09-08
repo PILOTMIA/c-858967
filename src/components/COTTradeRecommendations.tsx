@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, ArrowRight, Flame, Target, Sparkles } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowRight, Flame, Target, Sparkles, Zap } from "lucide-react";
+import { useSpotMomentum, squeezeCheck } from "@/hooks/useSpotMomentum";
 
 // Tradeable pairs we recommend (majors + key crosses)
 const PAIR_UNIVERSE: { base: string; quote: string }[] = [
