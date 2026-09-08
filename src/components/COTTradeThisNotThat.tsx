@@ -1,6 +1,8 @@
 import { useMemo } from "react";
-import { CheckCircle2, XCircle, ArrowRight, Zap, Shield } from "lucide-react";
+import { CheckCircle2, XCircle, ArrowRight, Zap, Shield, Flame } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useSpotMomentum, squeezeCheck } from "@/hooks/useSpotMomentum";
+
 
 const POSITIONS: Record<string, { net: number; weekly: number }> = {
   EUR: { net: -38173, weekly: 186 },
