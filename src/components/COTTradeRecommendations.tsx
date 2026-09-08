@@ -218,7 +218,7 @@ const COTTradeRecommendations = () => {
                   </div>
 
                   {/* Detail row */}
-                  <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-border/30">
+                  <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-border/30">
                     <div>
                       <div className="text-[9px] text-foreground/60 uppercase tracking-wider">Net Spread</div>
                       <div className={`text-sm font-mono font-bold ${r.netSpread >= 0 ? "text-success" : "text-destructive"}`}>
@@ -229,6 +229,12 @@ const COTTradeRecommendations = () => {
                       <div className="text-[9px] text-foreground/60 uppercase tracking-wider">Weekly Flow</div>
                       <div className={`text-sm font-mono font-bold ${r.flowSpread >= 0 ? "text-success" : "text-destructive"}`}>
                         {r.flowSpread >= 0 ? "+" : ""}{fmt(r.flowSpread)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[9px] text-foreground/60 uppercase tracking-wider">1W Price</div>
+                      <div className={`text-sm font-mono font-bold ${r.priceBias >= 0 ? "text-success" : "text-destructive"}`}>
+                        {r.priceBias >= 0 ? "+" : ""}{r.priceBias.toFixed(2)}%
                       </div>
                     </div>
                   </div>
@@ -254,7 +260,7 @@ const COTTradeRecommendations = () => {
         )}
 
         <p className="text-[10px] text-muted-foreground text-center pt-2 border-t border-border/30">
-          Source: CFTC Non-Commercial Positions • Updated weekly • Conviction = position spread (60%) + weekly flow alignment (40%) • Educational only
+          Source: CFTC positioning (report of September 1, 2026) plus live ECB spot rates • Conviction = position spread (60%) + weekly flow (40%), overridden when price contradicts crowded positioning • Educational only
         </p>
       </CardContent>
     </Card>
