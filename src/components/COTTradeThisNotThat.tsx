@@ -127,7 +127,9 @@ const COTTradeThisNotThat = () => {
           </div>
           <div>
             <h2 className="text-xl font-bold text-foreground">Trade This, Not That</h2>
-            <p className="text-sm text-muted-foreground">COT-backed pair selection — favor strong positioning, avoid weak setups</p>
+            <p className="text-sm text-muted-foreground">
+              COT positioning checked against live price — when a crowded position is moving the wrong way, we follow price
+            </p>
           </div>
         </div>
       </div>
@@ -158,12 +160,21 @@ const COTTradeThisNotThat = () => {
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">{idea.reason}</p>
-                <div className="mt-2 flex items-center gap-2">
-                  {idea.flowAlign && (
-                    <span className="inline-flex items-center gap-1 text-[10px] text-success font-medium">
-                      <ArrowRight className="h-3 w-3" /> Flow aligned
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {idea.squeeze ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] text-warning font-medium">
+                      <Flame className="h-3 w-3" /> Short squeeze — price leads
                     </span>
+                  ) : (
+                    idea.flowAlign && (
+                      <span className="inline-flex items-center gap-1 text-[10px] text-success font-medium">
+                        <ArrowRight className="h-3 w-3" /> Flow aligned
+                      </span>
+                    )
                   )}
+                  <span className="text-[10px] text-muted-foreground">
+                    1W price: {idea.priceBias > 0 ? "+" : ""}{idea.priceBias.toFixed(2)}%
+                  </span>
                   <span className="text-[10px] text-muted-foreground">
                     Net diff: {idea.netDiff > 0 ? "+" : ""}{(idea.netDiff / 1000).toFixed(1)}K
                   </span>
