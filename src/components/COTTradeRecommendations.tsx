@@ -142,7 +142,8 @@ const COTTradeRecommendations = () => {
           </Badge>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          Pairs ranked by net institutional position spread and week-over-week flow alignment. Higher conviction = stronger institutional consensus.
+          Pairs ranked by net institutional position spread and week-over-week flow, then checked against the last week of
+          live spot moves. Where a crowded position is being run over by price, the call follows price and is flagged as a squeeze.
         </p>
       </CardHeader>
       <CardContent className="pt-5 space-y-5">
@@ -170,11 +171,18 @@ const COTTradeRecommendations = () => {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xl font-bold font-display-hero text-foreground tracking-tight">{r.pair}</span>
-                        {r.aligned && (
-                          <Badge className="bg-warning/15 text-warning border-warning/30 text-[10px] gap-0.5">
-                            <Flame className="w-2.5 h-2.5" />
-                            Aligned
+                        {r.squeeze ? (
+                          <Badge className="bg-warning/20 text-warning border-warning/40 text-[10px] gap-0.5">
+                            <Zap className="w-2.5 h-2.5" />
+                            Squeeze
                           </Badge>
+                        ) : (
+                          r.aligned && (
+                            <Badge className="bg-warning/15 text-warning border-warning/30 text-[10px] gap-0.5">
+                              <Flame className="w-2.5 h-2.5" />
+                              Aligned
+                            </Badge>
+                          )
                         )}
                       </div>
                       <div className="text-[10px] text-muted-foreground mt-0.5">
