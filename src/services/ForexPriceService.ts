@@ -30,20 +30,21 @@ const getPairCode = (currency: string): string => {
   return `${currency}USD`;
 };
 
-// Fallback prices - Updated September 3, 2026 (ECB reference close)
+// Fallback prices - Updated September 7, 2026 (ECB reference close)
+// JPY strengthened sharply (USDJPY ~160.4 -> ~154.75) on BoJ rate-hike expectations.
 const fallbackPrices: Record<string, number> = {
   // USD majors
-  EURUSD: 1.16149, GBPUSD: 1.34971, USDJPY: 156.01, USDCHF: 0.80844,
-  AUDUSD: 0.71932, USDCAD: 1.3792, USDMXN: 18.42, NZDUSD: 0.5872, USDBRL: 5.3850,
+  EURUSD: 1.16220, GBPUSD: 1.35307, USDJPY: 154.75, USDCHF: 0.80924,
+  AUDUSD: 0.72145, USDCAD: 1.3820, USDMXN: 16.9121, NZDUSD: 0.58758, USDBRL: 5.1261,
   // Common crosses
-  EURJPY: 181.205, GBPJPY: 210.568, EURGBP: 0.86055, GBPCAD: 1.86152,
-  AUDJPY: 112.221, EURAUD: 1.61471, GBPAUD: 1.87637, EURCAD: 1.60193,
-  NZDJPY: 91.609, CADJPY: 113.116,
+  EURJPY: 179.850, GBPJPY: 209.388, EURGBP: 0.85893, GBPCAD: 1.86991,
+  AUDJPY: 111.645, EURAUD: 1.61091, GBPAUD: 1.87560, EURCAD: 1.60614,
+  NZDJPY: 90.928, CADJPY: 111.976,
   // Additional crosses (all G10 combos)
-  AUDNZD: 1.22500, AUDCAD: 0.99209, AUDCHF: 0.58153,
-  NZDCAD: 0.80986, NZDCHF: 0.47472, CADCHF: 0.58617,
-  EURCHF: 0.93900, GBPCHF: 1.09116, GBPNZD: 2.29856,
-  EURNZD: 1.97802, MXNJPY: 8.47, XAUUSD: 4476.20,
+  AUDNZD: 1.22783, AUDCAD: 0.99704, AUDCHF: 0.58382,
+  NZDCAD: 0.81203, NZDCHF: 0.47549, CADCHF: 0.58556,
+  EURCHF: 0.94050, GBPCHF: 1.09496, GBPNZD: 2.30278,
+  EURNZD: 1.97794, MXNJPY: 9.150, XAUUSD: 4424.70,
 };
 
 export const fetchForexPrice = async (currency: string): Promise<number> => {
