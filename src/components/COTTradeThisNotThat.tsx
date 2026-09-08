@@ -250,7 +250,7 @@ const COTTradeThisNotThat = () => {
 
       <div className="px-6 py-3 border-t border-border bg-muted/30">
         <p className="text-[10px] text-muted-foreground text-center">
-          CFTC Traders in Financial Futures, September 1, 2026 (released Sept 4) • Leveraged fund net positioning and weekly flow, cross-checked against live ECB spot moves • Not financial advice
+          CFTC Traders in Financial Futures{reportDate ? `, report of ${reportDate}` : ""} • Leveraged fund net positioning and weekly flow, cross-checked against live ECB spot moves • Not financial advice
         </p>
       </div>
     </div>

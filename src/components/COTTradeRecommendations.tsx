@@ -260,7 +260,7 @@ const COTTradeRecommendations = () => {
         )}
 
         <p className="text-[10px] text-muted-foreground text-center pt-2 border-t border-border/30">
-          Source: CFTC positioning (report of September 1, 2026) plus live ECB spot rates • Conviction = position spread (60%) + weekly flow (40%), overridden when price contradicts crowded positioning • Educational only
+          Source: latest stored CFTC positioning plus live ECB spot rates • Conviction = position spread (60%) + weekly flow (40%), overridden when price contradicts crowded positioning • Educational only
         </p>
       </CardContent>
     </Card>
