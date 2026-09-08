@@ -94,10 +94,20 @@ function buildIdeas(
 
 const COTTradeThisNotThat = () => {
   const { data: spot } = useSpotMomentum();
+  const { data: cot } = useLatestCOT();
   const momentum = spot?.momentum ?? {};
+  const reportDate = latestReportDate(cot);
+
+  const positions = useMemo(() => {
+    const merged: Record<string, { net: number; weekly: number }> = { ...FALLBACK_POSITIONS };
+    for (const [code, p] of Object.entries((cot ?? {}) as Record<string, CotPosition>)) {
+      merged[code] = { net: p.net, weekly: p.weekly };
+    }
+    return merged;
+  }, [cot]);
 
   const { tradeThis, notThat } = useMemo(() => {
-    const ideas = buildIdeas(momentum);
+    const ideas = buildIdeas(momentum, positions);
     const sorted = [...ideas].sort((a, b) => {
       const convScore = { High: 3, Medium: 2, Low: 1 };
       return (
