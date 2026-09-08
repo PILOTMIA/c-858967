@@ -1,10 +1,29 @@
 import { useState, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Upload, FileText, CheckCircle, AlertCircle, Lock, Shield } from 'lucide-react';
 import { toast } from "sonner";
 import { useCOTData } from './COTDataContext';
+import { supabase } from '@/integrations/supabase/client';
+
+/** Pull the plain text out of a CFTC PDF in the browser. */
+async function readPdfText(file: File): Promise<string> {
+  const pdfjs: any = await import('pdfjs-dist');
+  const workerSrc = (await import('pdfjs-dist/build/pdf.worker.min.mjs?url')).default;
+  pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+  const buf = await file.arrayBuffer();
+  const doc = await pdfjs.getDocument({ data: buf }).promise;
+  const pages: string[] = [];
+  const max = Math.min(doc.numPages, 15);
+  for (let i = 1; i <= max; i++) {
+    const page = await doc.getPage(i);
+    const content = await page.getTextContent();
+    pages.push(content.items.map((it: any) => it.str ?? '').join(' '));
+  }
+  return pages.join('\n');
+}
 
 interface COTDataUploadProps {
   onDataUploaded: (data: any) => void;
