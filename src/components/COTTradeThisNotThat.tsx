@@ -47,10 +47,13 @@ const PAIR_MAP: [string, string, string][] = [
   ["CADJPY", "CAD", "JPY"],
 ];
 
-function buildIdeas(momentum: Record<string, number>): TradeIdea[] {
+function buildIdeas(
+  momentum: Record<string, number>,
+  positions: Record<string, { net: number; weekly: number }>,
+): TradeIdea[] {
   return PAIR_MAP.map(([pair, base, quote]) => {
-    const b = POSITIONS[base] ?? { net: 0, weekly: 0 };
-    const q = POSITIONS[quote] ?? { net: 0, weekly: 0 };
+    const b = positions[base] ?? { net: 0, weekly: 0 };
+    const q = positions[quote] ?? { net: 0, weekly: 0 };
     const netDiff = b.net - q.net;
     const flowDiff = b.weekly - q.weekly;
     const absNet = Math.abs(netDiff);
