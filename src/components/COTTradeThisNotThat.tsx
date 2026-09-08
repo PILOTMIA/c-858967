@@ -209,12 +209,21 @@ const COTTradeThisNotThat = () => {
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">{idea.reason}</p>
-                <div className="mt-2 flex items-center gap-2">
-                  {!idea.flowAlign && (
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {idea.conflict ? (
                     <span className="inline-flex items-center gap-1 text-[10px] text-destructive/80 font-medium">
-                      <Shield className="h-3 w-3" /> Flow diverging
+                      <Shield className="h-3 w-3" /> Price against positioning
                     </span>
+                  ) : (
+                    !idea.flowAlign && (
+                      <span className="inline-flex items-center gap-1 text-[10px] text-destructive/80 font-medium">
+                        <Shield className="h-3 w-3" /> Flow diverging
+                      </span>
+                    )
                   )}
+                  <span className="text-[10px] text-muted-foreground">
+                    1W price: {idea.priceBias > 0 ? "+" : ""}{idea.priceBias.toFixed(2)}%
+                  </span>
                   <span className="text-[10px] text-muted-foreground">
                     Net diff: {idea.netDiff > 0 ? "+" : ""}{(idea.netDiff / 1000).toFixed(1)}K
                   </span>
@@ -227,7 +236,7 @@ const COTTradeThisNotThat = () => {
 
       <div className="px-6 py-3 border-t border-border bg-muted/30">
         <p className="text-[10px] text-muted-foreground text-center">
-          Based on CFTC Traders in Financial Futures Report (September 1, 2026) • Leveraged fund net positioning & weekly flow alignment • Not financial advice
+          CFTC Traders in Financial Futures, September 1, 2026 (released Sept 4) • Leveraged fund net positioning and weekly flow, cross-checked against live ECB spot moves • Not financial advice
         </p>
       </div>
     </div>
