@@ -71,100 +71,53 @@ const COTDataUpload = ({ onDataUploaded }: COTDataUploadProps) => {
     setFileName(file.name);
     
     try {
-      // Real COT data from CFTC Financial Futures Report - Jan 13, 2026
-      // Using Asset Manager/Institutional as Commercial, Leveraged Funds as Non-Commercial
-      const realCOTData = [
-        // CAD: Open Interest 219,263
-        { currency: 'CAD', commercialLong: 71451, commercialShort: 63407, nonCommercialLong: 22400, nonCommercialShort: 78099, reportDate: '2026-01-13', weeklyChange: 523 },
-        // CHF: Open Interest 96,220
-        { currency: 'CHF', commercialLong: 6766, commercialShort: 59792, nonCommercialLong: 10064, nonCommercialShort: 10635, reportDate: '2026-01-13', weeklyChange: 5842 },
-        // GBP: Open Interest 207,867
-        { currency: 'GBP', commercialLong: 43857, commercialShort: 123791, nonCommercialLong: 66540, nonCommercialShort: 28450, reportDate: '2026-01-13', weeklyChange: 1553 },
-        // JPY: Open Interest 294,242
-        { currency: 'JPY', commercialLong: 75804, commercialShort: 47581, nonCommercialLong: 43869, nonCommercialShort: 142519, reportDate: '2026-01-13', weeklyChange: 6527 },
-        // EUR: Open Interest 883,672
-        { currency: 'EUR', commercialLong: 555117, commercialShort: 151001, nonCommercialLong: 103621, nonCommercialShort: 78229, reportDate: '2026-01-13', weeklyChange: 1857 },
-        // AUD: Open Interest 229,456
-        { currency: 'AUD', commercialLong: 59649, commercialShort: 93135, nonCommercialLong: 68678, nonCommercialShort: 38461, reportDate: '2026-01-13', weeklyChange: -1470 },
-        // MXN: Open Interest 241,382
-        { currency: 'MXN', commercialLong: 105727, commercialShort: 23702, nonCommercialLong: 112440, nonCommercialShort: 51021, reportDate: '2026-01-13', weeklyChange: -8982 },
-        // NZD: Open Interest 85,211
-        { currency: 'NZD', commercialLong: 8135, commercialShort: 53891, nonCommercialLong: 12239, nonCommercialShort: 22372, reportDate: '2026-01-13', weeklyChange: 655 },
-        // BRL: Open Interest 78,988
-        { currency: 'BRL', commercialLong: 44473, commercialShort: 1677, nonCommercialLong: 23645, nonCommercialShort: 22729, reportDate: '2026-01-13', weeklyChange: 5319 },
-        // Cross pairs from CFTC report
-        { currency: 'EURGBP', commercialLong: 18940, commercialShort: 0, nonCommercialLong: 2843, nonCommercialShort: 4231, reportDate: '2026-01-13', weeklyChange: -952 },
-        { currency: 'EURJPY', commercialLong: 5084, commercialShort: 11710, nonCommercialLong: 1537, nonCommercialShort: 0, reportDate: '2026-01-13', weeklyChange: -86 },
-      ];
+      let text = '';
+      let records: any[] | undefined;
 
-      let data;
-      let text: string;
-
-      // Handle different file types including PDF
-      if (file.type === 'application/pdf') {
-        // For PDF, use the real COT data we extracted
-        data = realCOTData;
-        toast.success('PDF data extracted successfully! Using latest CFTC report data.');
-      } else {
-        text = await file.text();
-        
-        if (file.name.endsWith('.json')) {
-          data = JSON.parse(text);
-        } else if (file.name.endsWith('.csv')) {
-        // Enhanced CSV parsing with better error handling
-        const lines = text.split('\n').filter(line => line.trim());
-        if (lines.length < 2) {
-          throw new Error('CSV file must contain headers and at least one data row.');
+      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+        text = await readPdfText(file);
+        if (!text.trim()) throw new Error('Could not read any text from that PDF.');
+      } else if (file.name.endsWith('.json')) {
+        records = JSON.parse(await file.text());
+        if (!Array.isArray(records) || !records.length) {
+          throw new Error('JSON file must contain an array of COT records.');
         }
-        
-        const headers = lines[0].split(',').map(h => h.trim());
-        data = lines.slice(1).map(line => {
-          const values = line.split(',').map(v => v.trim());
+      } else if (file.name.endsWith('.csv')) {
+        const raw = await file.text();
+        const lines = raw.split('\n').filter((l) => l.trim());
+        if (lines.length < 2) throw new Error('CSV file must contain headers and at least one data row.');
+        const headers = lines[0].split(',').map((h) => h.trim());
+        records = lines.slice(1).map((line) => {
+          const values = line.split(',').map((v) => v.trim());
           const row: any = {};
-          headers.forEach((header, index) => {
-            if (values[index] !== undefined) {
-              row[header] = values[index];
-            }
-          });
+          headers.forEach((h, i) => { if (values[i] !== undefined) row[h] = values[i]; });
           return row;
-          }).filter(row => Object.keys(row).some(key => row[key])); // Filter empty rows
-        } else {
-          throw new Error('Unsupported file format. Please upload CSV, JSON, or PDF files.');
-        }
+        }).filter((row) => Object.keys(row).some((k) => row[k]));
+      } else {
+        throw new Error('Unsupported file format. Please upload CSV, JSON, or PDF files.');
       }
 
-      // Validate data structure
-      if (!Array.isArray(data) || data.length === 0) {
-        throw new Error('Invalid data format. Expected an array of COT records.');
-      }
-
-      // Transform and validate COT data structure with enhanced validation
-      const transformedData = data.map((record: any, index: number) => {
-        try {
-          return {
-            currency: record.currency || record.Currency || 'EUR',
-            commercialLong: parseInt(record.commercialLong || record.Commercial_Long || '0'),
-            commercialShort: parseInt(record.commercialShort || record.Commercial_Short || '0'),
-            nonCommercialLong: parseInt(record.nonCommercialLong || record.NonCommercial_Long || '0'),
-            nonCommercialShort: parseInt(record.nonCommercialShort || record.NonCommercial_Short || '0'),
-            reportDate: record.reportDate || record.Report_Date || new Date().toISOString().split('T')[0],
-            weeklyChange: parseInt(record.weeklyChange || record.Weekly_Change || '0'),
-          };
-        } catch (recordError) {
-          throw new Error(`Error processing record ${index + 1}: ${recordError instanceof Error ? recordError.message : 'Invalid data'}`);
-        }
+      // Store it centrally: the backend reads the report week from the file and refreshes
+      // every tracked market straight from the CFTC feed, so the whole site moves together.
+      const { data: result, error } = await supabase.functions.invoke('cot-upload', {
+        body: { password: adminKey.current, text: text.slice(0, 40000), records },
       });
+      if (error) throw new Error(error.message ?? 'Upload rejected');
+      if (result?.error) throw new Error(result.error);
 
-      // Update global COT data context
-      setCOTData(transformedData);
+      setSummary({ reportDate: result.reportDate, markets: result.markets ?? [] });
+      setCOTData(records ?? []);
       setLastUpdated(new Date());
-      
-      // Also call the prop callback for backward compatibility
-      onDataUploaded(transformedData);
+      onDataUploaded(records ?? []);
       setUploadStatus('success');
-      
-      toast.success(`✅ Successfully processed ${transformedData.length} COT records. All charts and analysis have been updated!`);
-      
+
+      // Refresh every panel on the site that reads market data
+      await queryClient.invalidateQueries();
+
+      toast.success(
+        `✅ ${result.written} markets stored for the ${result.reportDate} report — every page has been refreshed.`,
+      );
+
     } catch (error) {
       console.error('Upload error:', error);
       setUploadStatus('error');
