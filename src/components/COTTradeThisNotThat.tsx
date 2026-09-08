@@ -22,6 +22,11 @@ interface TradeIdea {
   conviction: "High" | "Medium" | "Low";
   netDiff: number;
   flowAlign: boolean;
+  /** price is moving against the crowded COT position */
+  squeeze: boolean;
+  /** price is moving against COT, but positioning is not extreme */
+  conflict: boolean;
+  priceBias: number;
 }
 
 const PAIR_MAP: [string, string, string][] = [
@@ -41,40 +46,71 @@ const PAIR_MAP: [string, string, string][] = [
   ["CADJPY", "CAD", "JPY"],
 ];
 
-function buildIdeas(): TradeIdea[] {
+function buildIdeas(momentum: Record<string, number>): TradeIdea[] {
   return PAIR_MAP.map(([pair, base, quote]) => {
     const b = POSITIONS[base] ?? { net: 0, weekly: 0 };
     const q = POSITIONS[quote] ?? { net: 0, weekly: 0 };
     const netDiff = b.net - q.net;
     const flowDiff = b.weekly - q.weekly;
-    const bullish = netDiff > 0;
-    const flowAlign = bullish ? flowDiff > 0 : flowDiff < 0;
     const absNet = Math.abs(netDiff);
-    const conviction: "High" | "Medium" | "Low" =
-      absNet > 60000 && flowAlign ? "High" : absNet > 20000 ? "Medium" : "Low";
+
+    // Live price bias for the pair: base strength minus quote strength (last ~5 sessions)
+    const priceBias = (momentum[base] ?? 0) - (momentum[quote] ?? 0);
+    const { conflict, squeeze } = squeezeCheck(netDiff, priceBias);
+
+    // When crowded positioning is being run over by price, follow price, not the crowd.
+    const bullish = squeeze ? priceBias > 0 : netDiff > 0;
+    const flowAlign = squeeze ? true : netDiff > 0 ? flowDiff > 0 : flowDiff < 0;
+
+    const conviction: "High" | "Medium" | "Low" = squeeze
+      ? "High"
+      : conflict
+      ? "Low"
+      : absNet > 60000 && flowAlign
+      ? "High"
+      : absNet > 20000
+      ? "Medium"
+      : "Low";
 
     const direction: "BUY" | "SELL" = bullish ? "BUY" : "SELL";
-    const reason = bullish
+    const crowdSide = netDiff > 0 ? base : quote;
+    const squeezedSide = netDiff > 0 ? quote : base;
+
+    const reason = squeeze
+      ? `Crowded ${crowdSide} longs are being squeezed — ${squeezedSide} has gained ${Math.abs(priceBias).toFixed(2)}% in the last week while positioning still sits ${(absNet / 1000).toFixed(0)}K the other way`
+      : conflict
+      ? `Positioning favours ${netDiff > 0 ? base : quote}, but price is moving ${Math.abs(priceBias).toFixed(2)}% the other way — no clean edge`
+      : netDiff > 0
       ? `${base} net longs dominate over ${quote} by ${(absNet / 1000).toFixed(0)}K contracts`
       : `${quote} net longs dominate over ${base} by ${(absNet / 1000).toFixed(0)}K contracts`;
 
-    return { pair, direction, reason, conviction, netDiff, flowAlign };
+    return { pair, direction, reason, conviction, netDiff, flowAlign, squeeze, conflict, priceBias };
   });
 }
 
 const COTTradeThisNotThat = () => {
+  const { data: spot } = useSpotMomentum();
+  const momentum = spot?.momentum ?? {};
+
   const { tradeThis, notThat } = useMemo(() => {
-    const ideas = buildIdeas();
+    const ideas = buildIdeas(momentum);
     const sorted = [...ideas].sort((a, b) => {
       const convScore = { High: 3, Medium: 2, Low: 1 };
-      return convScore[b.conviction] - convScore[a.conviction] || Math.abs(b.netDiff) - Math.abs(a.netDiff);
+      return (
+        Number(b.squeeze) - Number(a.squeeze) ||
+        convScore[b.conviction] - convScore[a.conviction] ||
+        Math.abs(b.netDiff) - Math.abs(a.netDiff)
+      );
     });
 
     const tradeThis = sorted.filter((i) => i.conviction !== "Low").slice(0, 4);
-    const notThat = sorted.filter((i) => i.conviction === "Low" || !i.flowAlign).slice(-4).reverse();
+    const notThat = sorted
+      .filter((i) => !i.squeeze && (i.conviction === "Low" || i.conflict || !i.flowAlign))
+      .slice(0, 4);
 
     return { tradeThis, notThat };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spot]);
 
   const convictionColor = (c: string) =>
     c === "High" ? "bg-success/15 text-success border-success/30" :
