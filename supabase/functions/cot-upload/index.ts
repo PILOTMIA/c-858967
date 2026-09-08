@@ -79,9 +79,12 @@ const num = (v: unknown) => {
   return Number.isFinite(n) ? n : 0;
 };
 
-async function fetchRows(code: string, onOrBefore: string) {
+// Commodities live in the Disaggregated dataset, currencies/indices in Traders in Financial Futures.
+const DATASETS = ["72hh-3qpy", "gpe5-46if"];
+
+async function fetchOne(dataset: string, code: string, onOrBefore: string) {
   const url =
-    `https://publicreporting.cftc.gov/resource/72hh-3qpy.json` +
+    `https://publicreporting.cftc.gov/resource/${dataset}.json` +
     `?$limit=2&$order=report_date_as_yyyy_mm_dd DESC` +
     `&cftc_contract_market_code=${code}` +
     `&$where=report_date_as_yyyy_mm_dd <= '${onOrBefore}T00:00:00.000'`;
@@ -96,9 +99,26 @@ async function fetchRows(code: string, onOrBefore: string) {
   }
 }
 
+async function fetchRows(code: string, onOrBefore: string) {
+  for (const dataset of DATASETS) {
+    const rows = await fetchOne(dataset, code, onOrBefore);
+    if (rows) {
+      const { long, short } = speculatorLegs(rows[0]);
+      if (long || short) return rows;
+    }
+  }
+  return null;
+}
+
 function speculatorLegs(row: Record<string, unknown>) {
-  const long = num(row.lev_money_positions_long_all ?? row.m_money_positions_long_all ?? row.noncomm_positions_long_all);
-  const short = num(row.lev_money_positions_short_all ?? row.m_money_positions_short_all ?? row.noncomm_positions_short_all);
+  const long = num(
+    row.lev_money_positions_long_all ?? row.lev_money_positions_long ??
+    row.m_money_positions_long_all ?? row.noncomm_positions_long_all,
+  );
+  const short = num(
+    row.lev_money_positions_short_all ?? row.lev_money_positions_short ??
+    row.m_money_positions_short_all ?? row.noncomm_positions_short_all,
+  );
   return { long, short };
 }
 
