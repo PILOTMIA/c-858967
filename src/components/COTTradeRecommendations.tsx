@@ -41,6 +41,7 @@ const fmt = (v: number) => {
 };
 
 const COTTradeRecommendations = () => {
+  const { data: spot } = useSpotMomentum();
   const { data: history } = useQuery({
     queryKey: ["cot-history-recos"],
     queryFn: async () => {
@@ -89,24 +90,40 @@ const COTTradeRecommendations = () => {
       // Aligned = position and flow agree → highest conviction
       const aligned = Math.sign(positionScore) === Math.sign(flowScore) && Math.abs(positionScore) > 5;
 
-      const direction: "LONG" | "SHORT" | "WAIT" =
+      // Live spot check: is price running against the crowded position?
+      const mom = spot?.momentum ?? {};
+      const priceBias = (mom[base] ?? 0) - (mom[quote] ?? 0);
+      const { conflict, squeeze } = squeezeCheck(netSpread, priceBias);
+
+      let direction: "LONG" | "SHORT" | "WAIT" =
         Math.abs(conviction) < 8 ? "WAIT" : conviction > 0 ? "LONG" : "SHORT";
+      let displayConviction = Math.abs(conviction);
+
+      if (squeeze) {
+        // Crowded positioning being squeezed — trade with price, not with the crowd
+        direction = priceBias > 0 ? "LONG" : "SHORT";
+        displayConviction = Math.max(displayConviction, 70);
+      } else if (conflict) {
+        direction = "WAIT";
+      }
 
       return {
         pair: `${base}${quote}`,
         base,
         quote,
         direction,
-        conviction: Math.abs(conviction),
+        conviction: displayConviction,
         signedConviction: conviction,
         netSpread,
         flowSpread,
-        aligned,
+        aligned: aligned && !conflict,
+        squeeze,
+        priceBias,
       };
     })
       .filter((x): x is NonNullable<typeof x> => !!x)
-      .sort((a, b) => b.conviction - a.conviction);
-  }, [history]);
+      .sort((a, b) => Number(b.squeeze) - Number(a.squeeze) || b.conviction - a.conviction);
+  }, [history, spot]);
 
   const top = recommendations.filter((r) => r.direction !== "WAIT").slice(0, 6);
   const wait = recommendations.filter((r) => r.direction === "WAIT").slice(0, 4);
