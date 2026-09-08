@@ -2,9 +2,10 @@ import { useMemo } from "react";
 import { CheckCircle2, XCircle, ArrowRight, Zap, Shield, Flame } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useSpotMomentum, squeezeCheck } from "@/hooks/useSpotMomentum";
+import { useLatestCOT, latestReportDate, type CotPosition } from "@/hooks/useLatestCOT";
 
-
-const POSITIONS: Record<string, { net: number; weekly: number }> = {
+/** Used only until the stored CFTC report loads. */
+const FALLBACK_POSITIONS: Record<string, { net: number; weekly: number }> = {
   EUR: { net: -38173, weekly: 186 },
   GBP: { net: 43167, weekly: -4742 },
   JPY: { net: -102188, weekly: -25146 },
@@ -46,10 +47,13 @@ const PAIR_MAP: [string, string, string][] = [
   ["CADJPY", "CAD", "JPY"],
 ];
 
-function buildIdeas(momentum: Record<string, number>): TradeIdea[] {
+function buildIdeas(
+  momentum: Record<string, number>,
+  positions: Record<string, { net: number; weekly: number }>,
+): TradeIdea[] {
   return PAIR_MAP.map(([pair, base, quote]) => {
-    const b = POSITIONS[base] ?? { net: 0, weekly: 0 };
-    const q = POSITIONS[quote] ?? { net: 0, weekly: 0 };
+    const b = positions[base] ?? { net: 0, weekly: 0 };
+    const q = positions[quote] ?? { net: 0, weekly: 0 };
     const netDiff = b.net - q.net;
     const flowDiff = b.weekly - q.weekly;
     const absNet = Math.abs(netDiff);
@@ -90,10 +94,20 @@ function buildIdeas(momentum: Record<string, number>): TradeIdea[] {
 
 const COTTradeThisNotThat = () => {
   const { data: spot } = useSpotMomentum();
+  const { data: cot } = useLatestCOT();
   const momentum = spot?.momentum ?? {};
+  const reportDate = latestReportDate(cot);
+
+  const positions = useMemo(() => {
+    const merged: Record<string, { net: number; weekly: number }> = { ...FALLBACK_POSITIONS };
+    for (const [code, p] of Object.entries((cot ?? {}) as Record<string, CotPosition>)) {
+      merged[code] = { net: p.net, weekly: p.weekly };
+    }
+    return merged;
+  }, [cot]);
 
   const { tradeThis, notThat } = useMemo(() => {
-    const ideas = buildIdeas(momentum);
+    const ideas = buildIdeas(momentum, positions);
     const sorted = [...ideas].sort((a, b) => {
       const convScore = { High: 3, Medium: 2, Low: 1 };
       return (
@@ -110,7 +124,7 @@ const COTTradeThisNotThat = () => {
 
     return { tradeThis, notThat };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [spot]);
+  }, [spot, positions]);
 
   const convictionColor = (c: string) =>
     c === "High" ? "bg-success/15 text-success border-success/30" :
@@ -236,7 +250,7 @@ const COTTradeThisNotThat = () => {
 
       <div className="px-6 py-3 border-t border-border bg-muted/30">
         <p className="text-[10px] text-muted-foreground text-center">
-          CFTC Traders in Financial Futures, September 1, 2026 (released Sept 4) • Leveraged fund net positioning and weekly flow, cross-checked against live ECB spot moves • Not financial advice
+          CFTC Traders in Financial Futures{reportDate ? `, report of ${reportDate}` : ""} • Leveraged fund net positioning and weekly flow, cross-checked against live ECB spot moves • Not financial advice
         </p>
       </div>
     </div>
