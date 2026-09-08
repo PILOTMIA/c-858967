@@ -249,6 +249,12 @@ const COTDataUpload = ({ onDataUploaded }: COTDataUploadProps) => {
               {fileName && (
                 <p className="text-sm opacity-80">File: {fileName}</p>
               )}
+              {uploadStatus === 'success' && summary && (
+                <p className="text-sm opacity-80">
+                  Report week {summary.reportDate} • {summary.markets.length} markets refreshed across the site
+                  {summary.markets.length ? ` (${summary.markets.slice(0, 10).join(', ')}${summary.markets.length > 10 ? '…' : ''})` : ''}
+                </p>
+              )}
             </div>
           </div>
         )}
