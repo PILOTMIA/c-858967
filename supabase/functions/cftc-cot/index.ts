@@ -105,11 +105,19 @@ serve(async (req) => {
     const currencies = (url.searchParams.get("currencies") || "EUR,GBP,JPY,CHF,AUD,CAD,NZD,MXN").split(",").map(c => c.trim().toUpperCase());
 
     const results: Record<string, any> = {};
-    
+
+    // Stored rows (written by the admin COT upload) take priority when they are the
+    // most recent report — that is what makes an upload propagate across the site.
+    const stored = await fetchStored(currencies);
+
     await Promise.all(
       currencies.map(async (currency) => {
         const live = await fetchFromCFTC(currency);
-        if (live) {
+        const db = stored[currency];
+        const pickDb = db && (!live || String(db.reportDate) >= String(live.reportDate || ""));
+        if (pickDb) {
+          results[currency] = db;
+        } else if (live) {
           results[currency] = live;
         } else {
           results[currency] = { ...FALLBACK_DATA[currency], source: "fallback" };
