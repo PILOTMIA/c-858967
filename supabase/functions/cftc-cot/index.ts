@@ -95,6 +95,38 @@ async function fetchFromCFTC(currency: string): Promise<any | null> {
   }
 }
 
+/** Latest stored row per currency from cot_history (admin uploads + weekly sync). */
+async function fetchStored(currencies: string[]): Promise<Record<string, any>> {
+  const out: Record<string, any> = {};
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+    const { data, error } = await supabase
+      .from("cot_history")
+      .select("currency, report_date, long_positions, short_positions, net_position, change_long, change_short, source")
+      .in("currency", currencies)
+      .order("report_date", { ascending: false })
+      .limit(2000);
+    if (error || !data) return out;
+    for (const row of data) {
+      if (out[row.currency]) continue; // first hit is the newest
+      out[row.currency] = {
+        netPosition: Number(row.net_position),
+        long: Number(row.long_positions),
+        short: Number(row.short_positions),
+        weeklyChange: Number(row.change_long ?? 0) - Number(row.change_short ?? 0),
+        reportDate: String(row.report_date).slice(0, 10),
+        source: row.source === "admin_upload" ? "admin_upload" : "stored",
+      };
+    }
+  } catch (e) {
+    console.error("fetchStored failed", e);
+  }
+  return out;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
