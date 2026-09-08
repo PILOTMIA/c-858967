@@ -2,9 +2,10 @@ import { useMemo } from "react";
 import { CheckCircle2, XCircle, ArrowRight, Zap, Shield, Flame } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useSpotMomentum, squeezeCheck } from "@/hooks/useSpotMomentum";
+import { useLatestCOT, latestReportDate, type CotPosition } from "@/hooks/useLatestCOT";
 
-
-const POSITIONS: Record<string, { net: number; weekly: number }> = {
+/** Used only until the stored CFTC report loads. */
+const FALLBACK_POSITIONS: Record<string, { net: number; weekly: number }> = {
   EUR: { net: -38173, weekly: 186 },
   GBP: { net: 43167, weekly: -4742 },
   JPY: { net: -102188, weekly: -25146 },
