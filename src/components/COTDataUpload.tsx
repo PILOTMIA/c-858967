@@ -35,8 +35,11 @@ const COTDataUpload = ({ onDataUploaded }: COTDataUploadProps) => {
   const [fileName, setFileName] = useState<string>('');
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [summary, setSummary] = useState<{ reportDate: string; markets: string[] } | null>(null);
+  const adminKey = useRef('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
   const { setCOTData, setIsDataLoading, setLastUpdated } = useCOTData();
 
   const validatePassword = () => {
@@ -45,7 +48,8 @@ const COTDataUpload = ({ onDataUploaded }: COTDataUploadProps) => {
     
     if (password === correctPassword) {
       setIsAuthenticated(true);
-      setPassword(''); // Clear password from memory immediately
+      adminKey.current = password;
+      setPassword(''); // Clear password from the input
       toast.success('Admin authenticated! You can now upload COT data.');
     } else {
       toast.error('Invalid admin password. Access denied.');
