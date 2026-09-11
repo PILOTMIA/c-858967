@@ -42,7 +42,8 @@ const COTAnalysisContent = () => {
   const dates = [...new Set(latestRows?.map((r) => r.report_date) ?? [])].sort().reverse();
   const latestDate = dates[0];
 
-  const latestByCurrency = new Map<string, (typeof latestRows)[number]>();
+  type WowRow = NonNullable<typeof latestRows>[number];
+  const latestByCurrency = new Map<string, WowRow>();
   for (const row of latestRows ?? []) {
     const current = latestByCurrency.get(row.currency);
     const isVerifiedUpload = row.source === "user_upload_verified" || row.source === "admin_upload";
