@@ -53,8 +53,10 @@ export function useLatestCOT() {
   return useQuery({
     queryKey: COT_QUERY_KEY,
     queryFn: fetchLatestCOT,
-    staleTime: 10 * 60_000,
+    staleTime: 15 * 60_000,
     refetchInterval: 30 * 60_000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
 

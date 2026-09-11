@@ -8,8 +8,7 @@ const WeeklyPlaybookPage = () => {
           Weekly Playbook
         </h1>
         <p className="text-muted-foreground text-base sm:text-lg font-medium max-w-2xl mx-auto">
-          Where each market is likely headed based on the latest COT positioning — and which day of the week it
-          historically moves, from 20 months of daily price data.
+          Top institutional squeezes, live news sentiment, market-moving reports, and 20 months of price rhythm in one weekly decision board.
         </p>
       </div>
 
