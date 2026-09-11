@@ -27,8 +27,16 @@ async function fetchLatestCOT(): Promise<Record<string, CotPosition>> {
   if (error) throw error;
 
   const out: Record<string, CotPosition> = {};
-  for (const row of data ?? []) {
-    if (out[row.currency]) continue; // newest row per market wins
+  const rows = [...(data ?? [])].sort((a, b) => {
+    if (a.currency !== b.currency) return a.currency.localeCompare(b.currency);
+    const aUploaded = a.source === "user_upload_verified" || a.source === "admin_upload";
+    const bUploaded = b.source === "user_upload_verified" || b.source === "admin_upload";
+    if (aUploaded !== bUploaded) return aUploaded ? -1 : 1;
+    return String(b.report_date).localeCompare(String(a.report_date));
+  });
+
+  for (const row of rows) {
+    if (out[row.currency]) continue; // verified uploads win, otherwise newest row wins
     out[row.currency] = {
       net: Number(row.net_position ?? 0),
       weekly: Number(row.change_long ?? 0) - Number(row.change_short ?? 0),

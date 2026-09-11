@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
  *
  * Source: ECB reference rates via Frankfurter (no key, no simulated data).
  */
-const BASKET = ["EUR", "JPY", "GBP", "CHF", "CAD", "AUD", "NZD", "SEK"];
+const BASKET = ["EUR", "JPY", "GBP", "CHF", "CAD", "AUD", "NZD", "MXN", "SEK"];
 
 export interface SpotMomentum {
   /** % strength vs USD over the window, keyed by currency code */
