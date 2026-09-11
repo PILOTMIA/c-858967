@@ -37,7 +37,7 @@ const COTMarketWheel = () => {
       'JPY': { long: 116682, short: 37361, ncLong: 58529, ncShort: 160717 },
       'EUR': { long: 54643, short: 322221, ncLong: 96137, ncShort: 134310 },
       'AUD': { long: 104022, short: 147478, ncLong: 78498, ncShort: 28836 },
-      'MXN': { long: 22083, short: 146774, ncLong: 140084, ncShort: 65722 },
+      'MXN': { long: 0, short: 0, ncLong: 174649, ncShort: 81402 },
       'NZD': { long: 54532, short: 36175, ncLong: 5216, ncShort: 27554 },
       'EURGBP': { long: 128582, short: 455363, ncLong: 130087, ncShort: 211427 },
       'EURJPY': { long: 92004, short: 438903, ncLong: 256854, ncShort: 192839 },

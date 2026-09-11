@@ -30,7 +30,7 @@ const FALLBACK_DATA: Record<string, any> = {
   AUD: { netPosition: 49662, long: 78498, short: 28836, weeklyChange: -4399, reportDate: "2026-09-01", source: "verified_9_1" },
   CAD: { netPosition: -68750, long: 27845, short: 96595, weeklyChange: 3342, reportDate: "2026-09-01", source: "verified_9_1" },
   NZD: { netPosition: -22338, long: 5216, short: 27554, weeklyChange: 9656, reportDate: "2026-09-01", source: "verified_9_1" },
-  MXN: { netPosition: 74362, long: 140084, short: 65722, weeklyChange: 5458, reportDate: "2026-09-01", source: "verified_9_1" },
+  MXN: { netPosition: 93247, long: 174649, short: 81402, weeklyChange: 10865, reportDate: "2026-08-31", source: "user_upload_verified" },
   USD: { netPosition: 7133, long: 16024, short: 8891, weeklyChange: -2056, reportDate: "2026-09-01", source: "verified_9_1" },
   XAU: { netPosition: 136771, long: 149721, short: 12950, weeklyChange: -7976, reportDate: "2026-09-01", source: "verified_9_1" },
   BTC: { netPosition: -7620, long: 4530, short: 12150, weeklyChange: 469, reportDate: "2026-09-01", source: "verified_9_1" },
