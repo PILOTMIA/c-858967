@@ -113,8 +113,8 @@ async function fetchStored(currencies: string[]): Promise<Record<string, any>> {
     if (error || !data) return out;
     const sorted = [...data].sort((a, b) => {
       if (a.currency !== b.currency) return String(a.currency).localeCompare(String(b.currency));
-      const aUploaded = a.source === "user_upload_verified" || a.source === "admin_upload";
-      const bUploaded = b.source === "user_upload_verified" || b.source === "admin_upload";
+      const aUploaded = a.source === "admin_upload" || String(a.source).includes("verified_upload");
+      const bUploaded = b.source === "admin_upload" || String(b.source).includes("verified_upload");
       if (aUploaded !== bUploaded) return aUploaded ? -1 : 1;
       return String(b.report_date).localeCompare(String(a.report_date));
     });
@@ -126,7 +126,7 @@ async function fetchStored(currencies: string[]): Promise<Record<string, any>> {
         short: Number(row.short_positions),
         weeklyChange: Number(row.change_long ?? 0) - Number(row.change_short ?? 0),
         reportDate: String(row.report_date).slice(0, 10),
-        source: row.source === "admin_upload" || row.source === "user_upload_verified" ? row.source : "stored",
+        source: row.source === "admin_upload" || String(row.source).includes("verified_upload") ? row.source : "stored",
       };
     }
   } catch (e) {
@@ -154,7 +154,7 @@ serve(async (req) => {
       currencies.map(async (currency) => {
         const live = await fetchFromCFTC(currency);
         const db = stored[currency];
-        const verifiedUpload = db?.source === "admin_upload" || db?.source === "user_upload_verified";
+        const verifiedUpload = db?.source === "admin_upload" || String(db?.source).includes("verified_upload");
         const pickDb = db && (verifiedUpload || !live || String(db.reportDate) >= String(live.reportDate || ""));
         if (pickDb) {
           results[currency] = db;

@@ -46,8 +46,8 @@ const COTAnalysisContent = () => {
   const latestByCurrency = new Map<string, WowRow>();
   for (const row of latestRows ?? []) {
     const current = latestByCurrency.get(row.currency);
-    const isVerifiedUpload = row.source === "user_upload_verified" || row.source === "admin_upload";
-    const currentIsVerified = current?.source === "user_upload_verified" || current?.source === "admin_upload";
+    const isVerifiedUpload = row.source === "admin_upload" || row.source?.includes("verified_upload");
+    const currentIsVerified = current?.source === "admin_upload" || current?.source?.includes("verified_upload");
     if (!current || (isVerifiedUpload && !currentIsVerified) || (isVerifiedUpload === currentIsVerified && row.report_date > current.report_date)) {
       latestByCurrency.set(row.currency, row);
     }

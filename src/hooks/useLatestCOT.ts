@@ -29,8 +29,8 @@ async function fetchLatestCOT(): Promise<Record<string, CotPosition>> {
   const out: Record<string, CotPosition> = {};
   const rows = [...(data ?? [])].sort((a, b) => {
     if (a.currency !== b.currency) return a.currency.localeCompare(b.currency);
-    const aUploaded = a.source === "user_upload_verified" || a.source === "admin_upload";
-    const bUploaded = b.source === "user_upload_verified" || b.source === "admin_upload";
+    const aUploaded = a.source === "admin_upload" || a.source?.includes("verified_upload");
+    const bUploaded = b.source === "admin_upload" || b.source?.includes("verified_upload");
     if (aUploaded !== bUploaded) return aUploaded ? -1 : 1;
     return String(b.report_date).localeCompare(String(a.report_date));
   });
