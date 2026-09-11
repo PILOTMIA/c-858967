@@ -1,6 +1,10 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useLatestCOT, latestReportDate, type CotPosition } from "@/hooks/useLatestCOT";
+import { useSpotMomentum, squeezeCheck } from "@/hooks/useSpotMomentum";
+import { fetchMarketNews } from "@/services/MarketNewsService";
+import { buildCalendar } from "@/lib/economicCalendar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,7 +13,7 @@ import {
 } from "recharts";
 import {
   TrendingUp, TrendingDown, CalendarClock, Target, Activity, ShieldCheck,
-  ShieldAlert, ShieldX, Sparkles, ChevronDown,
+  ShieldAlert, ShieldX, Sparkles, ChevronDown, Zap, Newspaper, Clock3,
 } from "lucide-react";
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -21,10 +25,6 @@ interface RhythmRow {
   strongestDayDirection: "up" | "down"; strongestDayAvgPct: number;
   seasonal: { month: string; avgPct: number; upRate: number; years: number; history: { year: number; pct: number }[] };
 }
-interface CotRow { netPosition: number; weeklyChange: number; reportDate: string }
-
-const COT_CURRENCIES = "EUR,GBP,JPY,CHF,AUD,CAD,NZD,MXN,USD,XAU,BTC";
-
 const PAIR_LABELS: Record<string, string> = {
   EURUSD: "EURUSD", GBPUSD: "GBPUSD", USDJPY: "USDJPY", USDCHF: "USDCHF",
   AUDUSD: "AUDUSD", USDCAD: "USDCAD", NZDUSD: "NZDUSD", USDMXN: "USDMXN",
@@ -44,27 +44,14 @@ const useRhythm = () =>
     staleTime: 30 * 60 * 1000,
   });
 
-const useCot = () =>
-  useQuery({
-    queryKey: ["playbook-cot"],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke(
-        `cftc-cot?currencies=${COT_CURRENCIES}`,
-      );
-      if (error) throw error;
-      return (data?.data ?? {}) as Record<string, CotRow>;
-    },
-    staleTime: 30 * 60 * 1000,
-  });
-
 // ── Scoring ─────────────────────────────────────────────────────────────────
-function buildSignal(row: RhythmRow, cot: Record<string, CotRow>, scale: number, flowScale: number) {
+function buildSignal(row: RhythmRow, cot: Record<string, CotPosition>, scale: number, flowScale: number) {
   const baseCot = cot[row.base];
   const quoteCot = cot[row.quote];
   const isSelfQuoted = row.base === row.quote; // DXY
 
-  const netOf = (c?: CotRow) => (c ? c.netPosition : 0);
-  const flowOf = (c?: CotRow) => (c ? c.weeklyChange : 0);
+  const netOf = (c?: CotPosition) => c?.net ?? 0;
+  const flowOf = (c?: CotPosition) => c?.weekly ?? 0;
 
   const rawPos = isSelfQuoted ? netOf(baseCot) : netOf(baseCot) - netOf(quoteCot);
   const rawFlow = isSelfQuoted ? flowOf(baseCot) : flowOf(baseCot) - flowOf(quoteCot);
@@ -125,7 +112,14 @@ const verdictStyle = (v: string) =>
 // ── Component ───────────────────────────────────────────────────────────────
 const WeeklyPlaybook = () => {
   const rhythm = useRhythm();
-  const cot = useCot();
+  const cot = useLatestCOT();
+  const spot = useSpotMomentum();
+  const news = useQuery({
+    queryKey: ["weekly-playbook-news"],
+    queryFn: fetchMarketNews,
+    staleTime: 5 * 60_000,
+    refetchInterval: 5 * 60_000,
+  });
   const [filter, setFilter] = useState<"tradeable" | "all" | "major" | "cross" | "other">("tradeable");
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -133,12 +127,41 @@ const WeeklyPlaybook = () => {
     const rows = (rhythm.data ?? []).filter((r) => r.ok);
     const c = cot.data ?? {};
     if (!rows.length || !Object.keys(c).length) return [];
-    const scale = Math.max(...Object.values(c).map((v) => Math.abs(v.netPosition)), 1) * 1.4;
-    const flowScale = Math.max(...Object.values(c).map((v) => Math.abs(v.weeklyChange)), 1) * 1.6;
+    const scale = Math.max(...Object.values(c).map((v) => Math.abs(v.net)), 1) * 1.4;
+    const flowScale = Math.max(...Object.values(c).map((v) => Math.abs(v.weekly)), 1) * 1.6;
     return rows
       .map((r) => buildSignal(r, c, scale, flowScale))
       .sort((a, b) => b.confirmations - a.confirmations || b.conviction - a.conviction);
   }, [rhythm.data, cot.data]);
+
+  const squeezes = useMemo(() => {
+    const momentum = spot.data?.momentum ?? {};
+    return signals
+      .map((signal) => {
+        const priceBias = (momentum[signal.base] ?? 0) - (momentum[signal.quote] ?? 0);
+        const check = squeezeCheck(signal.rawPos, priceBias);
+        return { ...signal, priceBias, isSqueeze: check.squeeze };
+      })
+      .filter((signal) => signal.isSqueeze)
+      .sort((a, b) => Math.abs(b.priceBias) - Math.abs(a.priceBias))
+      .slice(0, 5);
+  }, [signals, spot.data]);
+
+  const sentimentRows = useMemo(() => {
+    const pairScores = news.data?.majorPairs ?? {};
+    return signals
+      .map((signal) => ({ signal, sentiment: pairScores[signal.pair] }))
+      .filter((row) => row.sentiment)
+      .sort((a, b) => Math.abs(b.sentiment.score - 50) - Math.abs(a.sentiment.score - 50))
+      .slice(0, 6);
+  }, [news.data, signals]);
+
+  const upcomingReports = useMemo(() => {
+    const now = Date.now();
+    return buildCalendar(0, 2)
+      .filter((event) => event.when.getTime() >= now && event.impact !== "low")
+      .slice(0, 6);
+  }, []);
 
   const visible = signals.filter((s) =>
     filter === "all" ? true
@@ -148,7 +171,7 @@ const WeeklyPlaybook = () => {
   );
 
   const isLoading = rhythm.isLoading || cot.isLoading;
-  const reportDate = signals[0]?.reportDate;
+  const reportDate = latestReportDate(cot.data) ?? signals[0]?.reportDate;
 
   if (isLoading) {
     return (
@@ -204,6 +227,78 @@ const WeeklyPlaybook = () => {
           </div>
         </div>
       </Card>
+
+      <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]" aria-label="Weekly market intelligence">
+        <Card className="border-border/60 bg-card/80 p-5">
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                <Zap className="h-5 w-5 text-warning" /> Top COT squeezes
+              </h3>
+              <p className="mt-1 text-xs text-muted-foreground">Crowded positioning moving against the latest five-session price trend.</p>
+            </div>
+            <Badge variant="outline">{squeezes.length} active</Badge>
+          </div>
+          {squeezes.length ? (
+            <div className="divide-y divide-border/60">
+              {squeezes.map((item, index) => (
+                <div key={item.pair} className="grid grid-cols-[auto_1fr_auto] items-center gap-3 py-3">
+                  <span className="font-mono text-xs text-muted-foreground">0{index + 1}</span>
+                  <div>
+                    <div className="font-semibold text-foreground">{PAIR_LABELS[item.pair] ?? item.pair}</div>
+                    <div className="text-xs text-muted-foreground">Crowd {item.rawPos >= 0 ? "long" : "short"} · price {item.priceBias >= 0 ? "rising" : "falling"}</div>
+                  </div>
+                  <Badge className={item.priceBias >= 0 ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"}>
+                    {item.priceBias >= 0 ? "LONG" : "SHORT"} {Math.abs(item.priceBias).toFixed(2)}%
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="rounded-md border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">No confirmed crowded-position squeeze is active. That is a valid stand-aside signal.</p>
+          )}
+        </Card>
+
+        <Card className="border-border/60 bg-card/80 p-5">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            <Newspaper className="h-5 w-5 text-primary" /> Live sentiment scores
+          </h3>
+          <p className="mt-1 mb-4 text-xs text-muted-foreground">Current headline direction, refreshed every five minutes.</p>
+          <div className="space-y-3">
+            {sentimentRows.length ? sentimentRows.map(({ signal, sentiment }) => (
+              <div key={signal.pair} className="flex items-center justify-between gap-3">
+                <span className="text-sm font-medium text-foreground">{signal.pair}</span>
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted"><div className="h-full bg-primary" style={{ width: `${Math.max(4, Math.min(100, sentiment.score))}%` }} /></div>
+                  <span className="w-8 text-right font-mono text-xs text-foreground">{Math.round(sentiment.score)}</span>
+                  <Badge variant="outline" className="w-20 justify-center text-[10px]">{sentiment.sentiment}</Badge>
+                </div>
+              </div>
+            )) : <p className="text-sm text-muted-foreground">Live sentiment is refreshing.</p>}
+          </div>
+        </Card>
+      </section>
+
+      <section aria-labelledby="week-ahead-title">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div>
+            <h3 id="week-ahead-title" className="flex items-center gap-2 text-lg font-semibold text-foreground"><CalendarClock className="h-5 w-5 text-primary" /> Reports ahead</h3>
+            <p className="mt-1 text-xs text-muted-foreground">Scheduled releases most likely to interrupt this week’s COT setup.</p>
+          </div>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {upcomingReports.map((event) => (
+            <Card key={event.id} className="border-border/60 bg-card/70 p-4">
+              <div className="flex items-start justify-between gap-2">
+                <div className="text-sm font-semibold text-foreground">{event.title}</div>
+                <Badge variant="outline" className={event.impact === "high" ? "border-destructive/40 text-destructive" : "border-warning/40 text-warning"}>{event.impact}</Badge>
+              </div>
+              <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground"><Clock3 className="h-3.5 w-3.5" /> {event.when.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</div>
+              <div className="mt-2 text-xs text-muted-foreground">Impacts {event.pairs.slice(0, 4).join(" · ")}</div>
+            </Card>
+          ))}
+        </div>
+      </section>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
@@ -326,13 +421,15 @@ const WeeklyPlaybook = () => {
               </div>
 
               {/* Expand */}
-              <button
+              <Button
+                type="button"
+                variant="ghost"
                 onClick={() => setExpanded(open ? null : s.pair)}
                 className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg border border-border/50 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
               >
                 {open ? "Hide" : "Show"} 20-month day-of-week rhythm
                 <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
-              </button>
+              </Button>
 
               {open && (
                 <div className="mt-3 space-y-3">
