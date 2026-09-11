@@ -2,25 +2,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, ArrowRight, ChevronRight } from 'lucide-react';
 import { useCOTData } from './COTDataContext';
+import { latestReportDate, useLatestCOT } from '@/hooks/useLatestCOT';
 
 // Helper function to format currency pairs properly
 const formatCurrencyPair = (currency: string): string => {
-  // Cross pairs
-  if (currency.includes('/')) return currency;
-  if (currency === 'EURJPY') return 'EUR/JPY';
-  if (currency === 'GBPJPY') return 'GBP/JPY';
-  if (currency === 'EURGBP') return 'EUR/GBP';
-  if (currency === 'GBPCAD') return 'GBP/CAD';
-  if (currency === 'AUDJPY') return 'AUD/JPY';
-  if (currency === 'EURAUD') return 'EUR/AUD';
-  if (currency === 'GBPAUD') return 'GBP/AUD';
-  if (currency === 'EURCAD') return 'EUR/CAD';
-  if (currency === 'NZDJPY') return 'NZD/JPY';
-  if (currency === 'CADJPY') return 'CAD/JPY';
-  
-  // USD pairs
+  if (currency.length === 6) return currency;
   const usdBasePairs = ['JPY', 'CAD', 'MXN', 'CHF', 'BRL'];
-  return usdBasePairs.includes(currency) ? `USD/${currency}` : `${currency}/USD`;
+  return usdBasePairs.includes(currency) ? `USD${currency}` : `${currency}USD`;
 };
 
 interface WheelDataItem {
@@ -35,6 +23,8 @@ interface WheelDataItem {
 
 const COTMarketWheel = () => {
   const { cotData, lastUpdated, setSelectedCurrency, setIsDetailModalOpen } = useCOTData();
+  const { data: latestCot } = useLatestCOT();
+  const reportDate = latestReportDate(latestCot);
 
   const handleCurrencyClick = (item: WheelDataItem) => {
     console.log('Currency clicked:', item.currency);
@@ -47,7 +37,7 @@ const COTMarketWheel = () => {
       'JPY': { long: 116682, short: 37361, ncLong: 58529, ncShort: 160717 },
       'EUR': { long: 54643, short: 322221, ncLong: 96137, ncShort: 134310 },
       'AUD': { long: 104022, short: 147478, ncLong: 78498, ncShort: 28836 },
-      'MXN': { long: 22083, short: 146774, ncLong: 140084, ncShort: 65722 },
+      'MXN': { long: 0, short: 0, ncLong: 174649, ncShort: 81402 },
       'NZD': { long: 54532, short: 36175, ncLong: 5216, ncShort: 27554 },
       'EURGBP': { long: 128582, short: 455363, ncLong: 130087, ncShort: 211427 },
       'EURJPY': { long: 92004, short: 438903, ncLong: 256854, ncShort: 192839 },
@@ -61,7 +51,10 @@ const COTMarketWheel = () => {
       'CADJPY': { long: 217584, short: 178946, ncLong: 188562, ncShort: 155124 }
     };
     
-    const data = positionData[item.currency] || { long: 0, short: 0, ncLong: 0, ncShort: 0 };
+    const live = latestCot?.[item.currency];
+    const data = live
+      ? { long: 0, short: 0, ncLong: live.long, ncShort: live.short }
+      : positionData[item.currency] || { long: 0, short: 0, ncLong: 0, ncShort: 0 };
     
     const currencyDetail = {
       currency: item.currency,
@@ -69,7 +62,7 @@ const COTMarketWheel = () => {
       commercialShort: data.short,
       nonCommercialLong: data.ncLong,
       nonCommercialShort: data.ncShort,
-      reportDate: '2026-09-01T00:00:00Z',
+      reportDate: live?.reportDate ? `${live.reportDate}T00:00:00Z` : reportDate ? `${reportDate}T00:00:00Z` : '',
       weeklyChange: item.weeklyChange
     };
     
@@ -88,7 +81,7 @@ const COTMarketWheel = () => {
       { currency: 'CHF', netPosition: -10298, strength: 10298, bias: 'BEARISH', weeklyChange: -1473, color: '#EF4444', type: 'major' },
       { currency: 'AUD', netPosition: 49662, strength: 49662, bias: 'BULLISH', weeklyChange: -4399, color: '#7EBF8E', type: 'major' },
       { currency: 'CAD', netPosition: -68750, strength: 68750, bias: 'BEARISH', weeklyChange: 3342, color: '#EF4444', type: 'major' },
-      { currency: 'MXN', netPosition: 74362, strength: 74362, bias: 'BULLISH', weeklyChange: 5458, color: '#7EBF8E', type: 'major' },
+      { currency: 'MXN', netPosition: 93247, strength: 93247, bias: 'BULLISH', weeklyChange: 10865, color: '#7EBF8E', type: 'major' },
       { currency: 'NZD', netPosition: -22338, strength: 22338, bias: 'BEARISH', weeklyChange: 9656, color: '#EF4444', type: 'major' }
     ];
 
@@ -105,7 +98,35 @@ const COTMarketWheel = () => {
       { currency: 'EURGBP', netPosition: -81340, strength: 81340, bias: 'BEARISH', weeklyChange: 4928, color: '#EF4444', type: 'cross' }
     ];
 
-    return [...majorPairs, ...crossPairs];
+    const liveMajors = majorPairs.map((item) => {
+      const row = latestCot?.[item.currency];
+      if (!row) return item;
+      return {
+        ...item,
+        netPosition: row.net,
+        strength: Math.abs(row.net),
+        bias: row.net > 0 ? 'BULLISH' : row.net < 0 ? 'BEARISH' : 'NEUTRAL',
+        weeklyChange: row.weekly,
+      };
+    });
+
+    const liveCrosses = crossPairs.map((item) => {
+      const base = item.currency.slice(0, 3);
+      const quote = item.currency.slice(3, 6);
+      const baseRow = latestCot?.[base];
+      const quoteRow = latestCot?.[quote];
+      if (!baseRow || !quoteRow) return item;
+      const netPosition = baseRow.net - quoteRow.net;
+      return {
+        ...item,
+        netPosition,
+        strength: Math.abs(netPosition),
+        bias: netPosition > 0 ? 'BULLISH' : netPosition < 0 ? 'BEARISH' : 'NEUTRAL',
+        weeklyChange: baseRow.weekly - quoteRow.weekly,
+      };
+    });
+
+    return [...liveMajors, ...liveCrosses];
   };
 
   const allData = generateData();
@@ -175,7 +196,7 @@ const COTMarketWheel = () => {
           🎯 COT Market Positioning
         </CardTitle>
         <CardDescription className="font-medium">
-          Click any pair to see detailed COT analysis and trading signals. Data from CFTC report Mar 29, 2026 (as of Mar 24).
+          Click any pair to see detailed COT analysis and trading signals{reportDate ? ` from the latest stored CFTC report (${reportDate})` : ''}.
           {lastUpdated && (
             <div className="text-xs text-success mt-1 flex items-center gap-1">
               <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
@@ -214,7 +235,7 @@ const COTMarketWheel = () => {
 
         {/* Market Summary */}
         <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg p-4 border border-primary/20">
-          <h4 className="font-bold text-primary mb-2">Quick Summary - Mar 29, 2026 Report</h4>
+          <h4 className="font-bold text-primary mb-2">Quick Summary{reportDate ? ` — ${reportDate} Report` : ''}</h4>
           <div className="text-sm text-foreground grid grid-cols-2 gap-2">
             <div>
               <span className="text-muted-foreground">Most Bullish:</span>

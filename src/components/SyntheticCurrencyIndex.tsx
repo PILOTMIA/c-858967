@@ -53,7 +53,7 @@ const FALLBACK_COT: Record<string, CurrencyData> = {
   AUD: { netPosition: 49662, long: 78498, short: 28836, weeklyChange: -4399, dealerLong: 104022, dealerShort: 147478, assetManagerLong: 108835, assetManagerShort: 139302, reportDate: "2026-09-01" },
   CAD: { netPosition: -68750, long: 27845, short: 96595, weeklyChange: 3342, dealerLong: 180223, dealerShort: 62264, assetManagerLong: 59172, assetManagerShort: 108716, reportDate: "2026-09-01" },
   NZD: { netPosition: -22338, long: 5216, short: 27554, weeklyChange: 9656, dealerLong: 54532, dealerShort: 36175, assetManagerLong: 12931, assetManagerShort: 9972, reportDate: "2026-09-01" },
-  MXN: { netPosition: 74362, long: 140084, short: 65722, weeklyChange: 5458, dealerLong: 22083, dealerShort: 146774, assetManagerLong: 117879, assetManagerShort: 49802, reportDate: "2026-09-01" },
+  MXN: { netPosition: 93247, long: 174649, short: 81402, weeklyChange: 10865, dealerLong: 0, dealerShort: 0, assetManagerLong: 0, assetManagerShort: 0, reportDate: "2026-08-31", source: "user_upload_verified" },
   USD: { netPosition: 7133, long: 16024, short: 8891, weeklyChange: -2056, dealerLong: 5796, dealerShort: 32811, assetManagerLong: 17667, assetManagerShort: 1426, reportDate: "2026-09-01" },
 
 };
@@ -119,7 +119,7 @@ const SyntheticCurrencyIndex = () => {
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'xkgsugennbdatwmetnxx';
       const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/cftc-cot?currencies=${G10_CURRENCIES.filter(c => c !== 'USD').join(',')}`,
+        `https://${projectId}.supabase.co/functions/v1/cftc-cot?currencies=${G10_CURRENCIES.join(',')}`,
         {
           headers: {
             'Authorization': `Bearer ${anonKey}`,

@@ -1,10 +1,9 @@
 import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, ArrowRight, Flame, Target, Sparkles, Zap } from "lucide-react";
 import { useSpotMomentum, squeezeCheck } from "@/hooks/useSpotMomentum";
+import { useLatestCOT } from "@/hooks/useLatestCOT";
 
 // Tradeable pairs we recommend (majors + key crosses)
 const PAIR_UNIVERSE: { base: string; quote: string }[] = [
@@ -15,6 +14,7 @@ const PAIR_UNIVERSE: { base: string; quote: string }[] = [
   { base: "USD", quote: "JPY" },
   { base: "USD", quote: "CHF" },
   { base: "USD", quote: "CAD" },
+  { base: "USD", quote: "MXN" },
   { base: "EUR", quote: "JPY" },
   { base: "GBP", quote: "JPY" },
   { base: "AUD", quote: "JPY" },
@@ -23,14 +23,6 @@ const PAIR_UNIVERSE: { base: string; quote: string }[] = [
   { base: "EUR", quote: "AUD" },
   { base: "GBP", quote: "AUD" },
 ];
-
-interface HistoryRow {
-  currency: string;
-  report_date: string;
-  net_position: number;
-  long_positions: number;
-  short_positions: number;
-}
 
 const fmt = (v: number) => {
   if (!Number.isFinite(v)) return "—";
@@ -42,44 +34,21 @@ const fmt = (v: number) => {
 
 const COTTradeRecommendations = () => {
   const { data: spot } = useSpotMomentum();
-  const { data: history } = useQuery({
-    queryKey: ["cot-history-recos"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("cot_history")
-        .select("currency, report_date, net_position, long_positions, short_positions")
-        .order("report_date", { ascending: false })
-        .limit(200);
-      if (error) throw error;
-      return (data ?? []) as HistoryRow[];
-    },
-    staleTime: 1000 * 60 * 30,
-  });
+  const { data: latest } = useLatestCOT();
 
   const recommendations = useMemo(() => {
-    if (!history?.length) return [];
+    if (!latest || !Object.keys(latest).length) return [];
 
-    const dates = [...new Set(history.map((r) => r.report_date))].sort().reverse();
-    const latest = dates[0];
-    const prior = dates[1];
-    if (!latest) return [];
-
-    const byCurrencyLatest = new Map(history.filter((r) => r.report_date === latest).map((r) => [r.currency, r]));
-    const byCurrencyPrior = new Map(history.filter((r) => r.report_date === prior).map((r) => [r.currency, r]));
-
-    const usd = { net_position: 0 } as any;
+    const usd = latest.USD ?? { net: 0, weekly: 0 };
 
     return PAIR_UNIVERSE.map(({ base, quote }) => {
-      const b = base === "USD" ? usd : byCurrencyLatest.get(base);
-      const q = quote === "USD" ? usd : byCurrencyLatest.get(quote);
+      const b = base === "USD" ? usd : latest[base];
+      const q = quote === "USD" ? usd : latest[quote];
       if (!b || !q) return null;
 
-      const bPrior = base === "USD" ? usd : byCurrencyPrior.get(base);
-      const qPrior = quote === "USD" ? usd : byCurrencyPrior.get(quote);
-
-      const netSpread = (b.net_position ?? 0) - (q.net_position ?? 0);
-      const baseFlow = bPrior ? (b.net_position ?? 0) - (bPrior.net_position ?? 0) : 0;
-      const quoteFlow = qPrior ? (q.net_position ?? 0) - (qPrior.net_position ?? 0) : 0;
+      const netSpread = (b.net ?? 0) - (q.net ?? 0);
+      const baseFlow = b.weekly ?? 0;
+      const quoteFlow = q.weekly ?? 0;
       const flowSpread = baseFlow - quoteFlow;
 
       // Conviction: pure positioning (60%) + recent flow alignment (40%), normalized
@@ -123,7 +92,7 @@ const COTTradeRecommendations = () => {
     })
       .filter((x): x is NonNullable<typeof x> => !!x)
       .sort((a, b) => Number(b.squeeze) - Number(a.squeeze) || b.conviction - a.conviction);
-  }, [history, spot]);
+  }, [latest, spot]);
 
   const top = recommendations.filter((r) => r.direction !== "WAIT").slice(0, 6);
   const wait = recommendations.filter((r) => r.direction === "WAIT").slice(0, 4);

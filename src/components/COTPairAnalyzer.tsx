@@ -6,6 +6,7 @@ import { TrendingUp, TrendingDown, ArrowRight, Zap, Shield, Building2, BarChart3
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, LineChart, Line, CartesianGrid, Legend } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { latestReportDate, useLatestCOT } from "@/hooks/useLatestCOT";
 
 // COT positions from CFTC TFF report, August 11, 2026 (Leveraged Funds)
 interface CurrencyPositioning {
@@ -30,7 +31,7 @@ const COT_POSITIONS: Record<string, CurrencyPositioning> = {
   CHF: { netPosition: -10298, long: 12305, short: 22603, sentiment: 'BEARISH', weeklyChange: -1473, dealerLong: 64678, dealerShort: 8935, dealerWeeklyChange: 7042, assetManagerLong: 12689, assetManagerShort: 44806, assetManagerWeeklyChange: -3462 },
   AUD: { netPosition: 49662, long: 78498, short: 28836, sentiment: 'BULLISH', weeklyChange: -4399, dealerLong: 104022, dealerShort: 147478, dealerWeeklyChange: -5413, assetManagerLong: 108835, assetManagerShort: 139302, assetManagerWeeklyChange: 14960 },
   CAD: { netPosition: -68750, long: 27845, short: 96595, sentiment: 'BEARISH', weeklyChange: 3342, dealerLong: 180223, dealerShort: 62264, dealerWeeklyChange: -6971, assetManagerLong: 59172, assetManagerShort: 108716, assetManagerWeeklyChange: 9399 },
-  MXN: { netPosition: 74362, long: 140084, short: 65722, sentiment: 'BULLISH', weeklyChange: 5458, dealerLong: 22083, dealerShort: 146774, dealerWeeklyChange: -4614, assetManagerLong: 117879, assetManagerShort: 49802, assetManagerWeeklyChange: -513 },
+  MXN: { netPosition: 93247, long: 174649, short: 81402, sentiment: 'BULLISH', weeklyChange: 10865, dealerLong: 0, dealerShort: 0, dealerWeeklyChange: 0, assetManagerLong: 0, assetManagerShort: 0, assetManagerWeeklyChange: 0 },
   NZD: { netPosition: -22338, long: 5216, short: 27554, sentiment: 'BEARISH', weeklyChange: 9656, dealerLong: 54532, dealerShort: 36175, dealerWeeklyChange: -12382, assetManagerLong: 12931, assetManagerShort: 9972, assetManagerWeeklyChange: 2529 },
   USD: { netPosition: 7133, long: 16024, short: 8891, sentiment: 'BULLISH', weeklyChange: -2056, dealerLong: 5796, dealerShort: 32811, dealerWeeklyChange: 138, assetManagerLong: 17667, assetManagerShort: 1426, assetManagerWeeklyChange: 2223 },
 };
@@ -72,6 +73,24 @@ const COTPairAnalyzer = () => {
   const [quoteCurrency, setQuoteCurrency] = useState('JPY');
   const [us10yData, setUs10yData] = useState(US10Y_FALLBACK);
   const [us10ySource, setUs10ySource] = useState<'fallback' | 'fred'>('fallback');
+  const { data: latestCot } = useLatestCOT();
+  const reportDate = latestReportDate(latestCot);
+  const positions = useMemo(() => {
+    const merged = { ...COT_POSITIONS };
+    for (const [currency, row] of Object.entries(latestCot ?? {})) {
+      const prior = merged[currency];
+      if (!prior) continue;
+      merged[currency] = {
+        ...prior,
+        netPosition: row.net,
+        long: row.long,
+        short: row.short,
+        weeklyChange: row.weekly,
+        sentiment: row.net > 0 ? 'BULLISH' : row.net < 0 ? 'BEARISH' : 'NEUTRAL',
+      };
+    }
+    return merged;
+  }, [latestCot]);
 
   // Live historical net positions from cot_history (last ~10 reports)
   const { data: historicalNet = {} } = useQuery({
@@ -133,8 +152,8 @@ const COTPairAnalyzer = () => {
   }, [isUSDPair]);
 
   const analysis = useMemo(() => {
-    const base = COT_POSITIONS[baseCurrency];
-    const quote = COT_POSITIONS[quoteCurrency];
+    const base = positions[baseCurrency];
+    const quote = positions[quoteCurrency];
     if (!base || !quote) return null;
 
     const maxPos = 100000;
@@ -173,7 +192,7 @@ const COTPairAnalyzer = () => {
       base: { ...base, currency: baseCurrency },
       quote: { ...quote, currency: quoteCurrency },
     };
-  }, [baseCurrency, quoteCurrency]);
+  }, [baseCurrency, quoteCurrency, positions]);
 
   const formatContracts = (n: number) => {
     if (Math.abs(n) >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
@@ -254,7 +273,7 @@ const COTPairAnalyzer = () => {
           COT Pair Analyzer
         </CardTitle>
         <CardDescription className="text-muted-foreground">
-          Compare institutional positioning between any two currencies. CFTC report May 5, 2026 (as of April 28).
+          Compare institutional positioning between any two currencies using the latest stored CFTC report{reportDate ? ` (${reportDate})` : ''}.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -399,7 +418,9 @@ const COTPairAnalyzer = () => {
                     <Line type="monotone" dataKey={quoteCurrency} stroke="hsl(var(--chart-5))" strokeWidth={2} dot={{ fill: 'hsl(var(--chart-5))' }} />
                   </LineChart>
                 </ResponsiveContainer>
-                <p className="text-[10px] text-muted-foreground mt-2 text-center">CFTC Leveraged Funds net position • March 24 – April 28, 2026</p>
+                <p className="text-[10px] text-muted-foreground mt-2 text-center">
+                  CFTC Leveraged Funds net position{reportDate ? ` • Latest stored report ${reportDate}` : ''}
+                </p>
               </div>
             )}
 
@@ -583,7 +604,7 @@ const COTPairAnalyzer = () => {
 
             <div className="text-center">
               <p className="text-xs text-muted-foreground">
-                Data: CFTC Financial Traders Report • Released May 5, 2026 • Positions as of April 28, 2026
+                Data: latest stored CFTC Financial Traders Report{reportDate ? ` • Positions as of ${reportDate}` : ''}
               </p>
             </div>
           </>

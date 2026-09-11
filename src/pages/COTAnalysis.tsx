@@ -30,7 +30,7 @@ const COTAnalysisContent = () => {
     queryFn: async () => {
       const { data } = await supabase
         .from("cot_history")
-        .select("currency, report_date, net_position, change_long, change_short")
+        .select("currency, report_date, net_position, change_long, change_short, source")
         .order("report_date", { ascending: false })
         .limit(100);
       return data ?? [];
@@ -41,13 +41,21 @@ const COTAnalysisContent = () => {
   // Build WOW changes from latest report date
   const dates = [...new Set(latestRows?.map((r) => r.report_date) ?? [])].sort().reverse();
   const latestDate = dates[0];
-  const prevDate = dates[1];
 
-  const wowChanges = latestRows
-    ?.filter((r) => r.report_date === latestDate && !["MXN"].includes(r.currency))
+  type WowRow = NonNullable<typeof latestRows>[number];
+  const latestByCurrency = new Map<string, WowRow>();
+  for (const row of latestRows ?? []) {
+    const current = latestByCurrency.get(row.currency);
+    const isVerifiedUpload = row.source === "admin_upload" || row.source?.includes("verified_upload");
+    const currentIsVerified = current?.source === "admin_upload" || current?.source?.includes("verified_upload");
+    if (!current || (isVerifiedUpload && !currentIsVerified) || (isVerifiedUpload === currentIsVerified && row.report_date > current.report_date)) {
+      latestByCurrency.set(row.currency, row);
+    }
+  }
+
+  const wowChanges = [...latestByCurrency.values()]
     .map((r) => {
-      const prev = latestRows?.find((p) => p.currency === r.currency && p.report_date === prevDate);
-      const change = prev ? r.net_position - prev.net_position : (r.change_long ?? 0) - (r.change_short ?? 0);
+      const change = (r.change_long ?? 0) - (r.change_short ?? 0);
       return {
         currency: r.currency,
         change,
@@ -55,7 +63,7 @@ const COTAnalysisContent = () => {
         note: getNote(r.net_position, change),
       };
     })
-    .sort((a, b) => b.change - a.change) ?? [];
+    .sort((a, b) => b.change - a.change);
 
   const infoCards = [
     { icon: Building2, title: 'Commercial Traders', label: 'Institutions', desc: 'Banks, hedge funds, and large financial institutions', accent: 'text-primary' },

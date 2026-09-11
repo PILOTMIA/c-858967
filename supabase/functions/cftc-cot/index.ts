@@ -30,7 +30,7 @@ const FALLBACK_DATA: Record<string, any> = {
   AUD: { netPosition: 49662, long: 78498, short: 28836, weeklyChange: -4399, reportDate: "2026-09-01", source: "verified_9_1" },
   CAD: { netPosition: -68750, long: 27845, short: 96595, weeklyChange: 3342, reportDate: "2026-09-01", source: "verified_9_1" },
   NZD: { netPosition: -22338, long: 5216, short: 27554, weeklyChange: 9656, reportDate: "2026-09-01", source: "verified_9_1" },
-  MXN: { netPosition: 74362, long: 140084, short: 65722, weeklyChange: 5458, reportDate: "2026-09-01", source: "verified_9_1" },
+  MXN: { netPosition: 93247, long: 174649, short: 81402, weeklyChange: 10865, reportDate: "2026-08-31", source: "user_upload_verified" },
   USD: { netPosition: 7133, long: 16024, short: 8891, weeklyChange: -2056, reportDate: "2026-09-01", source: "verified_9_1" },
   XAU: { netPosition: 136771, long: 149721, short: 12950, weeklyChange: -7976, reportDate: "2026-09-01", source: "verified_9_1" },
   BTC: { netPosition: -7620, long: 4530, short: 12150, weeklyChange: 469, reportDate: "2026-09-01", source: "verified_9_1" },
@@ -111,15 +111,22 @@ async function fetchStored(currencies: string[]): Promise<Record<string, any>> {
       .order("report_date", { ascending: false })
       .limit(2000);
     if (error || !data) return out;
-    for (const row of data) {
-      if (out[row.currency]) continue; // first hit is the newest
+    const sorted = [...data].sort((a, b) => {
+      if (a.currency !== b.currency) return String(a.currency).localeCompare(String(b.currency));
+      const aUploaded = a.source === "admin_upload" || String(a.source).includes("verified_upload");
+      const bUploaded = b.source === "admin_upload" || String(b.source).includes("verified_upload");
+      if (aUploaded !== bUploaded) return aUploaded ? -1 : 1;
+      return String(b.report_date).localeCompare(String(a.report_date));
+    });
+    for (const row of sorted) {
+      if (out[row.currency]) continue; // verified uploads win, otherwise newest row wins
       out[row.currency] = {
         netPosition: Number(row.net_position),
         long: Number(row.long_positions),
         short: Number(row.short_positions),
         weeklyChange: Number(row.change_long ?? 0) - Number(row.change_short ?? 0),
         reportDate: String(row.report_date).slice(0, 10),
-        source: row.source === "admin_upload" ? "admin_upload" : "stored",
+        source: row.source === "admin_upload" || String(row.source).includes("verified_upload") ? row.source : "stored",
       };
     }
   } catch (e) {
@@ -147,7 +154,8 @@ serve(async (req) => {
       currencies.map(async (currency) => {
         const live = await fetchFromCFTC(currency);
         const db = stored[currency];
-        const pickDb = db && (!live || String(db.reportDate) >= String(live.reportDate || ""));
+        const verifiedUpload = db?.source === "admin_upload" || String(db?.source).includes("verified_upload");
+        const pickDb = db && (verifiedUpload || !live || String(db.reportDate) >= String(live.reportDate || ""));
         if (pickDb) {
           results[currency] = db;
         } else if (live) {

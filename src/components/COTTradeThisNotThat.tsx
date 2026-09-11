@@ -14,6 +14,7 @@ const FALLBACK_POSITIONS: Record<string, { net: number; weekly: number }> = {
   NZD: { net: -22338, weekly: 9656 },
   CHF: { net: -10298, weekly: -1473 },
   USD: { net: 7133, weekly: -2056 },
+  MXN: { net: 93247, weekly: 10865 },
 };
 
 interface TradeIdea {
@@ -35,6 +36,7 @@ const PAIR_MAP: [string, string, string][] = [
   ["GBPUSD", "GBP", "USD"],
   ["USDJPY", "USD", "JPY"],
   ["USDCAD", "USD", "CAD"],
+  ["USDMXN", "USD", "MXN"],
   ["AUDUSD", "AUD", "USD"],
   ["NZDUSD", "NZD", "USD"],
   ["USDCHF", "USD", "CHF"],
