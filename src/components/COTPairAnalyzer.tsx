@@ -418,7 +418,9 @@ const COTPairAnalyzer = () => {
                     <Line type="monotone" dataKey={quoteCurrency} stroke="hsl(var(--chart-5))" strokeWidth={2} dot={{ fill: 'hsl(var(--chart-5))' }} />
                   </LineChart>
                 </ResponsiveContainer>
-                <p className="text-[10px] text-muted-foreground mt-2 text-center">CFTC Leveraged Funds net position • March 24 – April 28, 2026</p>
+                <p className="text-[10px] text-muted-foreground mt-2 text-center">
+                  CFTC Leveraged Funds net position{reportDate ? ` • Latest stored report ${reportDate}` : ''}
+                </p>
               </div>
             )}
 
@@ -602,7 +604,7 @@ const COTPairAnalyzer = () => {
 
             <div className="text-center">
               <p className="text-xs text-muted-foreground">
-                Data: CFTC Financial Traders Report • Released May 5, 2026 • Positions as of April 28, 2026
+                Data: latest stored CFTC Financial Traders Report{reportDate ? ` • Positions as of ${reportDate}` : ''}
               </p>
             </div>
           </>
