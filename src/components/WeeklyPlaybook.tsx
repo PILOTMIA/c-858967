@@ -150,9 +150,14 @@ const WeeklyPlaybook = () => {
   const sentimentRows = useMemo(() => {
     const pairScores = news.data?.majorPairs ?? {};
     return signals
-      .map((signal) => ({ signal, sentiment: pairScores[signal.pair] }))
+      .map((signal) => {
+        const sentiment = pairScores[signal.pair];
+        const rawScore = Number(sentiment?.score ?? 0);
+        const score = Math.abs(rawScore) <= 1 ? rawScore * 100 : rawScore;
+        return { signal, sentiment, score };
+      })
       .filter((row) => row.sentiment)
-      .sort((a, b) => Math.abs(b.sentiment.score - 50) - Math.abs(a.sentiment.score - 50))
+      .sort((a, b) => Math.abs(b.score) - Math.abs(a.score))
       .slice(0, 6);
   }, [news.data, signals]);
 
@@ -265,12 +270,12 @@ const WeeklyPlaybook = () => {
           </h3>
           <p className="mt-1 mb-4 text-xs text-muted-foreground">Current headline direction, refreshed every five minutes.</p>
           <div className="space-y-3">
-            {sentimentRows.length ? sentimentRows.map(({ signal, sentiment }) => (
+            {sentimentRows.length ? sentimentRows.map(({ signal, sentiment, score }) => (
               <div key={signal.pair} className="flex items-center justify-between gap-3">
                 <span className="text-sm font-medium text-foreground">{signal.pair}</span>
                 <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted"><div className="h-full bg-primary" style={{ width: `${Math.max(4, Math.min(100, sentiment.score))}%` }} /></div>
-                  <span className="w-8 text-right font-mono text-xs text-foreground">{Math.round(sentiment.score)}</span>
+                  <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted"><div className="h-full bg-primary" style={{ width: `${Math.max(4, Math.min(100, Math.abs(score)))}%` }} /></div>
+                  <span className="w-12 text-right font-mono text-xs text-foreground">{score > 0 ? "+" : ""}{Math.round(score)}</span>
                   <Badge variant="outline" className="w-20 justify-center text-[10px]">{sentiment.sentiment}</Badge>
                 </div>
               </div>
