@@ -10,9 +10,9 @@ import COTDataHealthBanner from "@/components/COTDataHealthBanner";
 import PageHeader from "@/components/PageHeader";
 import { COTDataProvider, useCOTData } from "@/components/COTDataContext";
 import { TrendingUp, Users, Building2, ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { latestHistoryRows, useCOTHistory } from "@/hooks/useCOTHistory";
+import COTFreshnessBadge from "@/components/COTFreshnessBadge";
 
 const getNote = (net: number, change: number) => {
   if (change > 5000) return net > 0 ? 'Adding longs' : 'Shorts covering';
@@ -24,34 +24,13 @@ const getNote = (net: number, change: number) => {
 const COTAnalysisContent = () => {
   const { selectedCurrency, isDetailModalOpen, setIsDetailModalOpen } = useCOTData();
 
-  // Fetch latest two weeks from DB for WOW changes
-  const { data: latestRows } = useQuery({
-    queryKey: ["cot-wow"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("cot_history")
-        .select("currency, report_date, net_position, change_long, change_short, source")
-        .order("report_date", { ascending: false })
-        .limit(100);
-      return data ?? [];
-    },
-    staleTime: 1000 * 60 * 30,
-  });
+  const { data: latestRows } = useCOTHistory();
 
   // Build WOW changes from latest report date
   const dates = [...new Set(latestRows?.map((r) => r.report_date) ?? [])].sort().reverse();
   const latestDate = dates[0];
 
-  type WowRow = NonNullable<typeof latestRows>[number];
-  const latestByCurrency = new Map<string, WowRow>();
-  for (const row of latestRows ?? []) {
-    const current = latestByCurrency.get(row.currency);
-    const isVerifiedUpload = row.source === "admin_upload" || row.source?.includes("verified_upload");
-    const currentIsVerified = current?.source === "admin_upload" || current?.source?.includes("verified_upload");
-    if (!current || (isVerifiedUpload && !currentIsVerified) || (isVerifiedUpload === currentIsVerified && row.report_date > current.report_date)) {
-      latestByCurrency.set(row.currency, row);
-    }
-  }
+  const latestByCurrency = latestHistoryRows(latestRows);
 
   const wowChanges = [...latestByCurrency.values()]
     .map((r) => {
@@ -83,11 +62,12 @@ const COTAnalysisContent = () => {
       <COTDetailModal open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen} data={selectedCurrency} />
 
       <div className="min-h-screen">
-        <div className="cot-readable max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-16 space-y-10">
+        <div className="cot-readable hq-page space-y-8">
           <PageHeader
             eyebrow="Institutional Positioning"
             title="COT Analysis"
             subtitle="Commitment of Traders data — insights into institutional and retail positioning, refreshed every Friday from the CFTC."
+            actions={<COTFreshnessBadge />}
           />
 
 
@@ -97,7 +77,7 @@ const COTAnalysisContent = () => {
           {/* Week-over-Week Changes Card */}
 
           {wowChanges.length > 0 && (
-            <div className="rounded-2xl border border-border/40 bg-card/40 backdrop-blur-sm p-6 shadow-elegant">
+            <div className="hq-panel p-5 sm:p-6">
               <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
                 <div>
                   <h2 className="font-display-hero text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
@@ -118,7 +98,7 @@ const COTAnalysisContent = () => {
                   return (
                     <div
                       key={item.currency}
-                      className={`rounded-xl p-3 border text-center transition-all hover:scale-[1.03] hover:shadow-md ${
+                      className={`rounded-sm p-3 border text-center transition-colors ${
                         isPositive
                           ? 'bg-gradient-to-br from-success/[0.12] to-success/[0.04] border-success/30 hover:border-success/50'
                           : 'bg-gradient-to-br from-destructive/[0.12] to-destructive/[0.04] border-destructive/30 hover:border-destructive/50'
@@ -141,11 +121,11 @@ const COTAnalysisContent = () => {
 
           {/* Grouped sections — tabbed to reduce visual load */}
           <Tabs defaultValue="signals" className="w-full">
-            <TabsList className="w-full flex flex-wrap h-auto gap-1 rounded-2xl bg-muted/40 p-1.5">
-              <TabsTrigger value="signals" className="flex-1 min-w-[130px] rounded-xl py-2.5 text-sm">What to Trade</TabsTrigger>
-              <TabsTrigger value="positioning" className="flex-1 min-w-[130px] rounded-xl py-2.5 text-sm">Positioning</TabsTrigger>
-              <TabsTrigger value="pairs" className="flex-1 min-w-[130px] rounded-xl py-2.5 text-sm">Pair Tools</TabsTrigger>
-              <TabsTrigger value="learn" className="flex-1 min-w-[130px] rounded-xl py-2.5 text-sm">Learn</TabsTrigger>
+            <TabsList className="w-full flex flex-wrap h-auto gap-1 rounded-sm border border-border/60 bg-card p-1.5">
+              <TabsTrigger value="signals" className="flex-1 min-w-[130px] rounded-sm py-2.5 text-sm">What to Trade</TabsTrigger>
+              <TabsTrigger value="positioning" className="flex-1 min-w-[130px] rounded-sm py-2.5 text-sm">Positioning</TabsTrigger>
+              <TabsTrigger value="pairs" className="flex-1 min-w-[130px] rounded-sm py-2.5 text-sm">Pair Tools</TabsTrigger>
+              <TabsTrigger value="learn" className="flex-1 min-w-[130px] rounded-sm py-2.5 text-sm">Learn</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signals" className="mt-6 space-y-10 focus-visible:outline-none">
