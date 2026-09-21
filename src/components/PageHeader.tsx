@@ -8,14 +8,14 @@ interface PageHeaderProps {
 }
 
 const PageHeader = ({ eyebrow, title, subtitle, actions }: PageHeaderProps) => (
-  <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between animate-fade-in">
+  <header className="mb-6 flex flex-col gap-4 border-b border-border/70 pb-5 sm:flex-row sm:items-end sm:justify-between animate-fade-in">
     <div className="space-y-2">
       {eyebrow && (
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
+        <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">
           {eyebrow}
         </p>
       )}
-      <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground">
+      <h1 className="font-display text-3xl font-black uppercase text-foreground sm:text-4xl lg:text-5xl">
         {title}
       </h1>
       {subtitle && (

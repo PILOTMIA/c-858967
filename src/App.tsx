@@ -61,7 +61,7 @@ const App = () => (
           <div className="min-h-screen bg-background relative">
             <div className="app-ambient-bg" aria-hidden="true" />
             <TradingViewBanner />
-            <div className="pt-[46px]">
+            <div className="pt-[46px] lg:pl-[72px]">
               <TermsAgreementModal />
               <FirstTimeUserTutorial />
               <AppNavigation />

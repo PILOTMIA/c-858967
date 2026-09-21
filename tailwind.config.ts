@@ -71,9 +71,9 @@ export default {
         "nav-green": "hsl(var(--nav-green))",
       },
       borderRadius: {
-        lg: "1rem",
-        md: "0.75rem",
-        sm: "0.5rem",
+        lg: "0.5rem",
+        md: "0.375rem",
+        sm: "0.25rem",
       },
       animation: {
         "fade-in": "fade-in 0.5s ease-out",
