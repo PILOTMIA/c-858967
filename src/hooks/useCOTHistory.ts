@@ -41,7 +41,9 @@ export function latestHistoryRows(rows?: CotHistoryRow[]) {
     const current = latest.get(row.currency);
     const verified = row.source?.includes("verified_upload") || row.source === "admin_upload";
     const currentVerified = current?.source?.includes("verified_upload") || current?.source === "admin_upload";
-    if (!current || (verified && !currentVerified) || (verified === currentVerified && row.report_date > current.report_date)) {
+    const newer = !current || row.report_date > current.report_date;
+    const sameDateVerified = current && row.report_date === current.report_date && verified && !currentVerified;
+    if (newer || sameDateVerified) {
       latest.set(row.currency, row);
     }
   }

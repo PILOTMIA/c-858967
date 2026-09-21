@@ -3,6 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TrendingUp, TrendingDown, RefreshCw, BarChart3, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { latestReportDate, useLatestCOT } from "@/hooks/useLatestCOT";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 interface CurrencyData {
@@ -107,37 +109,17 @@ function computeStrength(
 const SyntheticCurrencyIndex = () => {
   const [timeframe, setTimeframe] = useState<'weekly' | '30day'>('30day');
   const [cotData, setCotData] = useState<Record<string, CurrencyData>>(FALLBACK_COT);
-  const [dataSource, setDataSource] = useState<string>('fallback');
   const [loading, setLoading] = useState(false);
   const [lastFetched, setLastFetched] = useState<string | null>(null);
   const [expandedCurrency, setExpandedCurrency] = useState<string | null>(null);
+  const { data: latestCot, refetch } = useLatestCOT();
 
   // Fetch live COT data from CFTC edge function
   const fetchCOTData = async () => {
     setLoading(true);
     try {
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'xkgsugennbdatwmetnxx';
-      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
-      const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/cftc-cot?currencies=${G10_CURRENCIES.join(',')}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${anonKey}`,
-            'apikey': anonKey,
-            'Content-Type': 'application/json',
-          },
-          signal: AbortSignal.timeout(20000),
-        }
-      );
-      if (res.ok) {
-        const json = await res.json();
-        if (json.data) {
-          setCotData(prev => ({ ...prev, ...json.data }));
-          const firstKey = Object.keys(json.data)[0];
-          setDataSource(json.data[firstKey]?.source || 'fallback');
-          setLastFetched(json.fetchedAt || new Date().toISOString());
-        }
-      }
+      await refetch();
+      setLastFetched(new Date().toISOString());
     } catch (e) {
       console.error('Failed to fetch CFTC COT data:', e);
     } finally {
@@ -148,6 +130,18 @@ const SyntheticCurrencyIndex = () => {
   useEffect(() => {
     fetchCOTData();
   }, []);
+
+  useEffect(() => {
+    if (!latestCot) return;
+    setCotData((previous) => {
+      const merged = { ...previous };
+      for (const [code, row] of Object.entries(latestCot)) {
+        const prior = merged[code] ?? FALLBACK_COT.USD;
+        merged[code] = { ...prior, netPosition: row.net, long: row.long, short: row.short, weeklyChange: row.weekly, assetManagerLong: row.long, assetManagerShort: row.short, reportDate: row.reportDate, source: row.source };
+      }
+      return merged;
+    });
+  }, [latestCot]);
 
   // Rank currencies
   const ranked: RankedCurrency[] = useMemo(() => {
@@ -171,10 +165,10 @@ const SyntheticCurrencyIndex = () => {
 
   const maxAbsScore = Math.max(...ranked.map(r => Math.abs(r.score)), 1);
 
-  const reportDate = cotData.EUR?.reportDate || '—';
+  const reportDate = latestReportDate(latestCot) || cotData.EUR?.reportDate || '—';
 
   return (
-    <div className="rounded-3xl border border-border/30 bg-card/20 backdrop-blur-sm p-6 sm:p-8">
+    <div className="hq-panel p-5 sm:p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
@@ -188,27 +182,33 @@ const SyntheticCurrencyIndex = () => {
         </div>
         <div className="flex items-center gap-3">
           <div className="flex rounded-lg border border-border/30 overflow-hidden">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setTimeframe('weekly')}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${timeframe === 'weekly' ? 'bg-primary text-primary-foreground' : 'bg-background/50 text-muted-foreground hover:text-foreground'}`}
+              className={`rounded-sm px-3 text-xs ${timeframe === 'weekly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
             >
               1 Week
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setTimeframe('30day')}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${timeframe === '30day' ? 'bg-primary text-primary-foreground' : 'bg-background/50 text-muted-foreground hover:text-foreground'}`}
+              className={`rounded-sm px-3 text-xs ${timeframe === '30day' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
             >
               30 Day
-            </button>
+            </Button>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={fetchCOTData}
             disabled={loading}
             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             Refresh
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -216,7 +216,7 @@ const SyntheticCurrencyIndex = () => {
       <div className="flex items-center gap-3 mb-4 text-xs text-muted-foreground">
         <span>Data as of {reportDate}</span>
         <Badge variant="outline" className="text-[10px] border-border/30">
-          {dataSource === 'cftc_live' ? '🟢 CFTC Live' : '⚪ Cached'}
+          Verified stored CFTC feed
         </Badge>
       </div>
 

@@ -29,14 +29,16 @@ async function fetchLatestCOT(): Promise<Record<string, CotPosition>> {
   const out: Record<string, CotPosition> = {};
   const rows = [...(data ?? [])].sort((a, b) => {
     if (a.currency !== b.currency) return a.currency.localeCompare(b.currency);
+    const dateOrder = String(b.report_date).localeCompare(String(a.report_date));
+    if (dateOrder !== 0) return dateOrder;
     const aUploaded = a.source === "admin_upload" || a.source?.includes("verified_upload");
     const bUploaded = b.source === "admin_upload" || b.source?.includes("verified_upload");
     if (aUploaded !== bUploaded) return aUploaded ? -1 : 1;
-    return String(b.report_date).localeCompare(String(a.report_date));
+    return 0;
   });
 
   for (const row of rows) {
-    if (out[row.currency]) continue; // verified uploads win, otherwise newest row wins
+    if (out[row.currency]) continue; // newest report wins; a verified upload wins only for the same date
     out[row.currency] = {
       net: Number(row.net_position ?? 0),
       weekly: Number(row.change_long ?? 0) - Number(row.change_short ?? 0),
