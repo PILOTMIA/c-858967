@@ -7,7 +7,12 @@ const corsHeaders = {
 };
 
 // All instruments we expect to have weekly COT data for
-const EXPECTED = ["EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "NZD", "MXN", "USD", "XAU", "BTC"];
+const EXPECTED = [
+  "EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "NZD", "MXN", "USD",
+  "XAU", "XAG", "HG", "XPT", "WTI", "NG", "BTC",
+  "CORN", "WHEAT", "SOYBEAN", "SUGAR", "COTTON", "COFFEE", "COCOA", "CATTLE", "HOGS",
+  "SP500", "NASDAQ", "VIX",
+];
 
 // CFTC publishes weekly; allow up to 10 days before flagging stale (cron runs Fri+Sat)
 const STALE_DAYS = 10;
@@ -107,7 +112,7 @@ serve(async (req) => {
       overall,
       ...counts,
       instruments,
-      next_cron_runs_utc: ["Fri 21:00 UTC", "Sat 16:00 UTC"],
+      next_cron_runs_utc: ["Daily 15:00 UTC (08:00 Phoenix)"],
     };
 
     return new Response(JSON.stringify(body), {
