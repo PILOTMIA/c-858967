@@ -63,15 +63,11 @@ const GoldCOTSummary = () => {
   const longChange = latest?.change_long ?? 0;
   const shortChange = latest?.change_short ?? 0;
   const totalContracts = (latest?.long_positions ?? 0) + (latest?.short_positions ?? 0);
-  const longPct = totalContracts > 0 ? ((latest!.long_positions / totalContracts) * 100) : 0;
+  const longPct = totalContracts > 0 && latest ? ((latest.long_positions / totalContracts) * 100) : 0;
   const shortPct = 100 - longPct;
 
   return (
     <Card className="relative rounded-2xl border border-warning/25 bg-gradient-to-br from-warning/[0.05] via-card/30 to-card/40 backdrop-blur-md shadow-sm overflow-hidden">
-      <div
-        className="absolute inset-0 pointer-events-none opacity-30"
-        style={{ background: "radial-gradient(circle at 80% 0%, hsl(45 93% 47% / 0.18), transparent 55%)" }}
-      />
       <CardHeader className="relative">
         <div className="flex items-start justify-between flex-wrap gap-2">
           <div>

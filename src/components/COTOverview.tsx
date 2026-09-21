@@ -186,7 +186,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                     commercialShort: mostBullish.commercialShort,
                     nonCommercialLong: mostBullish.nonCommercialLong,
                     nonCommercialShort: mostBullish.nonCommercialShort,
-                    reportDate: '2026-09-01T00:00:00Z',
+                    reportDate: mostBullish.reportDate,
                     weeklyChange: mostBullish.weeklyChange
                   });
                   setIsDetailModalOpen(true);
@@ -217,7 +217,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                     commercialShort: mostBearish.commercialShort,
                     nonCommercialLong: mostBearish.nonCommercialLong,
                     nonCommercialShort: mostBearish.nonCommercialShort,
-                    reportDate: '2026-09-01T00:00:00Z',
+                    reportDate: mostBearish.reportDate,
                     weeklyChange: mostBearish.weeklyChange
                   });
                   setIsDetailModalOpen(true);
@@ -258,7 +258,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                     commercialShort: biggestIncrease.commercialShort,
                     nonCommercialLong: biggestIncrease.nonCommercialLong,
                     nonCommercialShort: biggestIncrease.nonCommercialShort,
-                    reportDate: '2026-09-01T00:00:00Z',
+                    reportDate: biggestIncrease.reportDate,
                     weeklyChange: biggestIncrease.weeklyChange
                   });
                   setIsDetailModalOpen(true);
@@ -288,7 +288,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                     commercialShort: biggestDecrease.commercialShort,
                     nonCommercialLong: biggestDecrease.nonCommercialLong,
                     nonCommercialShort: biggestDecrease.nonCommercialShort,
-                    reportDate: '2026-09-01T00:00:00Z',
+                    reportDate: biggestDecrease.reportDate,
                     weeklyChange: biggestDecrease.weeklyChange
                   });
                   setIsDetailModalOpen(true);
