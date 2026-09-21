@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Compass, Radar as RadarIcon, LayoutGrid, TrendingUp, TrendingDown } from "lucide-react";
+import { useLatestCOT } from "@/hooks/useLatestCOT";
 
 /* ------------------------------------------------------------------ */
 /*  Config                                                             */
 /* ------------------------------------------------------------------ */
-
-const CFTC_CCYS = ["EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "NZD", "MXN", "USD", "XAU", "BTC"];
 
 type PairDef = { pair: string; base: string; quote: string; category: "Forex" | "Commodities" | "Crypto" };
 
@@ -89,17 +88,20 @@ const SentimentMatrix = () => {
   const [loading, setLoading] = useState(true);
   const [updated, setUpdated] = useState<Date | null>(null);
   const [filter, setFilter] = useState<Filter>("All");
+  const { data: latestCot, refetch: refetchCot } = useLatestCOT();
+
+  useEffect(() => {
+    const cotMap: Record<string, { netPosition: number; weeklyChange: number }> = {};
+    for (const [currency, row] of Object.entries(latestCot ?? {})) {
+      cotMap[currency] = { netPosition: row.net, weeklyChange: row.weekly };
+    }
+    setCot(cotMap);
+  }, [latestCot]);
 
   const load = async () => {
     setLoading(true);
     try {
-      const cotUrl = `https://xkgsugennbdatwmetnxx.supabase.co/functions/v1/cftc-cot?currencies=${CFTC_CCYS.join(",")}`;
-      const cotRes = await fetch(cotUrl).then(r => r.json()).catch(() => ({ data: {} }));
-      const cotMap: Record<string, { netPosition: number; weeklyChange: number }> = {};
-      Object.entries(cotRes?.data || {}).forEach(([k, v]: any) => {
-        cotMap[k] = { netPosition: Number(v.netPosition) || 0, weeklyChange: Number(v.weeklyChange) || 0 };
-      });
-      setCot(cotMap);
+      await refetchCot();
 
       const fxPairs = PAIRS.filter(p => p.category === "Forex" || p.pair === "XAUUSD").map(p => p.pair).join(",");
       const fxRes = await fetch(
