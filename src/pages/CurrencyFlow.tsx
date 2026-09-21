@@ -24,7 +24,7 @@ const HOW_TO = [
 ];
 
 const CurrencyFlow = () => (
-  <main className="container mx-auto max-w-[1500px] px-4 py-10">
+  <main className="hq-page">
     <PageHeader
       eyebrow="Institutional Positioning"
       title="3D Global Currency Flow"
