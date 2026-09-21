@@ -1,18 +1,12 @@
 import NewsSentimentAnalysis from "@/components/NewsSentimentAnalysis";
 import FundamentalNewsAnalysis from "@/components/FundamentalNewsAnalysis";
+import PageHeader from "@/components/PageHeader";
 
 const News = () => {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="px-4 pt-12 pb-8 text-center">
-        <h1 className="font-display-hero text-4xl sm:text-5xl font-bold text-foreground mb-3">Market News</h1>
-        <p className="text-muted-foreground text-base sm:text-lg font-medium max-w-2xl mx-auto">
-          Live market sentiment, central bank updates, yield drivers, currency headlines, and gold news with source citations.
-        </p>
-      </div>
-
-      <div className="news-readable max-w-7xl mx-auto px-4 pb-16 space-y-10">
+      <div className="news-readable hq-page space-y-8">
+        <PageHeader eyebrow="Live intelligence" title="Market News" subtitle="Current sentiment, central-bank updates, yield drivers, currency headlines and gold news with source citations." />
         <NewsSentimentAnalysis />
         <FundamentalNewsAnalysis />
 

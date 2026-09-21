@@ -3,6 +3,7 @@ import { ArrowRight, Crosshair, ShieldCheck, TrendingDown, TrendingUp, Target, G
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { latestReportDate, useLatestCOT } from "@/hooks/useLatestCOT";
 
 const POSITIONS: Record<string, { net: number; weekly: number; label: string }> = {
   EUR: { net: 11594, weekly: -8723, label: "EUR longs reduced" },
@@ -45,11 +46,13 @@ const ConvictionMeter = ({ score, max = 150 }: { score: number; max?: number }) 
 
 const COTTradeMap = () => {
   const [pair, setPair] = useState("EURUSD");
+  const { data: liveCot } = useLatestCOT();
+  const reportDate = latestReportDate(liveCot);
   const [base, quote] = splitPair(pair);
 
   const map = useMemo(() => {
-    const baseData = POSITIONS[base];
-    const quoteData = POSITIONS[quote];
+    const baseData = liveCot?.[base] ? { net: liveCot[base].net, weekly: liveCot[base].weekly, label: `${base} verified COT flow` } : POSITIONS[base];
+    const quoteData = liveCot?.[quote] ? { net: liveCot[quote].net, weekly: liveCot[quote].weekly, label: `${quote} verified COT flow` } : POSITIONS[quote];
     const score = (baseData.net - quoteData.net) / 1000;
     const flow = (baseData.weekly - quoteData.weekly) / 1000;
     const bullishPair = score > 0;
@@ -78,7 +81,7 @@ const COTTradeMap = () => {
       baseData,
       quoteData,
     };
-  }, [base, pair, quote]);
+  }, [base, liveCot, pair, quote]);
 
   const convBadgeClass =
     map.conviction === "High" ? "bg-success/15 text-success border-success/30" :
@@ -202,7 +205,7 @@ const COTTradeMap = () => {
 
       <div className="px-6 py-3 border-t border-border bg-muted/20">
         <p className="text-[10px] text-muted-foreground text-center">
-          Source: CFTC Disaggregated Report (April 28, 2026) • Leveraged fund positioning • Not financial advice
+          Source: CFTC positioning report {reportDate ?? "unavailable"} • Price confirmation required • Not financial advice
         </p>
       </div>
     </Card>

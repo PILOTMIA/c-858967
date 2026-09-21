@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
 import { Progress } from "@/components/ui/progress";
 import { useCOTData } from './COTDataContext';
+import { latestReportDate, useLatestCOT } from '@/hooks/useLatestCOT';
 
 // Helper function to format currency pairs properly
 const formatCurrencyPair = (currency: string): string => {
@@ -39,6 +40,8 @@ interface COTOverviewProps {
 
 const COTOverview = ({ data }: COTOverviewProps) => {
   const { cotData, lastUpdated, isDataLoading, setSelectedCurrency, setIsDetailModalOpen } = useCOTData();
+  const { data: latestCot } = useLatestCOT();
+  const verifiedReportDate = latestReportDate(latestCot);
   
   // Use uploaded data if available, otherwise use prop data
   const workingData = cotData.length > 0 ? cotData.map(item => {
@@ -186,7 +189,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                     commercialShort: mostBullish.commercialShort,
                     nonCommercialLong: mostBullish.nonCommercialLong,
                     nonCommercialShort: mostBullish.nonCommercialShort,
-                    reportDate: '2026-09-01T00:00:00Z',
+                    reportDate: verifiedReportDate ? `${verifiedReportDate}T00:00:00Z` : '',
                     weeklyChange: mostBullish.weeklyChange
                   });
                   setIsDetailModalOpen(true);
@@ -217,7 +220,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                     commercialShort: mostBearish.commercialShort,
                     nonCommercialLong: mostBearish.nonCommercialLong,
                     nonCommercialShort: mostBearish.nonCommercialShort,
-                    reportDate: '2026-09-01T00:00:00Z',
+                    reportDate: verifiedReportDate ? `${verifiedReportDate}T00:00:00Z` : '',
                     weeklyChange: mostBearish.weeklyChange
                   });
                   setIsDetailModalOpen(true);
@@ -258,7 +261,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                     commercialShort: biggestIncrease.commercialShort,
                     nonCommercialLong: biggestIncrease.nonCommercialLong,
                     nonCommercialShort: biggestIncrease.nonCommercialShort,
-                    reportDate: '2026-09-01T00:00:00Z',
+                    reportDate: verifiedReportDate ? `${verifiedReportDate}T00:00:00Z` : '',
                     weeklyChange: biggestIncrease.weeklyChange
                   });
                   setIsDetailModalOpen(true);
@@ -288,7 +291,7 @@ const COTOverview = ({ data }: COTOverviewProps) => {
                     commercialShort: biggestDecrease.commercialShort,
                     nonCommercialLong: biggestDecrease.nonCommercialLong,
                     nonCommercialShort: biggestDecrease.nonCommercialShort,
-                    reportDate: '2026-09-01T00:00:00Z',
+                    reportDate: verifiedReportDate ? `${verifiedReportDate}T00:00:00Z` : '',
                     weeklyChange: biggestDecrease.weeklyChange
                   });
                   setIsDetailModalOpen(true);

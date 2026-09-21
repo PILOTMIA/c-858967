@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, ArrowRight, BarChart3, Activity, Globe, Landmark, Users, DollarSign, RefreshCw } from "lucide-react";
 import { fetchForexPrice } from "@/services/ForexPriceService";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
+import { latestReportDate, useLatestCOT } from "@/hooks/useLatestCOT";
 
-// ── COT Positions (CFTC April 28, 2026) ──────────────────────────────────────
+// Fallback shape only; verified stored COT rows replace directional fields at runtime.
 interface CurrencyPositioning {
   netPosition: number;
   long: number;
@@ -190,44 +191,29 @@ const COTPairScorecard = () => {
   const [fundSource, setFundSource] = useState<string>('fallback');
   const [fundLoading, setFundLoading] = useState(false);
   const [cotPositions, setCotPositions] = useState<Record<string, CurrencyPositioning>>(FALLBACK_COT_POSITIONS);
-  const [cotSource, setCotSource] = useState<string>('fallback');
+  const { data: latestCot } = useLatestCOT();
+  const cotReportDate = latestReportDate(latestCot);
 
-  // Fetch live COT data from CFTC edge function
   useEffect(() => {
-    const fetchCOT = async () => {
-      try {
-        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'xkgsugennbdatwmetnxx';
-        const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
-        const res = await fetch(
-          `https://${projectId}.supabase.co/functions/v1/cftc-cot?currencies=${CURRENCIES.filter(c => c !== 'USD').join(',')}`,
-          {
-            headers: { 'Authorization': `Bearer ${anonKey}`, 'apikey': anonKey, 'Content-Type': 'application/json' },
-            signal: AbortSignal.timeout(20000),
-          }
-        );
-        if (res.ok) {
-          const json = await res.json();
-          if (json.data) {
-            const merged: Record<string, CurrencyPositioning> = { ...FALLBACK_COT_POSITIONS };
-            for (const [key, val] of Object.entries(json.data as Record<string, any>)) {
-              merged[key] = {
-                netPosition: val.netPosition, long: val.long, short: val.short,
-                sentiment: val.netPosition > 10000 ? 'BULLISH' : val.netPosition < -10000 ? 'BEARISH' : 'NEUTRAL',
-                weeklyChange: val.weeklyChange, dealerLong: val.dealerLong, dealerShort: val.dealerShort,
-                assetManagerLong: val.assetManagerLong, assetManagerShort: val.assetManagerShort,
-              };
-            }
-            setCotPositions(merged);
-            const firstKey = Object.keys(json.data)[0];
-            setCotSource(json.data[firstKey]?.source || 'fallback');
-          }
-        }
-      } catch (e) {
-        console.error('Failed to fetch CFTC COT:', e);
+    if (!latestCot) return;
+    setCotPositions((previous) => {
+      const merged = { ...previous };
+      for (const [key, row] of Object.entries(latestCot)) {
+        const prior = merged[key] ?? FALLBACK_COT_POSITIONS.USD;
+        merged[key] = {
+          ...prior,
+          netPosition: row.net,
+          long: row.long,
+          short: row.short,
+          sentiment: row.net > 10000 ? 'BULLISH' : row.net < -10000 ? 'BEARISH' : 'NEUTRAL',
+          weeklyChange: row.weekly,
+          assetManagerLong: row.long,
+          assetManagerShort: row.short,
+        };
       }
-    };
-    fetchCOT();
-  }, []);
+      return merged;
+    });
+  }, [latestCot]);
 
   const pair = `${baseCurrency}${quoteCurrency}`;
 
@@ -626,7 +612,7 @@ const COTPairScorecard = () => {
                 )}
               </p>
               <div className="mt-3 text-xs text-muted-foreground">
-                Updated: {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • CFTC data as of Mar 29, 2026
+                Verified CFTC report: {cotReportDate ?? 'unavailable'} • Live price confirmation refreshes independently
               </div>
             </CardContent>
           </Card>

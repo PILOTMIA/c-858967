@@ -1,140 +1,53 @@
+import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Wheat, Sparkles } from "lucide-react";
+import { TrendingUp, TrendingDown, Wheat } from "lucide-react";
+import { latestHistoryRows, useCOTHistory } from "@/hooks/useCOTHistory";
+import COTFreshnessBadge from "@/components/COTFreshnessBadge";
 
-// Managed Money (speculator) positions from CFTC Disaggregated COT — September 1, 2026
-// vs. August 25, 2026 (change in Managed Money net = change_long - change_short)
-type AgRow = {
-  commodity: string;
-  exchange: string;
-  long: number;
-  short: number;
-  changeLong: number;
-  changeShort: number;
-  unit: string;
-  note: string;
-};
-
-const AG_DATA: AgRow[] = [
-  { commodity: "Corn", exchange: "CBOT", long: 467856, short: 66853, changeLong: 56094, changeShort: -27461, unit: "5,000 bu", note: "Relentless bull build — net-long extends to +401.0k, the largest position in the complex" },
-  { commodity: "Wheat SRW", exchange: "CBOT", long: 109614, short: 94710, changeLong: 22113, changeShort: -6388, unit: "5,000 bu", note: "Speculators flip net-long +14.9k after a massive +28.5k swing — bearish regime broken" },
-  { commodity: "Wheat HRW", exchange: "CBOT", long: 82473, short: 33647, changeLong: 6440, changeShort: 128, unit: "5,000 bu", note: "Steady accumulation lifts net-long to +48.8k" },
-  { commodity: "Lean Hogs", exchange: "CME", long: 58819, short: 93510, changeLong: 1308, changeShort: -99, unit: "40,000 lbs", note: "Net-short narrows slightly to -34.7k — bears easing off" },
-  { commodity: "Live Cattle", exchange: "CME", long: 82039, short: 33188, changeLong: -2302, changeShort: 8576, unit: "40,000 lbs", note: "Sharp bullish unwind — net-long cut to +48.9k as shorts pile in" },
-  { commodity: "Feeder Cattle", exchange: "CME", long: 16043, short: 7607, changeLong: 32, changeShort: 482, unit: "50,000 lbs", note: "Net-long slips to +8.4k on light short-side pressure" },
-  { commodity: "Soybeans", exchange: "CBOT", long: 270450, short: 35530, changeLong: 31115, changeShort: -3126, unit: "5,000 bu", note: "Powerful continuation — net-long swells +34.2k to +234.9k" },
-  { commodity: "Soybean Oil", exchange: "CBOT", long: 124046, short: 24223, changeLong: 9798, changeShort: -4909, unit: "60,000 lbs", note: "Bulls back in control — net-long rebounds to +99.8k" },
-  { commodity: "Soybean Meal", exchange: "CBOT", long: 178183, short: 21004, changeLong: 48568, changeShort: -12658, unit: "100 short tons", note: "Explosive rotation — net-long rockets +61.2k to +157.2k" },
-  { commodity: "Sugar No. 11", exchange: "ICE", long: 334372, short: 100601, changeLong: 36401, changeShort: 647, unit: "112,000 lbs", note: "Softs leadership continues — net-long grows to +233.8k" },
-  { commodity: "Cotton No. 2", exchange: "ICE", long: 115804, short: 14841, changeLong: 11309, changeShort: -1361, unit: "50,000 lbs", note: "Net-long widens to +101.0k on fresh buying and short covering" },
-  { commodity: "Coffee C", exchange: "ICE", long: 40000, short: 13271, changeLong: -2216, changeShort: 2243, unit: "37,500 lbs", note: "Bulls trim — net-long fades to +26.7k" },
-  { commodity: "Cocoa", exchange: "ICE", long: 26056, short: 30806, changeLong: 4125, changeShort: -1583, unit: "10 tonnes", note: "Net-short shrinks to -4.8k — bearish structure nearly neutralized" },
-];
-
+const AGRICULTURE = [
+  ["CORN", "Corn", "CBOT"], ["WHEAT", "Wheat SRW", "CBOT"], ["SOYBEAN", "Soybeans", "CBOT"],
+  ["SUGAR", "Sugar No. 11", "ICE"], ["COTTON", "Cotton No. 2", "ICE"], ["COFFEE", "Coffee C", "ICE"],
+  ["COCOA", "Cocoa", "ICE"], ["CATTLE", "Live Cattle", "CME"], ["HOGS", "Lean Hogs", "CME"],
+] as const;
 
 const AgricultureCOT = () => {
+  const { data, isLoading } = useCOTHistory();
+  const rows = useMemo(() => {
+    const latest = latestHistoryRows(data);
+    return AGRICULTURE.map(([code, commodity, exchange]) => {
+      const row = latest.get(code);
+      return row ? { ...row, code, commodity, exchange, weekly: Number(row.change_long ?? 0) - Number(row.change_short ?? 0) } : null;
+    }).filter((row): row is NonNullable<typeof row> => Boolean(row));
+  }, [data]);
+
   return (
-    <Card className="relative overflow-hidden rounded-2xl border-border/60 bg-card/80 backdrop-blur-xl p-6 sm:p-8 shadow-[0_8px_40px_-12px_hsl(var(--primary)/0.15)]">
-      {/* Ambient glow */}
-      <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-
-      <div className="relative flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+    <Card className="hq-panel p-5 sm:p-6">
+      <div className="mb-5 flex flex-col justify-between gap-4 border-b border-border/60 pb-4 sm:flex-row sm:items-start">
         <div className="flex items-start gap-3">
-          <div className="rounded-xl bg-primary/10 p-2.5 border border-primary/20">
-            <Wheat className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl sm:text-2xl font-semibold text-foreground tracking-tight">
-                Agriculture COT — Managed Money
-              </h2>
-              <Badge className="bg-primary/15 text-primary border border-primary/30 hover:bg-primary/20 gap-1">
-                <Sparkles className="w-3 h-3" /> New
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-              Food is everything. Grains and livestock feed the inflation story that drives yields, the dollar, and gold.
-              Speculator positioning here often leads CPI prints by weeks.
-            </p>
-          </div>
+          <div className="rounded-sm border border-primary/30 bg-primary/10 p-2"><Wheat className="h-5 w-5 text-primary" /></div>
+          <div><h2 className="text-xl font-black uppercase text-foreground">Agriculture positioning</h2><p className="mt-1 max-w-2xl text-sm text-muted-foreground">Managed-money flows that can precede food inflation, yield repricing and USD moves.</p></div>
         </div>
-        <div className="text-xs text-muted-foreground shrink-0">
-          <div>Report: <span className="text-foreground font-medium">Sep 1, 2026</span></div>
-          <div>Source: CFTC Disaggregated</div>
+        <COTFreshnessBadge />
+      </div>
+      {isLoading ? <div className="h-40 animate-pulse rounded-sm bg-muted" /> : (
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {rows.map((row) => {
+            const bullish = row.net_position >= 0;
+            const flowUp = row.weekly >= 0;
+            const total = row.long_positions + row.short_positions;
+            const longPct = total ? row.long_positions / total * 100 : 50;
+            return <article key={row.code} className="rounded-sm border border-border/60 bg-background/50 p-4">
+              <div className="flex items-start justify-between gap-2"><div><div className="font-bold text-foreground">{row.commodity}</div><div className="font-mono text-[10px] text-muted-foreground">{row.exchange} · {row.code}</div></div><Badge variant="outline" className={bullish ? "border-success/40 text-success" : "border-destructive/40 text-destructive"}>{bullish ? "NET LONG" : "NET SHORT"}</Badge></div>
+              <div className={`mt-4 font-mono text-2xl font-bold ${bullish ? "text-success" : "text-destructive"}`}>{bullish ? "+" : ""}{row.net_position.toLocaleString()}</div>
+              <div className={`mt-1 flex items-center gap-1 font-mono text-xs ${flowUp ? "text-success" : "text-destructive"}`}>{flowUp ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}{flowUp ? "+" : ""}{row.weekly.toLocaleString()} WoW</div>
+              <div className="mt-4 flex h-1.5 overflow-hidden rounded-full bg-muted"><span className="bg-success" style={{ width: `${longPct}%` }} /><span className="bg-destructive" style={{ width: `${100 - longPct}%` }} /></div>
+              <div className="mt-1 flex justify-between font-mono text-[10px] text-muted-foreground"><span>L {row.long_positions.toLocaleString()}</span><span>S {row.short_positions.toLocaleString()}</span></div>
+            </article>;
+          })}
         </div>
-      </div>
-
-      <div className="relative grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {AG_DATA.map((row) => {
-          const net = row.long - row.short;
-          const netChange = row.changeLong - row.changeShort;
-          const bullish = net > 0;
-          const flowBullish = netChange > 0;
-          const total = row.long + row.short;
-          const longPct = total > 0 ? (row.long / total) * 100 : 50;
-
-          return (
-            <div
-              key={row.commodity}
-              className="group rounded-xl border border-border/50 bg-background/40 hover:bg-background/60 hover:border-primary/40 transition-all p-4 space-y-3"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-sm font-semibold text-foreground">{row.commodity}</div>
-                  <div className="text-[11px] text-muted-foreground">{row.exchange} · {row.unit}</div>
-                </div>
-                <Badge
-                  variant="outline"
-                  className={`text-[10px] ${bullish ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10" : "border-red-500/40 text-red-400 bg-red-500/10"}`}
-                >
-                  {bullish ? "NET LONG" : "NET SHORT"}
-                </Badge>
-              </div>
-
-              <div>
-                <div className={`text-2xl font-bold tracking-tight ${bullish ? "text-emerald-400" : "text-red-400"}`}>
-                  {net > 0 ? "+" : ""}{net.toLocaleString()}
-                </div>
-                <div className="flex items-center gap-1 text-xs mt-0.5">
-                  {flowBullish ? (
-                    <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-                  ) : (
-                    <TrendingDown className="w-3.5 h-3.5 text-red-400" />
-                  )}
-                  <span className={flowBullish ? "text-emerald-400" : "text-red-400"}>
-                    {netChange > 0 ? "+" : ""}{netChange.toLocaleString()} WoW
-                  </span>
-                </div>
-              </div>
-
-              {/* Long vs Short bar */}
-              <div>
-                <div className="h-2 w-full rounded-full bg-muted overflow-hidden flex">
-                  <div className="h-full bg-emerald-500/70" style={{ width: `${longPct}%` }} />
-                  <div className="h-full bg-red-500/70" style={{ width: `${100 - longPct}%` }} />
-                </div>
-                <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-                  <span>L {row.long.toLocaleString()}</span>
-                  <span>S {row.short.toLocaleString()}</span>
-                </div>
-              </div>
-
-              <p className="text-xs text-muted-foreground leading-relaxed border-t border-border/40 pt-2">
-                {row.note}
-              </p>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="relative mt-6 rounded-xl border border-primary/20 bg-primary/5 p-4">
-        <div className="text-xs font-semibold text-foreground mb-1">Why agriculture matters to FX & Gold</div>
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          Rising grain and livestock prices feed directly into food CPI — the most visible component of headline inflation.
-          When speculators pile into long grains + long cattle, expect stickier CPI, hawkish Fed repricing, and headwinds for gold.
-          Falling ag positioning has the opposite effect: disinflation tailwind, dovish tilt, gold support.
-        </p>
-      </div>
+      )}
+      <p className="mt-5 border-t border-border/60 pt-4 text-xs leading-relaxed text-muted-foreground">Rising grain and livestock positioning can flag stickier food inflation. Confirm every COT read with current price action before trading.</p>
     </Card>
   );
 };

@@ -118,7 +118,7 @@ const CurrencyFlowGlobeWidget = ({ height = 620 }: { height?: number }) => {
   const bankPoint = selectedBank ? frame?.points.find((p) => p.code === selectedBank) : undefined;
 
   return (
-    <Card className="modern-surface overflow-hidden border-border/60 bg-[#050912] p-0">
+    <Card className="modern-surface overflow-hidden border-border/60 bg-background p-0">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/50 bg-gradient-to-r from-primary/10 via-transparent to-transparent px-4 py-3">
         <div className="flex flex-wrap items-center gap-2">
           <Globe2 className="h-4 w-4 text-primary" />
@@ -131,7 +131,7 @@ const CurrencyFlowGlobeWidget = ({ height = 620 }: { height?: number }) => {
             </Badge>
           )}
           {isLatest && (
-            <Badge className="bg-emerald-500/15 font-mono text-[10px] text-emerald-400 hover:bg-emerald-500/15">
+            <Badge className="bg-success/15 font-mono text-[10px] text-success hover:bg-success/15">
               Latest CFTC release
             </Badge>
           )}
