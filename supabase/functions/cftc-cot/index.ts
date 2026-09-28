@@ -43,8 +43,9 @@ async function fetchFromCFTC(currency: string): Promise<any | null> {
   if (!info) return null;
 
   try {
-    // CFTC Disaggregated Futures-Only report (Socrata API)
-    const url = `https://publicreporting.cftc.gov/resource/72hh-3qpy.json?$limit=2&$order=report_date_as_yyyy_mm_dd DESC&cftc_contract_market_code=${info.code}`;
+    const financial = ["EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "NZD", "MXN", "USD", "BTC", "SP500", "NASDAQ", "VIX"].includes(currency);
+    const dataset = financial ? "gpe5-46if" : "72hh-3qpy";
+    const url = `https://publicreporting.cftc.gov/resource/${dataset}.json?$limit=2&$order=report_date_as_yyyy_mm_dd DESC&cftc_contract_market_code=${info.code}`;
     
     const res = await fetch(url, {
       headers: { Accept: "application/json" },
@@ -57,38 +58,27 @@ async function fetchFromCFTC(currency: string): Promise<any | null> {
     }
 
     const data = await res.json();
-    if (!data || data.length === 0) return null;
+    if (!Array.isArray(data) || data.length < 2) return null;
 
     const latest = data[0];
     const previous = data.length > 1 ? data[1] : null;
 
-    const long = parseInt(latest.lev_money_positions_long_all || latest.m_money_positions_long_all || "0");
-    const short = parseInt(latest.lev_money_positions_short_all || latest.m_money_positions_short_all || "0");
+    const long = Number(financial ? latest.lev_money_positions_long ?? latest.lev_money_positions_long_all : latest.m_money_positions_long_all);
+    const short = Number(financial ? latest.lev_money_positions_short ?? latest.lev_money_positions_short_all : latest.m_money_positions_short_all);
+    const prevLong = Number(financial ? previous.lev_money_positions_long ?? previous.lev_money_positions_long_all : previous.m_money_positions_long_all);
+    const prevShort = Number(financial ? previous.lev_money_positions_short ?? previous.lev_money_positions_short_all : previous.m_money_positions_short_all);
+    if (![long, short, prevLong, prevShort].every(Number.isFinite) || [long, short, prevLong, prevShort].some(n => n < 0)) return null;
     const netPosition = long - short;
 
-    const dealerLong = parseInt(latest.dealer_positions_long_all || "0");
-    const dealerShort = parseInt(latest.dealer_positions_short_all || "0");
-    const assetManagerLong = parseInt(latest.asset_mgr_positions_long || "0");
-    const assetManagerShort = parseInt(latest.asset_mgr_positions_short || "0");
-
-    let weeklyChange = 0;
-    if (previous) {
-      const prevLong = parseInt(previous.lev_money_positions_long_all || previous.m_money_positions_long_all || "0");
-      const prevShort = parseInt(previous.lev_money_positions_short_all || previous.m_money_positions_short_all || "0");
-      weeklyChange = netPosition - (prevLong - prevShort);
-    }
+    const weeklyChange = netPosition - (prevLong - prevShort);
 
     return {
       netPosition,
       long,
       short,
       weeklyChange,
-      dealerLong,
-      dealerShort,
-      assetManagerLong,
-      assetManagerShort,
-      reportDate: latest.report_date_as_yyyy_mm_dd || "",
-      source: "cftc_live",
+      reportDate: String(latest.report_date_as_yyyy_mm_dd || "").slice(0, 10),
+      source: financial ? "cftc_tff_leveraged" : "cftc_disagg_managed_money",
     };
   } catch (e) {
     console.error(`Error fetching CFTC data for ${currency}:`, e);
@@ -113,10 +103,12 @@ async function fetchStored(currencies: string[]): Promise<Record<string, any>> {
     if (error || !data) return out;
     const sorted = [...data].sort((a, b) => {
       if (a.currency !== b.currency) return String(a.currency).localeCompare(String(b.currency));
+      const dateOrder = String(b.report_date).localeCompare(String(a.report_date));
+      if (dateOrder) return dateOrder;
       const aUploaded = a.source === "admin_upload" || String(a.source).includes("verified_upload");
       const bUploaded = b.source === "admin_upload" || String(b.source).includes("verified_upload");
       if (aUploaded !== bUploaded) return aUploaded ? -1 : 1;
-      return String(b.report_date).localeCompare(String(a.report_date));
+      return 0;
     });
     for (const row of sorted) {
       if (out[row.currency]) continue; // verified uploads win, otherwise newest row wins
@@ -155,7 +147,8 @@ serve(async (req) => {
         const live = await fetchFromCFTC(currency);
         const db = stored[currency];
         const verifiedUpload = db?.source === "admin_upload" || String(db?.source).includes("verified_upload");
-        const pickDb = db && (verifiedUpload || !live || String(db.reportDate) >= String(live.reportDate || ""));
+        const pickDb = db && (!live || String(db.reportDate) > String(live.reportDate || "") ||
+          (String(db.reportDate) === String(live.reportDate || "") && verifiedUpload));
         if (pickDb) {
           results[currency] = db;
         } else if (live) {
