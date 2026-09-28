@@ -44,7 +44,7 @@ const CODES: Record<string, string> = {
   COCOA: "073732",
   CATTLE: "057642",
   HOGS: "054642",
-  SP500: "13874P",
+  SP500: "13874A",
   NASDAQ: "209742",
   DOW: "12460P",
   VIX: "1170E1",
@@ -79,8 +79,8 @@ const num = (v: unknown) => {
   return Number.isFinite(n) ? n : 0;
 };
 
-// Commodities live in the Disaggregated dataset, currencies/indices in Traders in Financial Futures.
-const DATASETS = ["72hh-3qpy", "gpe5-46if"];
+// Commodities use managed money; FX and indices use leveraged funds.
+const FINANCIAL = new Set(["EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "NZD", "MXN", "BRL", "USD", "BTC", "SP500", "NASDAQ", "DOW", "VIX"]);
 
 async function fetchOne(dataset: string, code: string, onOrBefore: string) {
   const url =
@@ -99,26 +99,13 @@ async function fetchOne(dataset: string, code: string, onOrBefore: string) {
   }
 }
 
-async function fetchRows(code: string, onOrBefore: string) {
-  for (const dataset of DATASETS) {
-    const rows = await fetchOne(dataset, code, onOrBefore);
-    if (rows) {
-      const { long, short } = speculatorLegs(rows[0]);
-      if (long || short) return rows;
-    }
-  }
-  return null;
+async function fetchRows(currency: string, code: string, onOrBefore: string) {
+  return fetchOne(FINANCIAL.has(currency) ? "gpe5-46if" : "72hh-3qpy", code, onOrBefore);
 }
 
-function speculatorLegs(row: Record<string, unknown>) {
-  const long = num(
-    row.lev_money_positions_long_all ?? row.lev_money_positions_long ??
-    row.m_money_positions_long_all ?? row.noncomm_positions_long_all,
-  );
-  const short = num(
-    row.lev_money_positions_short_all ?? row.lev_money_positions_short ??
-    row.m_money_positions_short_all ?? row.noncomm_positions_short_all,
-  );
+function speculatorLegs(row: Record<string, unknown>, financial: boolean) {
+  const long = num(financial ? row.lev_money_positions_long_all ?? row.lev_money_positions_long : row.m_money_positions_long_all);
+  const short = num(financial ? row.lev_money_positions_short_all ?? row.lev_money_positions_short : row.m_money_positions_short_all);
   return { long, short };
 }
 
@@ -179,13 +166,14 @@ serve(async (req) => {
     const entries = Object.entries(CODES);
     await Promise.all(entries.map(async ([currency, code]) => {
       if (markets.includes(currency)) return;
-      const rows = await fetchRows(code, reportDate);
-      if (!rows) { missing.push(currency); return; }
+      const rows = await fetchRows(currency, code, reportDate);
+      if (!rows || rows.length < 2) { missing.push(currency); return; }
       const latest = rows[0];
       const prev = rows[1];
-      const { long, short } = speculatorLegs(latest);
+      if (String(latest.report_date_as_yyyy_mm_dd).slice(0, 10) !== reportDate) { missing.push(currency); return; }
+      const { long, short } = speculatorLegs(latest, FINANCIAL.has(currency));
       if (!long && !short) { missing.push(currency); return; }
-      const p = prev ? speculatorLegs(prev) : { long: 0, short: 0 };
+      const p = speculatorLegs(prev, FINANCIAL.has(currency));
       const total = long + short;
       rowsToWrite.push({
         currency,
@@ -193,11 +181,11 @@ serve(async (req) => {
         long_positions: long,
         short_positions: short,
         net_position: long - short,
-        change_long: prev ? long - p.long : 0,
-        change_short: prev ? short - p.short : 0,
+        change_long: long - p.long,
+        change_short: short - p.short,
         pct_long: total ? Number(((long / total) * 100).toFixed(2)) : 0,
         pct_short: total ? Number(((short / total) * 100).toFixed(2)) : 0,
-        source: "cftc_official",
+        source: FINANCIAL.has(currency) ? "cftc_tff_leveraged" : "cftc_disagg_managed_money",
       });
       markets.push(currency);
     }));
