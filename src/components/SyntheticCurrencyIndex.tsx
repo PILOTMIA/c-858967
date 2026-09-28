@@ -46,7 +46,6 @@ const G10_CURRENCIES = ['USD', 'EUR', 'JPY', 'GBP', 'AUD', 'CHF', 'CAD', 'NZD', 
 function computeStrength(
   currency: string,
   allData: Record<string, CurrencyData>,
-  mode: 'weekly' | '30day'
 ): { score: number; pctChange: number; pairs: number } {
   const others = G10_CURRENCIES.filter(c => c !== currency);
   let totalScore = 0;
@@ -82,7 +81,6 @@ function computeStrength(
 
 // ── Component ───────────────────────────────────────────────────────────────
 const SyntheticCurrencyIndex = () => {
-  const [timeframe, setTimeframe] = useState<'weekly' | '30day'>('weekly');
   const [cotData, setCotData] = useState<Record<string, CurrencyData>>({});
   const [loading, setLoading] = useState(false);
   const [lastFetched, setLastFetched] = useState<string | null>(null);
@@ -118,7 +116,7 @@ const SyntheticCurrencyIndex = () => {
   // Rank currencies
   const ranked: RankedCurrency[] = useMemo(() => {
     const items = G10_CURRENCIES.filter(code => cotData[code]).map(code => {
-      const { score, pctChange, pairs } = computeStrength(code, cotData, timeframe);
+      const { score, pctChange, pairs } = computeStrength(code, cotData);
       return {
         code,
         name: CURRENCY_META[code].name,
@@ -133,7 +131,7 @@ const SyntheticCurrencyIndex = () => {
     items.sort((a, b) => b.score - a.score);
     items.forEach((item, i) => { item.rank = i + 1; });
     return items;
-  }, [cotData, timeframe]);
+  }, [cotData]);
 
   const maxAbsScore = Math.max(...ranked.map(r => Math.abs(r.score)), 1);
 
@@ -153,25 +151,6 @@ const SyntheticCurrencyIndex = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {/* A 30-day series needs four actual reports; do not extrapolate one week. */}
-          <div className="hidden rounded-lg border border-border/30 overflow-hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setTimeframe('weekly')}
-              className={`rounded-sm px-3 text-xs ${timeframe === 'weekly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
-            >
-              1 Week
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setTimeframe('30day')}
-              className={`rounded-sm px-3 text-xs ${timeframe === '30day' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
-            >
-              30 Day
-            </Button>
-          </div>
           <Button
             variant="ghost"
             size="sm"
