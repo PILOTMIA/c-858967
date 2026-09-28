@@ -85,9 +85,8 @@ function computeScores(base: string, quote: string, fundamentals: Record<string,
   const seasScore = clampScore(safeNum(bSeas[month]) - safeNum(qSeas[month]), -2, 2);
   const trendScore = clampScore(((safeNum(bp.weeklyChange) - safeNum(qp.weeklyChange)) / 15000) * 2, -2, 2);
 
-  const baseAMNet = safeNum(bp.assetManagerLong) - safeNum(bp.assetManagerShort);
-  const quoteAMNet = safeNum(qp.assetManagerLong) - safeNum(qp.assetManagerShort);
-  const momentumScore = clampScore(((baseAMNet - quoteAMNet) / 300000) * 2, -2, 2);
+  // The shared feed contains one trader category per instrument, not asset-manager positions.
+  const momentumScore = 0;
 
   const gdpDiff = safeNum(bf.gdp) - safeNum(qf.gdp);
   const rateDiff = safeNum(bf.interestRate) - safeNum(qf.interestRate);
@@ -207,8 +206,6 @@ const COTPairScorecard = () => {
           short: row.short,
           sentiment: row.net > 10000 ? 'BULLISH' : row.net < -10000 ? 'BEARISH' : 'NEUTRAL',
           weeklyChange: row.weekly,
-          assetManagerLong: row.long,
-          assetManagerShort: row.short,
         };
       }
       return merged;
@@ -320,7 +317,6 @@ const COTPairScorecard = () => {
     { label: 'COT', value: scores.cotScore, max: 3 },
     { label: 'Seasonality', value: scores.seasScore, max: 2 },
     { label: 'Trend', value: scores.trendScore, max: 2 },
-    { label: 'Momentum', value: scores.momentumScore, max: 2 },
     { label: 'Economic', value: scores.economicScore, max: 2 },
   ];
 
