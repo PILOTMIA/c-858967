@@ -8,33 +8,13 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { latestReportDate, useLatestCOT } from "@/hooks/useLatestCOT";
 
-// COT positions from CFTC TFF report, August 11, 2026 (Leveraged Funds)
 interface CurrencyPositioning {
   netPosition: number;
   long: number;
   short: number;
   sentiment: string;
   weeklyChange: number;
-  dealerLong: number;
-  dealerShort: number;
-  dealerWeeklyChange: number;
-  assetManagerLong: number;
-  assetManagerShort: number;
-  assetManagerWeeklyChange: number;
 }
-
-// CFTC TFF report, September 1, 2026 (Leveraged Funds) — verified from CFTC Socrata API
-const COT_POSITIONS: Record<string, CurrencyPositioning> = {
-  EUR: { netPosition: -38173, long: 96137, short: 134310, sentiment: 'BEARISH', weeklyChange: 186, dealerLong: 54643, dealerShort: 322221, dealerWeeklyChange: 1003, assetManagerLong: 468254, assetManagerShort: 205001, assetManagerWeeklyChange: 1827 },
-  GBP: { netPosition: 43167, long: 77117, short: 33950, sentiment: 'BULLISH', weeklyChange: -4742, dealerLong: 133142, dealerShort: 73939, dealerWeeklyChange: 10798, assetManagerLong: 43569, assetManagerShort: 150902, assetManagerWeeklyChange: -2842 },
-  JPY: { netPosition: -102188, long: 58529, short: 160717, sentiment: 'BEARISH', weeklyChange: -25146, dealerLong: 116682, dealerShort: 37361, dealerWeeklyChange: 36383, assetManagerLong: 70419, assetManagerShort: 94940, assetManagerWeeklyChange: -4405 },
-  CHF: { netPosition: -10298, long: 12305, short: 22603, sentiment: 'BEARISH', weeklyChange: -1473, dealerLong: 64678, dealerShort: 8935, dealerWeeklyChange: 7042, assetManagerLong: 12689, assetManagerShort: 44806, assetManagerWeeklyChange: -3462 },
-  AUD: { netPosition: 49662, long: 78498, short: 28836, sentiment: 'BULLISH', weeklyChange: -4399, dealerLong: 104022, dealerShort: 147478, dealerWeeklyChange: -5413, assetManagerLong: 108835, assetManagerShort: 139302, assetManagerWeeklyChange: 14960 },
-  CAD: { netPosition: -68750, long: 27845, short: 96595, sentiment: 'BEARISH', weeklyChange: 3342, dealerLong: 180223, dealerShort: 62264, dealerWeeklyChange: -6971, assetManagerLong: 59172, assetManagerShort: 108716, assetManagerWeeklyChange: 9399 },
-  MXN: { netPosition: 93247, long: 174649, short: 81402, sentiment: 'BULLISH', weeklyChange: 10865, dealerLong: 0, dealerShort: 0, dealerWeeklyChange: 0, assetManagerLong: 0, assetManagerShort: 0, assetManagerWeeklyChange: 0 },
-  NZD: { netPosition: -22338, long: 5216, short: 27554, sentiment: 'BEARISH', weeklyChange: 9656, dealerLong: 54532, dealerShort: 36175, dealerWeeklyChange: -12382, assetManagerLong: 12931, assetManagerShort: 9972, assetManagerWeeklyChange: 2529 },
-  USD: { netPosition: 7133, long: 16024, short: 8891, sentiment: 'BULLISH', weeklyChange: -2056, dealerLong: 5796, dealerShort: 32811, dealerWeeklyChange: 138, assetManagerLong: 17667, assetManagerShort: 1426, assetManagerWeeklyChange: 2223 },
-};
 
 
 // Historical net positions are loaded live from cot_history (see useHistoricalNet below)
@@ -76,12 +56,9 @@ const COTPairAnalyzer = () => {
   const { data: latestCot } = useLatestCOT();
   const reportDate = latestReportDate(latestCot);
   const positions = useMemo(() => {
-    const merged = { ...COT_POSITIONS };
+    const merged: Record<string, CurrencyPositioning> = {};
     for (const [currency, row] of Object.entries(latestCot ?? {})) {
-      const prior = merged[currency];
-      if (!prior) continue;
       merged[currency] = {
-        ...prior,
         netPosition: row.net,
         long: row.long,
         short: row.short,
@@ -241,28 +218,13 @@ const COTPairAnalyzer = () => {
     const baseDir = base.netPosition > 0 ? 'long' : 'short';
     const quoteDir = quote.netPosition > 0 ? 'long' : 'short';
 
-    const baseDealerNet = base.dealerLong - base.dealerShort;
-    const quoteDealerNet = quote.dealerLong - quote.dealerShort;
-    const baseAMNet = base.assetManagerLong - base.assetManagerShort;
-    const quoteAMNet = quote.assetManagerLong - quote.assetManagerShort;
-    
-    const dealerFavorsBase = baseDealerNet - quoteDealerNet > 0;
-    const amFavorsBase = baseAMNet - quoteAMNet > 0;
-    const leveragedFavorsBase = analysis.isBullish;
-    
-    const allAligned = (dealerFavorsBase === amFavorsBase) && (amFavorsBase === leveragedFavorsBase);
-    const twoOfThree = (dealerFavorsBase === amFavorsBase) || (amFavorsBase === leveragedFavorsBase) || (dealerFavorsBase === leveragedFavorsBase);
-
-    const conviction = allAligned ? 'High' : twoOfThree ? 'Moderate' : 'Low';
-    const convictionColor = allAligned ? 'text-success' : twoOfThree ? 'text-chart-1' : 'text-destructive';
-
     const favoredCurrency = analysis.isBullish ? baseName : quoteName;
     const direction = analysis.isBullish ? 'bullish' : 'bearish';
 
     const baseFlow = base.weeklyChange > 0 ? `+${formatContracts(base.weeklyChange)}` : formatContracts(base.weeklyChange);
     const quoteFlow = quote.weeklyChange > 0 ? `+${formatContracts(quote.weeklyChange)}` : formatContracts(quote.weeklyChange);
 
-    return { baseName, quoteName, baseDir, quoteDir, baseFlow, quoteFlow, conviction, convictionColor, favoredCurrency, direction, allAligned, twoOfThree, baseNet: formatContracts(Math.abs(base.netPosition)), quoteNet: formatContracts(Math.abs(quote.netPosition)) };
+    return { baseName, quoteName, baseDir, quoteDir, baseFlow, quoteFlow, favoredCurrency, direction, baseNet: formatContracts(Math.abs(base.netPosition)), quoteNet: formatContracts(Math.abs(quote.netPosition)) };
   }, [analysis]);
 
   return (
