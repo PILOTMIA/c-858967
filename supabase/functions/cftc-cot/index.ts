@@ -164,7 +164,7 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("CFTC COT function error:", error);
-    return new Response(JSON.stringify({ error: error.message, data: FALLBACK_DATA }), {
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "COT feed unavailable", data: FALLBACK_DATA }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
