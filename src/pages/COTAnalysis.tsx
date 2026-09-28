@@ -13,13 +13,7 @@ import { TrendingUp, Users, Building2, ArrowUpRight, ArrowDownRight } from "luci
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { latestHistoryRows, useCOTHistory } from "@/hooks/useCOTHistory";
 import COTFreshnessBadge from "@/components/COTFreshnessBadge";
-
-const getNote = (net: number, change: number) => {
-  if (change > 5000) return net > 0 ? 'Adding longs' : 'Shorts covering';
-  if (change > 0) return net > 0 ? 'Steady longs' : 'Shorts reducing';
-  if (change < -5000) return net > 0 ? 'Longs reducing' : 'Deep bearish';
-  return net > 0 ? 'Stable longs' : 'Flipped short';
-};
+import { explainCOTChange } from "@/lib/cotExplanation";
 
 const COTAnalysisContent = () => {
   const { selectedCurrency, isDetailModalOpen, setIsDetailModalOpen } = useCOTData();
@@ -39,7 +33,7 @@ const COTAnalysisContent = () => {
         currency: r.currency,
         change,
         netPosition: r.net_position,
-        note: getNote(r.net_position, change),
+        note: explainCOTChange(r),
       };
     })
     .sort((a, b) => b.change - a.change);
@@ -92,7 +86,7 @@ const COTAnalysisContent = () => {
                   <span className="inline-flex items-center gap-1"><ArrowDownRight className="w-3 h-3 text-destructive" /> Trimming</span>
                 </div>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
                 {wowChanges.map((item) => {
                   const isPositive = item.change > 0;
                   return (
@@ -111,7 +105,7 @@ const COTAnalysisContent = () => {
                         {isPositive ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
                         {isPositive ? '+' : ''}{(item.change / 1000).toFixed(1)}K
                       </div>
-                      <div className="text-[11px] text-foreground/75 mt-1 leading-tight font-medium">{item.note}</div>
+                      <div className="text-xs text-foreground/75 mt-2 leading-relaxed text-left">{item.note}</div>
                     </div>
                   );
                 })}
