@@ -381,7 +381,7 @@ const COTPairAnalyzer = () => {
                   </LineChart>
                 </ResponsiveContainer>
                 <p className="text-[10px] text-muted-foreground mt-2 text-center">
-                  CFTC Leveraged Funds net position{reportDate ? ` • Latest stored report ${reportDate}` : ''}
+                   Stored speculative net positions • historical rows may use different trader categories and are not directly comparable{reportDate ? ` • Latest ${reportDate}` : ''}
                 </p>
               </div>
             )}
