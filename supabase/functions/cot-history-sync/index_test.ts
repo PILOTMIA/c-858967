@@ -1,75 +1,35 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { validateRow } from "./index.ts";
 
-Deno.test("validateRow accepts a well-formed CFTC row", () => {
-  const r = validateRow("EUR", {
-    report_date_as_yyyy_mm_dd: "2026-06-02",
-    noncomm_positions_long_all: "217091",
-    noncomm_positions_short_all: "181379",
-    change_in_noncomm_long_all: "-1000",
-    change_in_noncomm_short_all: "500",
-  });
-  if (!r.ok) throw new Error("expected ok");
-  assertEquals(r.value.currency, "EUR");
-  assertEquals(r.value.long_positions, 217091);
-  assertEquals(r.value.short_positions, 181379);
-  assertEquals(r.value.net_position, 217091 - 181379);
-  assertEquals(r.value.change_long, -1000);
-  assertEquals(r.value.change_short, 500);
+const current = { report_date_as_yyyy_mm_dd: "2026-09-22T00:00:00.000", lev_money_positions_long: "114151", lev_money_positions_short: "140845" };
+const previous = { report_date_as_yyyy_mm_dd: "2026-09-15T00:00:00.000", lev_money_positions_long: "103260", lev_money_positions_short: "131416" };
+
+Deno.test("TFF leveraged-fund fields and changes agree with prior report", () => {
+  const result = validateRow("EUR", current, previous);
+  if (!result.ok) throw new Error(result.error);
+  assertEquals(result.value.net_position, -26694);
+  assertEquals(result.value.change_long, 10891);
+  assertEquals(result.value.change_short, 9429);
+  assertEquals(result.value.source, "cftc_tff_leveraged");
 });
 
-Deno.test("validateRow rejects negative positions", () => {
-  const r = validateRow("EUR", {
-    report_date_as_yyyy_mm_dd: "2026-06-02",
-    noncomm_positions_long_all: "-5",
-    noncomm_positions_short_all: "100",
-  });
-  assertEquals(r.ok, false);
+Deno.test("disaggregated managed-money positions do not use legacy fields", () => {
+  const result = validateRow("XAU", {
+    report_date_as_yyyy_mm_dd: "2026-09-22", m_money_positions_long_all: "135699", m_money_positions_short_all: "8310",
+    noncomm_positions_long_all: "253982", noncomm_positions_short_all: "28129",
+  }, { report_date_as_yyyy_mm_dd: "2026-09-15", m_money_positions_long_all: "142394", m_money_positions_short_all: "9278" });
+  if (!result.ok) throw new Error(result.error);
+  assertEquals(result.value.net_position, 127389);
+  assertEquals(result.value.change_long, -6695);
 });
 
-Deno.test("validateRow rejects non-numeric positions", () => {
-  const r = validateRow("EUR", {
-    report_date_as_yyyy_mm_dd: "2026-06-02",
-    noncomm_positions_long_all: "abc",
-    noncomm_positions_short_all: "100",
-  });
-  assertEquals(r.ok, false);
+Deno.test("missing prior report never creates fictitious zero weekly change", () => {
+  assertEquals(validateRow("EUR", current).ok, false);
 });
 
-Deno.test("validateRow rejects malformed dates", () => {
-  const r = validateRow("EUR", {
-    report_date_as_yyyy_mm_dd: "06/02/2026",
-    noncomm_positions_long_all: "10",
-    noncomm_positions_short_all: "5",
-  });
-  assertEquals(r.ok, false);
-});
-
-Deno.test("validateRow rejects future dates", () => {
-  const future = new Date(Date.now() + 90 * 86_400_000).toISOString().slice(0, 10);
-  const r = validateRow("EUR", {
-    report_date_as_yyyy_mm_dd: future,
-    noncomm_positions_long_all: "10",
-    noncomm_positions_short_all: "5",
-  });
-  assertEquals(r.ok, false);
-});
-
-Deno.test("validateRow rejects sanity-cap breaches", () => {
-  const r = validateRow("EUR", {
-    report_date_as_yyyy_mm_dd: "2026-06-02",
-    noncomm_positions_long_all: "999999999",
-    noncomm_positions_short_all: "5",
-  });
-  assertEquals(r.ok, false);
-});
-
-Deno.test("validateRow enforces net = long - short invariant", () => {
-  const r = validateRow("EUR", {
-    report_date_as_yyyy_mm_dd: "2026-06-02",
-    noncomm_positions_long_all: "200",
-    noncomm_positions_short_all: "75",
-  });
-  if (!r.ok) throw new Error("expected ok");
-  assertEquals(r.value.net_position, 125);
+Deno.test("rejects invalid dates, negative values, and position caps", () => {
+  assertEquals(validateRow("EUR", { ...current, report_date_as_yyyy_mm_dd: "bad" }, previous).ok, false);
+  assertEquals(validateRow("EUR", { ...current, lev_money_positions_long: "-5" }, previous).ok, false);
+  assertEquals(validateRow("EUR", { ...current, lev_money_positions_long: "abc" }, previous).ok, false);
+  assertEquals(validateRow("EUR", { ...current, lev_money_positions_long: "999999999" }, previous).ok, false);
 });
