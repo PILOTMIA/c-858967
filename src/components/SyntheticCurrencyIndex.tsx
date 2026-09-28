@@ -276,18 +276,6 @@ const SyntheticCurrencyIndex = () => {
                         {item.data.weeklyChange >= 0 ? '+' : ''}{item.data.weeklyChange.toLocaleString()}
                       </div>
                     </div>
-                    <div className="bg-muted/5 rounded-lg p-2 border border-border/10">
-                      <div className="text-muted-foreground">AM Net</div>
-                      <div className={`font-mono font-bold ${(item.data.assetManagerLong - item.data.assetManagerShort) >= 0 ? 'text-success' : 'text-destructive'}`}>
-                        {(item.data.assetManagerLong - item.data.assetManagerShort).toLocaleString()}
-                      </div>
-                    </div>
-                    <div className="bg-muted/5 rounded-lg p-2 border border-border/10">
-                      <div className="text-muted-foreground">Dealer Net</div>
-                      <div className={`font-mono font-bold ${(item.data.dealerLong - item.data.dealerShort) >= 0 ? 'text-success' : 'text-destructive'}`}>
-                        {(item.data.dealerLong - item.data.dealerShort).toLocaleString()}
-                      </div>
-                    </div>
                   </div>
                 </div>
               )}
