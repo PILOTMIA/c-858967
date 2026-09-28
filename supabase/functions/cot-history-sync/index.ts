@@ -33,6 +33,9 @@ const CFTC_CODES: Record<string, string> = {
   CATTLE: "057642",
   HOGS: "054642",
   BTC: "133741",
+  SP500: "13874A",
+  NASDAQ: "209742",
+  VIX: "1170E1",
 };
 
 // Per-field validation — exported for tests
@@ -68,7 +71,7 @@ export function validateRow(currency: string, row: RawCotRow, previous?: RawCotR
   // Reject ancient data older than 5 years (safety)
   if (d.getTime() < Date.now() - 5 * 365 * 24 * 3600_000) return { ok: false, error: `too old: ${reportDate}` };
 
-  const financial = ["EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "NZD", "MXN", "USD", "BTC"].includes(currency);
+  const financial = ["EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "NZD", "MXN", "USD", "BTC", "SP500", "NASDAQ", "VIX"].includes(currency);
   const longKey = financial ? "lev_money_positions_long" : "m_money_positions_long_all";
   const shortKey = financial ? "lev_money_positions_short" : "m_money_positions_short_all";
   const long = Number(row[longKey] ?? (financial ? row.lev_money_positions_long_all : undefined));
@@ -110,7 +113,7 @@ export function validateRow(currency: string, row: RawCotRow, previous?: RawCotR
 
 async function fetchCategoryCOT(currency: string, code: string): Promise<RawCotRow[] | null> {
   try {
-    const financial = ["EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "NZD", "MXN", "USD", "BTC"].includes(currency);
+    const financial = ["EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "NZD", "MXN", "USD", "BTC", "SP500", "NASDAQ", "VIX"].includes(currency);
     const dataset = financial ? "gpe5-46if" : "72hh-3qpy";
     const url = `https://publicreporting.cftc.gov/resource/${dataset}.json?$limit=2&$order=report_date_as_yyyy_mm_dd DESC&cftc_contract_market_code=${code}`;
     const res = await fetch(url, {
