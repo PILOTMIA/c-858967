@@ -174,6 +174,11 @@ serve(async (req) => {
       const { long, short } = speculatorLegs(latest, FINANCIAL.has(currency));
       if (!long && !short) { missing.push(currency); return; }
       const p = speculatorLegs(prev, FINANCIAL.has(currency));
+      const previousDate = String(prev.report_date_as_yyyy_mm_dd ?? "").slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(previousDate) || previousDate >= reportDate ||
+          !Number.isFinite(p.long) || !Number.isFinite(p.short) || p.long < 0 || p.short < 0) {
+        missing.push(currency); return;
+      }
       const total = long + short;
       rowsToWrite.push({
         currency,
@@ -197,9 +202,22 @@ serve(async (req) => {
       );
     }
 
+    const dates = [...new Set(rowsToWrite.map(row => String(row.report_date)))];
+    const { data: protectedRows, error: lookupError } = await supabase.from("cot_history")
+      .select("currency, report_date, source").in("report_date", dates);
+    if (lookupError) throw lookupError;
+    const protectedKeys = new Set((protectedRows ?? [])
+      .filter(row => row.source === "verified_upload" || row.source === "admin_upload")
+      .map(row => `${row.currency}:${row.report_date}`));
+    const acceptedRows = rowsToWrite.filter(row => row.source === "admin_upload" ||
+      !protectedKeys.has(`${row.currency}:${row.report_date}`));
+    if (!acceptedRows.length) return new Response(
+      JSON.stringify({ ok: true, reportDate, written: 0, markets: [], unavailable: missing.sort() }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
     const { error } = await supabase
       .from("cot_history")
-      .upsert(rowsToWrite, { onConflict: "currency,report_date" });
+      .upsert(acceptedRows, { onConflict: "currency,report_date" });
 
     if (error) throw error;
 
@@ -207,7 +225,7 @@ serve(async (req) => {
       JSON.stringify({
         ok: true,
         reportDate,
-        written: rowsToWrite.length,
+        written: acceptedRows.length,
         markets: markets.sort(),
         unavailable: missing.sort(),
         updatedAt: new Date().toISOString(),
