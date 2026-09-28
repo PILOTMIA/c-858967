@@ -75,16 +75,14 @@ function computeStrength(
 
   // Calculate % change based on weekly positioning change relative to total open interest
   const totalOI = currData.long + currData.short || 1;
-  const pctChange = mode === 'weekly'
-    ? (currData.weeklyChange / totalOI) * 100
-    : (currData.weeklyChange / totalOI) * 100 * 4.3; // rough 30-day estimate
+  const pctChange = (currData.weeklyChange / totalOI) * 100;
 
   return { score: avgScore, pctChange, pairs: pairCount };
 }
 
 // ── Component ───────────────────────────────────────────────────────────────
 const SyntheticCurrencyIndex = () => {
-  const [timeframe, setTimeframe] = useState<'weekly' | '30day'>('30day');
+  const [timeframe, setTimeframe] = useState<'weekly' | '30day'>('weekly');
   const [cotData, setCotData] = useState<Record<string, CurrencyData>>({});
   const [loading, setLoading] = useState(false);
   const [lastFetched, setLastFetched] = useState<string | null>(null);
@@ -151,11 +149,12 @@ const SyntheticCurrencyIndex = () => {
             <h2 className="font-display-hero text-xl sm:text-2xl font-bold text-foreground">Synthetic Currency Indexes</h2>
           </div>
           <p className="text-muted-foreground text-xs sm:text-sm">
-            G10 currencies ranked strongest to weakest based on COT cross-pair performance
+            Weekly COT positioning comparison (contracts, not spot-price performance)
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex rounded-lg border border-border/30 overflow-hidden">
+          {/* A 30-day series needs four actual reports; do not extrapolate one week. */}
+          <div className="hidden rounded-lg border border-border/30 overflow-hidden">
             <Button
               variant="ghost"
               size="sm"
@@ -251,7 +250,7 @@ const SyntheticCurrencyIndex = () => {
                       const otherD = cotData[other];
                       const netDiff = currD.netPosition - otherD.netPosition;
                       const isPos = netDiff >= 0;
-                      const pairLabel = `${item.code}/${other}`;
+                      const pairLabel = `${item.code} vs ${other}`;
 
                       return (
                         <div key={other} className="flex items-center justify-between rounded-lg bg-muted/5 px-3 py-2 border border-border/10">
