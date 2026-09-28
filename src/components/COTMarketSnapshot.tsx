@@ -3,6 +3,7 @@ import { ArrowDownRight, ArrowUpRight, Radio, SlidersHorizontal } from "lucide-r
 import { Button } from "@/components/ui/button";
 import COTFreshnessBadge from "@/components/COTFreshnessBadge";
 import { latestHistoryRows, useCOTHistory } from "@/hooks/useCOTHistory";
+import { explainCOTChange } from "@/lib/cotExplanation";
 
 const GROUPS = {
   FX: ["EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "NZD", "MXN", "USD"],
@@ -34,6 +35,7 @@ const COTMarketSnapshot = () => {
         <div>
           <div className="hq-kicker"><Radio className="h-3 w-3" /> Latest positioning tape</div>
           <h2 className="mt-1 text-xl font-extrabold uppercase text-foreground">What changed this week</h2>
+           <p className="mt-1 text-xs text-muted-foreground">Weekly changes in leveraged funds (FX/BTC) or managed money (commodities). Positions are Tuesday snapshots, not live prices.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <COTFreshnessBadge />
@@ -76,12 +78,13 @@ const COTMarketSnapshot = () => {
                   <span className="bg-success" style={{ width: `${longPct}%` }} />
                   <span className="bg-destructive" style={{ width: `${100 - longPct}%` }} />
                 </div>
+                <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{explainCOTChange(row)}</p>
               </article>
             );
           })}
         </div>
       )}
-      <div className="mt-3 flex items-center gap-2 text-[10px] uppercase text-muted-foreground"><SlidersHorizontal className="h-3 w-3" /> Sorted by largest weekly positioning change</div>
+      <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground"><SlidersHorizontal className="h-3 w-3 shrink-0" /> Sorted by weekly change. COT shows what traders held, not their motives or where price will go; confirm with current prices and risk controls.</div>
     </section>
   );
 };

@@ -12,10 +12,6 @@ interface CurrencyData {
   long: number;
   short: number;
   weeklyChange: number;
-  dealerLong: number;
-  dealerShort: number;
-  assetManagerLong: number;
-  assetManagerShort: number;
   reportDate: string;
   source?: string;
 }
@@ -46,27 +42,10 @@ const CURRENCY_META: Record<string, { name: string; flag: string }> = {
 
 const G10_CURRENCIES = ['USD', 'EUR', 'JPY', 'GBP', 'AUD', 'CHF', 'CAD', 'NZD', 'MXN'];
 
-// Fallback COT positions (CFTC TFF report, September 1, 2026 — Leveraged Funds)
-const FALLBACK_COT: Record<string, CurrencyData> = {
-  EUR: { netPosition: -38173, long: 96137, short: 134310, weeklyChange: 186, dealerLong: 54643, dealerShort: 322221, assetManagerLong: 468254, assetManagerShort: 205001, reportDate: "2026-09-01" },
-  GBP: { netPosition: 43167, long: 77117, short: 33950, weeklyChange: -4742, dealerLong: 133142, dealerShort: 73939, assetManagerLong: 43569, assetManagerShort: 150902, reportDate: "2026-09-01" },
-  JPY: { netPosition: -102188, long: 58529, short: 160717, weeklyChange: -25146, dealerLong: 116682, dealerShort: 37361, assetManagerLong: 70419, assetManagerShort: 94940, reportDate: "2026-09-01" },
-  CHF: { netPosition: -10298, long: 12305, short: 22603, weeklyChange: -1473, dealerLong: 64678, dealerShort: 8935, assetManagerLong: 12689, assetManagerShort: 44806, reportDate: "2026-09-01" },
-  AUD: { netPosition: 49662, long: 78498, short: 28836, weeklyChange: -4399, dealerLong: 104022, dealerShort: 147478, assetManagerLong: 108835, assetManagerShort: 139302, reportDate: "2026-09-01" },
-  CAD: { netPosition: -68750, long: 27845, short: 96595, weeklyChange: 3342, dealerLong: 180223, dealerShort: 62264, assetManagerLong: 59172, assetManagerShort: 108716, reportDate: "2026-09-01" },
-  NZD: { netPosition: -22338, long: 5216, short: 27554, weeklyChange: 9656, dealerLong: 54532, dealerShort: 36175, assetManagerLong: 12931, assetManagerShort: 9972, reportDate: "2026-09-01" },
-  MXN: { netPosition: 93247, long: 174649, short: 81402, weeklyChange: 10865, dealerLong: 0, dealerShort: 0, assetManagerLong: 0, assetManagerShort: 0, reportDate: "2026-08-31", source: "user_upload_verified" },
-  USD: { netPosition: 7133, long: 16024, short: 8891, weeklyChange: -2056, dealerLong: 5796, dealerShort: 32811, assetManagerLong: 17667, assetManagerShort: 1426, reportDate: "2026-09-01" },
-
-};
-
-
-
 // ── Scoring logic ───────────────────────────────────────────────────────────
 function computeStrength(
   currency: string,
   allData: Record<string, CurrencyData>,
-  mode: 'weekly' | '30day'
 ): { score: number; pctChange: number; pairs: number } {
   const others = G10_CURRENCIES.filter(c => c !== currency);
   let totalScore = 0;
@@ -83,14 +62,11 @@ function computeStrength(
     // COT net position differential
     const netDiff = currData.netPosition - otherData.netPosition;
 
-    // Asset manager differential
-    const amDiff = (currData.assetManagerLong - currData.assetManagerShort) - (otherData.assetManagerLong - otherData.assetManagerShort);
-
     // Weekly change differential
     const weeklyDiff = currData.weeklyChange - otherData.weeklyChange;
 
     // Composite pair score (normalized)
-    const pairScore = (netDiff / 100000) * 50 + (amDiff / 300000) * 30 + (weeklyDiff / 20000) * 20;
+    const pairScore = (netDiff / 100000) * 70 + (weeklyDiff / 20000) * 30;
     totalScore += pairScore;
   }
 
@@ -98,17 +74,14 @@ function computeStrength(
 
   // Calculate % change based on weekly positioning change relative to total open interest
   const totalOI = currData.long + currData.short || 1;
-  const pctChange = mode === 'weekly'
-    ? (currData.weeklyChange / totalOI) * 100
-    : (currData.weeklyChange / totalOI) * 100 * 4.3; // rough 30-day estimate
+  const pctChange = (currData.weeklyChange / totalOI) * 100;
 
   return { score: avgScore, pctChange, pairs: pairCount };
 }
 
 // ── Component ───────────────────────────────────────────────────────────────
 const SyntheticCurrencyIndex = () => {
-  const [timeframe, setTimeframe] = useState<'weekly' | '30day'>('30day');
-  const [cotData, setCotData] = useState<Record<string, CurrencyData>>(FALLBACK_COT);
+  const [cotData, setCotData] = useState<Record<string, CurrencyData>>({});
   const [loading, setLoading] = useState(false);
   const [lastFetched, setLastFetched] = useState<string | null>(null);
   const [expandedCurrency, setExpandedCurrency] = useState<string | null>(null);
@@ -133,20 +106,17 @@ const SyntheticCurrencyIndex = () => {
 
   useEffect(() => {
     if (!latestCot) return;
-    setCotData((previous) => {
-      const merged = { ...previous };
-      for (const [code, row] of Object.entries(latestCot)) {
-        const prior = merged[code] ?? FALLBACK_COT.USD;
-        merged[code] = { ...prior, netPosition: row.net, long: row.long, short: row.short, weeklyChange: row.weekly, assetManagerLong: row.long, assetManagerShort: row.short, reportDate: row.reportDate, source: row.source };
-      }
-      return merged;
-    });
+    const mapped: Record<string, CurrencyData> = {};
+    for (const [code, row] of Object.entries(latestCot)) {
+      mapped[code] = { netPosition: row.net, long: row.long, short: row.short, weeklyChange: row.weekly, reportDate: row.reportDate, source: row.source };
+    }
+    setCotData(mapped);
   }, [latestCot]);
 
   // Rank currencies
   const ranked: RankedCurrency[] = useMemo(() => {
-    const items = G10_CURRENCIES.map(code => {
-      const { score, pctChange, pairs } = computeStrength(code, cotData, timeframe);
+    const items = G10_CURRENCIES.filter(code => cotData[code]).map(code => {
+      const { score, pctChange, pairs } = computeStrength(code, cotData);
       return {
         code,
         name: CURRENCY_META[code].name,
@@ -155,17 +125,17 @@ const SyntheticCurrencyIndex = () => {
         pctChange,
         pairs,
         rank: 0,
-        data: cotData[code] || FALLBACK_COT[code],
+        data: cotData[code],
       };
     });
     items.sort((a, b) => b.score - a.score);
     items.forEach((item, i) => { item.rank = i + 1; });
     return items;
-  }, [cotData, timeframe]);
+  }, [cotData]);
 
   const maxAbsScore = Math.max(...ranked.map(r => Math.abs(r.score)), 1);
 
-  const reportDate = latestReportDate(latestCot) || cotData.EUR?.reportDate || '—';
+  const reportDate = latestReportDate(latestCot) || '—';
 
   return (
     <div className="hq-panel p-5 sm:p-6">
@@ -177,28 +147,10 @@ const SyntheticCurrencyIndex = () => {
             <h2 className="font-display-hero text-xl sm:text-2xl font-bold text-foreground">Synthetic Currency Indexes</h2>
           </div>
           <p className="text-muted-foreground text-xs sm:text-sm">
-            G10 currencies ranked strongest to weakest based on COT cross-pair performance
+            Weekly COT positioning comparison (contracts, not spot-price performance)
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex rounded-lg border border-border/30 overflow-hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setTimeframe('weekly')}
-              className={`rounded-sm px-3 text-xs ${timeframe === 'weekly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
-            >
-              1 Week
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setTimeframe('30day')}
-              className={`rounded-sm px-3 text-xs ${timeframe === '30day' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
-            >
-              30 Day
-            </Button>
-          </div>
           <Button
             variant="ghost"
             size="sm"
@@ -216,7 +168,7 @@ const SyntheticCurrencyIndex = () => {
       <div className="flex items-center gap-3 mb-4 text-xs text-muted-foreground">
         <span>Data as of {reportDate}</span>
         <Badge variant="outline" className="text-[10px] border-border/30">
-          Verified stored CFTC feed
+          Stored CFTC positioning
         </Badge>
       </div>
 
@@ -272,12 +224,12 @@ const SyntheticCurrencyIndex = () => {
                 <div className="ml-10 mt-1 mb-2 rounded-xl border border-border/15 bg-card/20 p-4">
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Pair Breakdown — {item.code}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    {G10_CURRENCIES.filter(c => c !== item.code).map(other => {
+                    {G10_CURRENCIES.filter(c => c !== item.code && cotData[c]).map(other => {
                       const currD = item.data;
-                      const otherD = cotData[other] || FALLBACK_COT[other];
+                      const otherD = cotData[other];
                       const netDiff = currD.netPosition - otherD.netPosition;
                       const isPos = netDiff >= 0;
-                      const pairLabel = `${item.code}/${other}`;
+                      const pairLabel = `${item.code} vs ${other}`;
 
                       return (
                         <div key={other} className="flex items-center justify-between rounded-lg bg-muted/5 px-3 py-2 border border-border/10">
@@ -300,18 +252,6 @@ const SyntheticCurrencyIndex = () => {
                       <div className="text-muted-foreground">Weekly Δ</div>
                       <div className={`font-mono font-bold ${item.data.weeklyChange >= 0 ? 'text-success' : 'text-destructive'}`}>
                         {item.data.weeklyChange >= 0 ? '+' : ''}{item.data.weeklyChange.toLocaleString()}
-                      </div>
-                    </div>
-                    <div className="bg-muted/5 rounded-lg p-2 border border-border/10">
-                      <div className="text-muted-foreground">AM Net</div>
-                      <div className={`font-mono font-bold ${(item.data.assetManagerLong - item.data.assetManagerShort) >= 0 ? 'text-success' : 'text-destructive'}`}>
-                        {(item.data.assetManagerLong - item.data.assetManagerShort).toLocaleString()}
-                      </div>
-                    </div>
-                    <div className="bg-muted/5 rounded-lg p-2 border border-border/10">
-                      <div className="text-muted-foreground">Dealer Net</div>
-                      <div className={`font-mono font-bold ${(item.data.dealerLong - item.data.dealerShort) >= 0 ? 'text-success' : 'text-destructive'}`}>
-                        {(item.data.dealerLong - item.data.dealerShort).toLocaleString()}
                       </div>
                     </div>
                   </div>

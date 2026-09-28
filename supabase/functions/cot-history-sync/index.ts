@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// CFTC codes for Non-Commercial (legacy) COT report
+// Canonical contracts appearing in the uploaded TFF / disaggregated reports.
 const CFTC_CODES: Record<string, string> = {
   EUR: "099741",
   GBP: "096742",
@@ -33,15 +33,15 @@ const CFTC_CODES: Record<string, string> = {
   CATTLE: "057642",
   HOGS: "054642",
   BTC: "133741",
+  SP500: "13874A",
+  NASDAQ: "209742",
+  VIX: "1170E1",
 };
 
 // Per-field validation — exported for tests
 export interface RawCotRow {
   report_date_as_yyyy_mm_dd?: string;
-  noncomm_positions_long_all?: string | number;
-  noncomm_positions_short_all?: string | number;
-  change_in_noncomm_long_all?: string | number;
-  change_in_noncomm_short_all?: string | number;
+  [key: string]: string | number | undefined;
 }
 
 export interface ValidatedRow {
@@ -57,7 +57,7 @@ export interface ValidatedRow {
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
-export function validateRow(currency: string, row: RawCotRow): { ok: true; value: ValidatedRow } | { ok: false; error: string } {
+export function validateRow(currency: string, row: RawCotRow, previous?: RawCotRow): { ok: true; value: ValidatedRow } | { ok: false; error: string } {
   if (!row || typeof row !== "object") return { ok: false, error: "row missing" };
 
   const rawDate = String(row.report_date_as_yyyy_mm_dd ?? "");
@@ -71,17 +71,26 @@ export function validateRow(currency: string, row: RawCotRow): { ok: true; value
   // Reject ancient data older than 5 years (safety)
   if (d.getTime() < Date.now() - 5 * 365 * 24 * 3600_000) return { ok: false, error: `too old: ${reportDate}` };
 
-  const long = Number(row.noncomm_positions_long_all);
-  const short = Number(row.noncomm_positions_short_all);
+  const financial = ["EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "NZD", "MXN", "USD", "BTC", "SP500", "NASDAQ", "VIX"].includes(currency);
+  const longKey = financial ? "lev_money_positions_long" : "m_money_positions_long_all";
+  const shortKey = financial ? "lev_money_positions_short" : "m_money_positions_short_all";
+  const long = Number(row[longKey] ?? (financial ? row.lev_money_positions_long_all : undefined));
+  const short = Number(row[shortKey] ?? (financial ? row.lev_money_positions_short_all : undefined));
   if (!Number.isFinite(long) || !Number.isFinite(short)) return { ok: false, error: "non-numeric long/short" };
   if (long < 0 || short < 0) return { ok: false, error: "negative position" };
   // Sanity cap — no real CFTC contract has >10M speculator positions
   if (long > 10_000_000 || short > 10_000_000) return { ok: false, error: "position exceeds sanity cap" };
 
-  const cLong = Number(row.change_in_noncomm_long_all ?? 0);
-  const cShort = Number(row.change_in_noncomm_short_all ?? 0);
-  const changeLong = Number.isFinite(cLong) ? cLong : 0;
-  const changeShort = Number.isFinite(cShort) ? cShort : 0;
+  // Do not substitute legacy Non-Commercial weekly changes for a different trader category.
+  const priorDate = String(previous?.report_date_as_yyyy_mm_dd ?? "").slice(0, 10);
+  const priorLong = Number(previous?.[longKey] ?? (financial ? previous?.lev_money_positions_long_all : undefined));
+  const priorShort = Number(previous?.[shortKey] ?? (financial ? previous?.lev_money_positions_short_all : undefined));
+  if (!previous || !DATE_RE.test(priorDate) || priorDate >= reportDate ||
+      !Number.isInteger(priorLong) || !Number.isInteger(priorShort) || priorLong < 0 || priorShort < 0) {
+    return { ok: false, error: "missing valid previous report for category-matched weekly change" };
+  }
+  const changeLong = long - priorLong;
+  const changeShort = short - priorShort;
 
   const net = long - short;
   // Integrity invariant
@@ -97,14 +106,16 @@ export function validateRow(currency: string, row: RawCotRow): { ok: true; value
       net_position: Math.trunc(net),
       change_long: Math.trunc(changeLong),
       change_short: Math.trunc(changeShort),
-      source: "cftc_auto",
+      source: financial ? "cftc_tff_leveraged" : "cftc_disagg_managed_money",
     },
   };
 }
 
-async function fetchLegacyCOT(code: string): Promise<RawCotRow[] | null> {
+async function fetchCategoryCOT(currency: string, code: string): Promise<RawCotRow[] | null> {
   try {
-    const url = `https://publicreporting.cftc.gov/resource/6dca-aqww.json?$limit=2&$order=report_date_as_yyyy_mm_dd DESC&cftc_contract_market_code=${code}`;
+    const financial = ["EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "NZD", "MXN", "USD", "BTC", "SP500", "NASDAQ", "VIX"].includes(currency);
+    const dataset = financial ? "gpe5-46if" : "72hh-3qpy";
+    const url = `https://publicreporting.cftc.gov/resource/${dataset}.json?$limit=2&$order=report_date_as_yyyy_mm_dd DESC&cftc_contract_market_code=${code}`;
     const res = await fetch(url, {
       headers: { Accept: "application/json" },
       signal: AbortSignal.timeout(15000),
@@ -134,19 +145,28 @@ serve(async (req) => {
   for (const [currency, code] of Object.entries(CFTC_CODES)) {
     const entry = { status: "ok", valid: 0, rejected: 0, errors: [] as string[] };
     try {
-      const data = await fetchLegacyCOT(code);
-      if (!data) {
+      const data = await fetchCategoryCOT(currency, code);
+      if (!data || data.length < 2) {
         entry.status = "no_data";
         results[currency] = entry;
         continue;
       }
 
-      for (const row of data) {
-        const v = validateRow(currency, row);
+      // One report per contract. Previous report supplies the category-matched weekly change.
+      for (const row of data.slice(0, 1)) {
+        const v = validateRow(currency, row, data[1]);
         if (!v.ok) {
           entry.rejected++;
           totalRejected++;
           entry.errors.push(v.error);
+          continue;
+        }
+        const { data: existing, error: lookupError } = await supabase.from("cot_history")
+          .select("report_date, source").eq("currency", currency)
+          .eq("report_date", v.value.report_date).maybeSingle();
+        if (lookupError) throw lookupError;
+        if (existing?.source?.includes("verified_upload") || existing?.source === "admin_upload") {
+          entry.status = "preserved_verified_upload";
           continue;
         }
         const { error } = await supabase

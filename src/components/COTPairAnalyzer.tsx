@@ -8,33 +8,13 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { latestReportDate, useLatestCOT } from "@/hooks/useLatestCOT";
 
-// COT positions from CFTC TFF report, August 11, 2026 (Leveraged Funds)
 interface CurrencyPositioning {
   netPosition: number;
   long: number;
   short: number;
   sentiment: string;
   weeklyChange: number;
-  dealerLong: number;
-  dealerShort: number;
-  dealerWeeklyChange: number;
-  assetManagerLong: number;
-  assetManagerShort: number;
-  assetManagerWeeklyChange: number;
 }
-
-// CFTC TFF report, September 1, 2026 (Leveraged Funds) — verified from CFTC Socrata API
-const COT_POSITIONS: Record<string, CurrencyPositioning> = {
-  EUR: { netPosition: -38173, long: 96137, short: 134310, sentiment: 'BEARISH', weeklyChange: 186, dealerLong: 54643, dealerShort: 322221, dealerWeeklyChange: 1003, assetManagerLong: 468254, assetManagerShort: 205001, assetManagerWeeklyChange: 1827 },
-  GBP: { netPosition: 43167, long: 77117, short: 33950, sentiment: 'BULLISH', weeklyChange: -4742, dealerLong: 133142, dealerShort: 73939, dealerWeeklyChange: 10798, assetManagerLong: 43569, assetManagerShort: 150902, assetManagerWeeklyChange: -2842 },
-  JPY: { netPosition: -102188, long: 58529, short: 160717, sentiment: 'BEARISH', weeklyChange: -25146, dealerLong: 116682, dealerShort: 37361, dealerWeeklyChange: 36383, assetManagerLong: 70419, assetManagerShort: 94940, assetManagerWeeklyChange: -4405 },
-  CHF: { netPosition: -10298, long: 12305, short: 22603, sentiment: 'BEARISH', weeklyChange: -1473, dealerLong: 64678, dealerShort: 8935, dealerWeeklyChange: 7042, assetManagerLong: 12689, assetManagerShort: 44806, assetManagerWeeklyChange: -3462 },
-  AUD: { netPosition: 49662, long: 78498, short: 28836, sentiment: 'BULLISH', weeklyChange: -4399, dealerLong: 104022, dealerShort: 147478, dealerWeeklyChange: -5413, assetManagerLong: 108835, assetManagerShort: 139302, assetManagerWeeklyChange: 14960 },
-  CAD: { netPosition: -68750, long: 27845, short: 96595, sentiment: 'BEARISH', weeklyChange: 3342, dealerLong: 180223, dealerShort: 62264, dealerWeeklyChange: -6971, assetManagerLong: 59172, assetManagerShort: 108716, assetManagerWeeklyChange: 9399 },
-  MXN: { netPosition: 93247, long: 174649, short: 81402, sentiment: 'BULLISH', weeklyChange: 10865, dealerLong: 0, dealerShort: 0, dealerWeeklyChange: 0, assetManagerLong: 0, assetManagerShort: 0, assetManagerWeeklyChange: 0 },
-  NZD: { netPosition: -22338, long: 5216, short: 27554, sentiment: 'BEARISH', weeklyChange: 9656, dealerLong: 54532, dealerShort: 36175, dealerWeeklyChange: -12382, assetManagerLong: 12931, assetManagerShort: 9972, assetManagerWeeklyChange: 2529 },
-  USD: { netPosition: 7133, long: 16024, short: 8891, sentiment: 'BULLISH', weeklyChange: -2056, dealerLong: 5796, dealerShort: 32811, dealerWeeklyChange: 138, assetManagerLong: 17667, assetManagerShort: 1426, assetManagerWeeklyChange: 2223 },
-};
 
 
 // Historical net positions are loaded live from cot_history (see useHistoricalNet below)
@@ -76,12 +56,9 @@ const COTPairAnalyzer = () => {
   const { data: latestCot } = useLatestCOT();
   const reportDate = latestReportDate(latestCot);
   const positions = useMemo(() => {
-    const merged = { ...COT_POSITIONS };
+    const merged: Record<string, CurrencyPositioning> = {};
     for (const [currency, row] of Object.entries(latestCot ?? {})) {
-      const prior = merged[currency];
-      if (!prior) continue;
       merged[currency] = {
-        ...prior,
         netPosition: row.net,
         long: row.long,
         short: row.short,
@@ -241,28 +218,13 @@ const COTPairAnalyzer = () => {
     const baseDir = base.netPosition > 0 ? 'long' : 'short';
     const quoteDir = quote.netPosition > 0 ? 'long' : 'short';
 
-    const baseDealerNet = base.dealerLong - base.dealerShort;
-    const quoteDealerNet = quote.dealerLong - quote.dealerShort;
-    const baseAMNet = base.assetManagerLong - base.assetManagerShort;
-    const quoteAMNet = quote.assetManagerLong - quote.assetManagerShort;
-    
-    const dealerFavorsBase = baseDealerNet - quoteDealerNet > 0;
-    const amFavorsBase = baseAMNet - quoteAMNet > 0;
-    const leveragedFavorsBase = analysis.isBullish;
-    
-    const allAligned = (dealerFavorsBase === amFavorsBase) && (amFavorsBase === leveragedFavorsBase);
-    const twoOfThree = (dealerFavorsBase === amFavorsBase) || (amFavorsBase === leveragedFavorsBase) || (dealerFavorsBase === leveragedFavorsBase);
-
-    const conviction = allAligned ? 'High' : twoOfThree ? 'Moderate' : 'Low';
-    const convictionColor = allAligned ? 'text-success' : twoOfThree ? 'text-chart-1' : 'text-destructive';
-
     const favoredCurrency = analysis.isBullish ? baseName : quoteName;
     const direction = analysis.isBullish ? 'bullish' : 'bearish';
 
     const baseFlow = base.weeklyChange > 0 ? `+${formatContracts(base.weeklyChange)}` : formatContracts(base.weeklyChange);
     const quoteFlow = quote.weeklyChange > 0 ? `+${formatContracts(quote.weeklyChange)}` : formatContracts(quote.weeklyChange);
 
-    return { baseName, quoteName, baseDir, quoteDir, baseFlow, quoteFlow, conviction, convictionColor, favoredCurrency, direction, allAligned, twoOfThree, baseNet: formatContracts(Math.abs(base.netPosition)), quoteNet: formatContracts(Math.abs(quote.netPosition)) };
+    return { baseName, quoteName, baseDir, quoteDir, baseFlow, quoteFlow, favoredCurrency, direction, baseNet: formatContracts(Math.abs(base.netPosition)), quoteNet: formatContracts(Math.abs(quote.netPosition)) };
   }, [analysis]);
 
   return (
@@ -419,77 +381,12 @@ const COTPairAnalyzer = () => {
                   </LineChart>
                 </ResponsiveContainer>
                 <p className="text-[10px] text-muted-foreground mt-2 text-center">
-                  CFTC Leveraged Funds net position{reportDate ? ` • Latest stored report ${reportDate}` : ''}
+                   Stored speculative net positions • historical rows may use different trader categories and are not directly comparable{reportDate ? ` • Latest ${reportDate}` : ''}
                 </p>
               </div>
             )}
 
-            {/* Dealer & Asset Manager Positioning */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-primary" />
-                Institutional Breakdown
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {[analysis.base, analysis.quote].map((curr) => {
-                  const dealerNet = curr.dealerLong - curr.dealerShort;
-                  const amNet = curr.assetManagerLong - curr.assetManagerShort;
-                  return (
-                    <div key={`inst-${curr.currency}`} className="rounded-xl bg-muted/10 p-4 border border-border/20 space-y-3">
-                      <span className="font-bold text-foreground text-sm">{FLAG_EMOJIS[curr.currency]} {curr.currency}</span>
-                      
-                      {/* Dealer */}
-                      <div className="p-2.5 rounded-lg bg-background/50 border border-border/10">
-                        <div className="flex items-center gap-1.5 mb-1.5">
-                          <Building2 className="w-3 h-3 text-muted-foreground" />
-                          <span className="text-xs font-medium text-muted-foreground">Dealers/Intermediaries</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-muted-foreground">Net</span>
-                          <span className={`font-mono font-bold text-sm ${dealerNet > 0 ? 'text-success' : dealerNet < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                            {dealerNet > 0 ? '+' : ''}{formatContracts(dealerNet)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center mt-0.5">
-                          <span className="text-xs text-muted-foreground">L / S</span>
-                          <span className="font-mono text-xs text-foreground">{formatContracts(curr.dealerLong)} / {formatContracts(curr.dealerShort)}</span>
-                        </div>
-                        <div className="flex justify-between items-center mt-0.5">
-                          <span className="text-xs text-muted-foreground">Weekly Δ</span>
-                          <span className={`font-mono text-xs ${curr.dealerWeeklyChange > 0 ? 'text-success' : 'text-destructive'}`}>
-                            {curr.dealerWeeklyChange > 0 ? '+' : ''}{formatContracts(curr.dealerWeeklyChange)}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {/* Asset Manager */}
-                      <div className="p-2.5 rounded-lg bg-background/50 border border-border/10">
-                        <div className="flex items-center gap-1.5 mb-1.5">
-                          <BarChart3 className="w-3 h-3 text-muted-foreground" />
-                          <span className="text-xs font-medium text-muted-foreground">Asset Managers</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-muted-foreground">Net</span>
-                          <span className={`font-mono font-bold text-sm ${amNet > 0 ? 'text-success' : amNet < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                            {amNet > 0 ? '+' : ''}{formatContracts(amNet)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center mt-0.5">
-                          <span className="text-xs text-muted-foreground">L / S</span>
-                          <span className="font-mono text-xs text-foreground">{formatContracts(curr.assetManagerLong)} / {formatContracts(curr.assetManagerShort)}</span>
-                        </div>
-                        <div className="flex justify-between items-center mt-0.5">
-                          <span className="text-xs text-muted-foreground">Weekly Δ</span>
-                          <span className={`font-mono text-xs ${curr.assetManagerWeeklyChange > 0 ? 'text-success' : 'text-destructive'}`}>
-                            {curr.assetManagerWeeklyChange > 0 ? '+' : ''}{formatContracts(curr.assetManagerWeeklyChange)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+             <p className="text-xs text-muted-foreground">This comparison uses the stored speculative category only. Dealer and asset-manager breakdowns are not available in this feed.</p>
 
             {/* US 10-Year Treasury Note — only for USD pairs */}
             {isUSDPair && (
@@ -583,22 +480,15 @@ const COTPairAnalyzer = () => {
                   <Shield className="w-4 h-4 text-primary" />
                   <span className="font-semibold text-foreground text-sm">Smart Money Insight</span>
                 </div>
-                <Badge variant="outline" className={`text-[10px] ${smartMoneyInsight.convictionColor} border-current`}>
-                  {smartMoneyInsight.conviction} Conviction
-                </Badge>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Leveraged funds are <strong className={smartMoneyInsight.baseDir === 'long' ? 'text-success' : 'text-destructive'}>net {smartMoneyInsight.baseDir} {smartMoneyInsight.baseName}</strong> ({smartMoneyInsight.baseNet} contracts) and <strong className={smartMoneyInsight.quoteDir === 'long' ? 'text-success' : 'text-destructive'}>net {smartMoneyInsight.quoteDir} {smartMoneyInsight.quoteName}</strong> ({smartMoneyInsight.quoteNet} contracts).
+                Speculative traders are <strong className={smartMoneyInsight.baseDir === 'long' ? 'text-success' : 'text-destructive'}>net {smartMoneyInsight.baseDir} {smartMoneyInsight.baseName}</strong> ({smartMoneyInsight.baseNet} contracts) and <strong className={smartMoneyInsight.quoteDir === 'long' ? 'text-success' : 'text-destructive'}>net {smartMoneyInsight.quoteDir} {smartMoneyInsight.quoteName}</strong> ({smartMoneyInsight.quoteNet} contracts).
                 
                 Weekly flow: {smartMoneyInsight.baseName} {smartMoneyInsight.baseFlow}, {smartMoneyInsight.quoteName} {smartMoneyInsight.quoteFlow}.
                 
                 The net differential is <strong className={analysis.isBullish ? 'text-success' : 'text-destructive'}>{smartMoneyInsight.direction}</strong> for {analysis.pair}, favoring <strong className="text-foreground">{smartMoneyInsight.favoredCurrency}</strong>.
                 
-                {smartMoneyInsight.allAligned 
-                  ? ' All three groups (Dealers, Asset Managers, Leveraged Funds) agree — high conviction setup.'
-                  : smartMoneyInsight.twoOfThree
-                    ? ' Two of three institutional groups agree — moderate conviction. Manage risk accordingly.'
-                    : ' Institutional groups are split — low conviction. Wait for alignment before entering.'}
+                {' '}Positioning is a weekly snapshot, not a price forecast; check current prices before acting.
               </p>
             </div>
 
