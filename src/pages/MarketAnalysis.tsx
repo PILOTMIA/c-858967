@@ -5,6 +5,7 @@ import LivePriceBoard from "@/components/LivePriceBoard";
 import LiveRateTicker from "@/components/LiveRateTicker";
 import PipCalculator from "@/components/PipCalculator";
 import CurrencyStrengthWatch from "@/components/CurrencyStrengthWatch";
+import DataTrustBadge from "@/components/DataTrustBadge";
 
 /**
  * Market Analysis — live rate board, session status and an accurate pip calculator.
