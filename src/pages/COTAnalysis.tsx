@@ -13,6 +13,7 @@ import { TrendingUp, Users, Building2, ArrowUpRight, ArrowDownRight } from "luci
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { latestHistoryRows, useCOTHistory } from "@/hooks/useCOTHistory";
 import COTFreshnessBadge from "@/components/COTFreshnessBadge";
+import DataTrustBadge from "@/components/DataTrustBadge";
 import { explainCOTChange } from "@/lib/cotExplanation";
 
 const COTAnalysisContent = () => {
@@ -61,7 +62,7 @@ const COTAnalysisContent = () => {
             eyebrow="Institutional Positioning"
             title="COT Analysis"
             subtitle="Commitment of Traders data — insights into institutional and retail positioning, refreshed every Friday from the CFTC."
-            actions={<COTFreshnessBadge />}
+            actions={<div className="flex flex-wrap gap-2"><DataTrustBadge /><COTFreshnessBadge /></div>}
           />
 
 

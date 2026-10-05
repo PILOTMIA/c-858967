@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { TrendingUp, BookOpen, Users, BarChart3, Building, Newspaper, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import COTMarketSnapshot from "@/components/COTMarketSnapshot";
+import DataTrustBadge from "@/components/DataTrustBadge";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ const Index = () => {
             <p className="mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">Institutional positioning, live market confirmation, macro catalysts and risk conditions in one tactical workspace.</p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <DataTrustBadge />
             <Button onClick={() => navigate('/weekly-playbook')}>Open weekly playbook <ArrowRight className="ml-2 h-4 w-4" /></Button>
             <Button variant="outline" onClick={() => navigate('/cot-analysis')}>Inspect COT data</Button>
           </div>

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { ArrowDownRight, ArrowUpRight, Radio, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import COTFreshnessBadge from "@/components/COTFreshnessBadge";
+import DataTrustBadge from "@/components/DataTrustBadge";
 import { latestHistoryRows, useCOTHistory } from "@/hooks/useCOTHistory";
 import { explainCOTChange } from "@/lib/cotExplanation";
 
@@ -38,6 +39,7 @@ const COTMarketSnapshot = () => {
            <p className="mt-1 text-xs text-muted-foreground">Weekly changes in leveraged funds (FX/BTC) or managed money (commodities). Positions are Tuesday snapshots, not live prices.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <DataTrustBadge />
           <COTFreshnessBadge />
           <div className="hq-segment" aria-label="Market group">
             {(Object.keys(GROUPS) as Group[]).map((item) => (

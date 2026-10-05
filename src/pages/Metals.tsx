@@ -9,12 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import COTFreshnessBadge from "@/components/COTFreshnessBadge";
+import DataTrustBadge from "@/components/DataTrustBadge";
 
 const Metals = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="hq-page space-y-8">
-        <PageHeader eyebrow="Cross-asset desk" title="Metals & Commodities" subtitle="Gold pricing, rate correlation and verified institutional positioning across metals, energy and agriculture." actions={<div className="flex flex-wrap gap-2"><COTFreshnessBadge /><Badge className="gap-1 border border-primary/30 bg-primary/15 text-primary"><Sparkles className="h-3 w-3" /> Agriculture live</Badge></div>} />
+        <PageHeader eyebrow="Cross-asset desk" title="Metals & Commodities" subtitle="Gold pricing, rate correlation and verified institutional positioning across metals, energy and agriculture." actions={<div className="flex flex-wrap gap-2"><DataTrustBadge /><COTFreshnessBadge /><Badge className="gap-1 border border-primary/30 bg-primary/15 text-primary"><Sparkles className="h-3 w-3" /> Agriculture live</Badge></div>} />
         <GoldLivePrice />
         <InterestRatesModule />
         <GoldRateCorrelation />

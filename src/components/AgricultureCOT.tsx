@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Wheat } from "lucide-react";
 import { latestHistoryRows, useCOTHistory } from "@/hooks/useCOTHistory";
 import COTFreshnessBadge from "@/components/COTFreshnessBadge";
+import DataTrustBadge from "@/components/DataTrustBadge";
 
 const AGRICULTURE = [
   ["CORN", "Corn", "CBOT"], ["WHEAT", "Wheat SRW", "CBOT"], ["SOYBEAN", "Soybeans", "CBOT"],
@@ -28,6 +29,7 @@ const AgricultureCOT = () => {
           <div className="rounded-sm border border-primary/30 bg-primary/10 p-2"><Wheat className="h-5 w-5 text-primary" /></div>
           <div><h2 className="text-xl font-black uppercase text-foreground">Agriculture positioning</h2><p className="mt-1 max-w-2xl text-sm text-muted-foreground">Managed-money flows that can precede food inflation, yield repricing and USD moves.</p></div>
         </div>
+        <DataTrustBadge />
         <COTFreshnessBadge />
       </div>
       {isLoading ? <div className="h-40 animate-pulse rounded-sm bg-muted" /> : (

@@ -5,6 +5,7 @@ import LivePriceBoard from "@/components/LivePriceBoard";
 import LiveRateTicker from "@/components/LiveRateTicker";
 import PipCalculator from "@/components/PipCalculator";
 import CurrencyStrengthWatch from "@/components/CurrencyStrengthWatch";
+import DataTrustBadge from "@/components/DataTrustBadge";
 
 /**
  * Market Analysis — live rate board, session status and an accurate pip calculator.
@@ -55,6 +56,7 @@ const MarketAnalysis = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 lg:gap-3">
+            <DataTrustBadge />
             <div className="ma-chip">
               <span className="ma-mono text-[11px] text-foreground/90">{utcStr} UTC</span>
             </div>
