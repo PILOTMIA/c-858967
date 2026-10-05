@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { TrendingUp, BookOpen, Users, BarChart3, Building, Newspaper, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import COTMarketSnapshot from "@/components/COTMarketSnapshot";
+import DataTrustBadge from "@/components/DataTrustBadge";
 
 const Index = () => {
   const navigate = useNavigate();
