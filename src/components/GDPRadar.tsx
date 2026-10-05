@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { TrendingUp, TrendingDown, Minus, Globe, Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import GDPChat from "@/components/GDPChat";
 
 interface GDPEntry {
   country: string;
@@ -172,6 +173,9 @@ const GDPRadar = () => {
           );
         })}
       </div>
+
+      {/* AI explainer */}
+      <GDPChat rows={entries} />
 
       {/* Key Insights */}
       <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm p-5">

@@ -1,0 +1,1 @@
+- AI chat features run in Supabase Edge Functions via Lovable AI Gateway (Responses API, streamed UI-message protocol) with AI Elements on the client — keeps keys server-side and one consistent chat stack.
