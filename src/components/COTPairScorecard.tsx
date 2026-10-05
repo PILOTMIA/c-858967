@@ -6,6 +6,8 @@ import { TrendingUp, TrendingDown, ArrowRight, BarChart3, Activity, Globe, Landm
 import { fetchForexPrice } from "@/services/ForexPriceService";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
 import { latestReportDate, useLatestCOT } from "@/hooks/useLatestCOT";
+import { useSpotMomentum } from "@/hooks/useSpotMomentum";
+import { computePairCall, type PairCall } from "@/lib/pairBias";
 
 // Fallback shape only; verified stored COT rows replace directional fields at runtime.
 interface CurrencyPositioning {
@@ -21,14 +23,14 @@ interface CurrencyPositioning {
 }
 
 const FALLBACK_COT_POSITIONS: Record<string, CurrencyPositioning> = {
-  EUR: { netPosition: 11594, long: 111857, short: 100263, sentiment: 'BULLISH', weeklyChange: -8723, dealerLong: 48682, dealerShort: 396571, assetManagerLong: 439565, assetManagerShort: 148667 },
-  GBP: { netPosition: 28882, long: 58489, short: 29607, sentiment: 'BULLISH', weeklyChange: -255, dealerLong: 131315, dealerShort: 63446, assetManagerLong: 39695, assetManagerShort: 133448 },
-  JPY: { netPosition: -75802, long: 81800, short: 157602, sentiment: 'BEARISH', weeklyChange: -7305, dealerLong: 84091, dealerShort: 25315, assetManagerLong: 66512, assetManagerShort: 93062 },
-  CHF: { netPosition: -5174, long: 7107, short: 12281, sentiment: 'BEARISH', weeklyChange: -1408, dealerLong: 62055, dealerShort: 12371, assetManagerLong: 6003, assetManagerShort: 43537 },
-  AUD: { netPosition: 47855, long: 73808, short: 25953, sentiment: 'BULLISH', weeklyChange: -470, dealerLong: 41534, dealerShort: 166752, assetManagerLong: 102988, assetManagerShort: 57891 },
-  CAD: { netPosition: -53828, long: 25239, short: 79067, sentiment: 'BEARISH', weeklyChange: 10387, dealerLong: 83444, dealerShort: 60192, assetManagerLong: 88349, assetManagerShort: 72317 },
-  MXN: { netPosition: 49189, long: 76797, short: 27608, sentiment: 'BULLISH', weeklyChange: 3969, dealerLong: 21503, dealerShort: 60570, assetManagerLong: 91215, assetManagerShort: 35502 },
-  NZD: { netPosition: -16833, long: 7160, short: 23993, sentiment: 'BEARISH', weeklyChange: 1229, dealerLong: 61264, dealerShort: 3960, assetManagerLong: 7660, assetManagerShort: 49488 },
+  EUR: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 48682, dealerShort: 396571, assetManagerLong: 439565, assetManagerShort: 148667 },
+  GBP: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 131315, dealerShort: 63446, assetManagerLong: 39695, assetManagerShort: 133448 },
+  JPY: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 84091, dealerShort: 25315, assetManagerLong: 66512, assetManagerShort: 93062 },
+  CHF: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 62055, dealerShort: 12371, assetManagerLong: 6003, assetManagerShort: 43537 },
+  AUD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 41534, dealerShort: 166752, assetManagerLong: 102988, assetManagerShort: 57891 },
+  CAD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 83444, dealerShort: 60192, assetManagerLong: 88349, assetManagerShort: 72317 },
+  MXN: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 21503, dealerShort: 60570, assetManagerLong: 91215, assetManagerShort: 35502 },
+  NZD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 61264, dealerShort: 3960, assetManagerLong: 7660, assetManagerShort: 49488 },
   USD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 0, dealerShort: 0, assetManagerLong: 0, assetManagerShort: 0 },
 };
 
@@ -71,7 +73,7 @@ const clampScore = (raw: number, min: number, max: number) => {
   return Math.max(min, Math.min(max, parseFloat(n.toFixed(2))));
 };
 
-function computeScores(base: string, quote: string, fundamentals: Record<string, typeof FALLBACK_FUNDAMENTALS['USD']>, cotPositions: Record<string, CurrencyPositioning>) {
+function computeScores(base: string, quote: string, fundamentals: Record<string, typeof FALLBACK_FUNDAMENTALS['USD']>, cotPositions: Record<string, CurrencyPositioning>, priceBias = 0) {
   const bp = { ...FALLBACK_COT_POSITIONS[base], ...(cotPositions[base] || {}) };
   const qp = { ...FALLBACK_COT_POSITIONS[quote], ...(cotPositions[quote] || {}) };
   const bf = { ...FALLBACK_FUNDAMENTALS[base], ...(fundamentals[base] || {}) };
@@ -80,10 +82,16 @@ function computeScores(base: string, quote: string, fundamentals: Record<string,
   const qSeas = SEASONALITY[quote] ?? SEASONALITY.USD;
   const month = new Date().getMonth();
 
-  const maxNet = 100000;
-  const cotScore = clampScore(((safeNum(bp.netPosition) - safeNum(qp.netPosition)) / maxNet) * 3, -3, 3);
+  // Same engine and scales as "What to Trade" so both tools agree.
+  const call: PairCall = computePairCall(
+    base, quote,
+    { net: safeNum(bp.netPosition), weekly: safeNum(bp.weeklyChange) },
+    { net: safeNum(qp.netPosition), weekly: safeNum(qp.weeklyChange) },
+    priceBias
+  );
+  const cotScore = clampScore((call.positionScore / 100) * 3, -3, 3);
   const seasScore = clampScore(safeNum(bSeas[month]) - safeNum(qSeas[month]), -2, 2);
-  const trendScore = clampScore(((safeNum(bp.weeklyChange) - safeNum(qp.weeklyChange)) / 15000) * 2, -2, 2);
+  const trendScore = clampScore((call.flowScore / 100) * 2, -2, 2);
 
   // The shared feed contains one trader category per instrument, not asset-manager positions.
   const momentumScore = 0;
@@ -95,7 +103,7 @@ function computeScores(base: string, quote: string, fundamentals: Record<string,
   const totalRaw = cotScore + seasScore + trendScore + momentumScore + economicScore;
   const totalScore = parseFloat((Number.isFinite(totalRaw) ? totalRaw : 0).toFixed(2));
 
-  return { cotScore, seasScore, trendScore, momentumScore, economicScore, totalScore };
+  return { cotScore, seasScore, trendScore, momentumScore, economicScore, totalScore, call };
 }
 
 function getVerdict(score: number): { label: string; color: string; bgClass: string } {
@@ -278,7 +286,13 @@ const COTPairScorecard = () => {
     return () => { cancelled = true; clearInterval(interval); };
   }, [baseCurrency, quoteCurrency]);
 
-  const scores = useMemo(() => computeScores(baseCurrency, quoteCurrency, fundamentals, cotPositions), [baseCurrency, quoteCurrency, fundamentals, cotPositions]);
+  const { data: spot } = useSpotMomentum();
+  const priceBias = (spot?.momentum?.[baseCurrency] ?? 0) - (spot?.momentum?.[quoteCurrency] ?? 0);
+  const scores = useMemo(() => computeScores(baseCurrency, quoteCurrency, fundamentals, cotPositions, priceBias), [baseCurrency, quoteCurrency, fundamentals, cotPositions, priceBias]);
+  const call = scores.call;
+  const scoreDisagrees =
+    (call.direction === 'LONG' && scores.totalScore <= -0.5) ||
+    (call.direction === 'SHORT' && scores.totalScore >= 0.5);
   const verdict = useMemo(() => getVerdict(scores.totalScore), [scores.totalScore]);
 
   const bp = cotPositions[baseCurrency] || FALLBACK_COT_POSITIONS[baseCurrency];
@@ -380,6 +394,27 @@ const COTPairScorecard = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Smart Money call — identical engine to "What to Trade" */}
+      <div className={`rounded-2xl border p-4 ${call.direction === 'LONG' ? 'border-success/30 bg-success/[0.06]' : call.direction === 'SHORT' ? 'border-destructive/30 bg-destructive/[0.06]' : 'border-border/30 bg-card/30'}`}>
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Smart Money call</span>
+          <Badge className={`font-bold ${call.direction === 'LONG' ? 'bg-success/20 text-success border-success/40' : call.direction === 'SHORT' ? 'bg-destructive/20 text-destructive border-destructive/40' : 'bg-muted/30 text-foreground/80 border-border/50'}`}>
+            {call.direction} {pair}
+          </Badge>
+          {call.direction !== 'WAIT' && (
+            <span className="text-xs font-mono text-foreground/80">Conviction {call.displayConviction.toFixed(0)}/100</span>
+          )}
+          {call.squeeze && <Badge className="bg-warning/20 text-warning border-warning/40 text-[10px]">Squeeze</Badge>}
+        </div>
+        <p className="text-sm text-foreground/85 mt-2">{call.reason}</p>
+        {scoreDisagrees && (
+          <p className="text-xs text-warning mt-1.5">
+            The overall score leans the other way because seasonality and economic data disagree with this week's COT and price action. The Smart Money call is the one used in "What to Trade".
+          </p>
+        )}
+        <p className="text-[10px] text-muted-foreground mt-2">Same call as "What to Trade" • COT report {cotReportDate ?? '—'} • 1W price {priceBias >= 0 ? '+' : ''}{priceBias.toFixed(2)}%</p>
       </div>
 
       {/* TradingView Chart */}

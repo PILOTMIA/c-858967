@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, ArrowRight, Flame, Target, Sparkles, Zap } from "lucide-react";
-import { useSpotMomentum, squeezeCheck } from "@/hooks/useSpotMomentum";
+import { useSpotMomentum } from "@/hooks/useSpotMomentum";
+import { computePairCall } from "@/lib/pairBias";
 import { useLatestCOT } from "@/hooks/useLatestCOT";
 
 // Tradeable pairs we recommend (majors + key crosses)
@@ -46,48 +47,24 @@ const COTTradeRecommendations = () => {
       const q = quote === "USD" ? usd : latest[quote];
       if (!b || !q) return null;
 
-      const netSpread = (b.net ?? 0) - (q.net ?? 0);
-      const baseFlow = b.weekly ?? 0;
-      const quoteFlow = q.weekly ?? 0;
-      const flowSpread = baseFlow - quoteFlow;
-
-      // Conviction: pure positioning (60%) + recent flow alignment (40%), normalized
-      const positionScore = Math.max(-100, Math.min(100, (netSpread / 150000) * 100));
-      const flowScore = Math.max(-100, Math.min(100, (flowSpread / 30000) * 100));
-      const conviction = positionScore * 0.6 + flowScore * 0.4;
-
-      // Aligned = position and flow agree → highest conviction
-      const aligned = Math.sign(positionScore) === Math.sign(flowScore) && Math.abs(positionScore) > 5;
-
-      // Live spot check: is price running against the crowded position?
       const mom = spot?.momentum ?? {};
       const priceBias = (mom[base] ?? 0) - (mom[quote] ?? 0);
-      const { conflict, squeeze } = squeezeCheck(netSpread, priceBias);
-
-      let direction: "LONG" | "SHORT" | "WAIT" =
-        Math.abs(conviction) < 8 ? "WAIT" : conviction > 0 ? "LONG" : "SHORT";
-      let displayConviction = Math.abs(conviction);
-
-      if (squeeze) {
-        // Crowded positioning being squeezed — trade with price, not with the crowd
-        direction = priceBias > 0 ? "LONG" : "SHORT";
-        displayConviction = Math.max(displayConviction, 70);
-      } else if (conflict) {
-        direction = "WAIT";
-      }
+      const call = computePairCall(base, quote, b, q, priceBias);
 
       return {
         pair: `${base}${quote}`,
         base,
         quote,
-        direction,
-        conviction: displayConviction,
-        signedConviction: conviction,
-        netSpread,
-        flowSpread,
-        aligned: aligned && !conflict,
-        squeeze,
+        direction: call.direction,
+        conviction: call.displayConviction,
+        signedConviction: call.conviction,
+        netSpread: call.netSpread,
+        flowSpread: call.flowSpread,
+        aligned: call.aligned,
+        squeeze: call.squeeze,
+        conflict: call.conflict,
         priceBias,
+        reason: call.reason,
       };
     })
       .filter((x): x is NonNullable<typeof x> => !!x)
@@ -186,6 +163,8 @@ const COTTradeRecommendations = () => {
                     </div>
                   </div>
 
+                  <p className="text-[11px] text-foreground/75 mt-2 leading-snug">{r.reason}</p>
+
                   {/* Detail row */}
                   <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-border/30">
                     <div>
@@ -216,12 +195,12 @@ const COTTradeRecommendations = () => {
         {wait.length > 0 && (
           <div>
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
-              Avoid / No Edge — institutional positioning is mixed
+              Avoid / No Edge — positioning is mixed or price disagrees with COT
             </div>
             <div className="flex flex-wrap gap-2">
               {wait.map((r) => (
-                <Badge key={r.pair} variant="outline" className="border-border/50 text-foreground/70 text-xs">
-                  {r.pair} • neutral
+                <Badge key={r.pair} title={r.reason} variant="outline" className="border-border/50 text-foreground/70 text-xs">
+                  {r.pair} • {r.conflict ? "price disagrees" : "neutral"}
                 </Badge>
               ))}
             </div>
