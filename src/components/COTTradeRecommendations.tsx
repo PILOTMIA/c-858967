@@ -46,48 +46,24 @@ const COTTradeRecommendations = () => {
       const q = quote === "USD" ? usd : latest[quote];
       if (!b || !q) return null;
 
-      const netSpread = (b.net ?? 0) - (q.net ?? 0);
-      const baseFlow = b.weekly ?? 0;
-      const quoteFlow = q.weekly ?? 0;
-      const flowSpread = baseFlow - quoteFlow;
-
-      // Conviction: pure positioning (60%) + recent flow alignment (40%), normalized
-      const positionScore = Math.max(-100, Math.min(100, (netSpread / 150000) * 100));
-      const flowScore = Math.max(-100, Math.min(100, (flowSpread / 30000) * 100));
-      const conviction = positionScore * 0.6 + flowScore * 0.4;
-
-      // Aligned = position and flow agree → highest conviction
-      const aligned = Math.sign(positionScore) === Math.sign(flowScore) && Math.abs(positionScore) > 5;
-
-      // Live spot check: is price running against the crowded position?
       const mom = spot?.momentum ?? {};
       const priceBias = (mom[base] ?? 0) - (mom[quote] ?? 0);
-      const { conflict, squeeze } = squeezeCheck(netSpread, priceBias);
-
-      let direction: "LONG" | "SHORT" | "WAIT" =
-        Math.abs(conviction) < 8 ? "WAIT" : conviction > 0 ? "LONG" : "SHORT";
-      let displayConviction = Math.abs(conviction);
-
-      if (squeeze) {
-        // Crowded positioning being squeezed — trade with price, not with the crowd
-        direction = priceBias > 0 ? "LONG" : "SHORT";
-        displayConviction = Math.max(displayConviction, 70);
-      } else if (conflict) {
-        direction = "WAIT";
-      }
+      const call = computePairCall(base, quote, b, q, priceBias);
 
       return {
         pair: `${base}${quote}`,
         base,
         quote,
-        direction,
-        conviction: displayConviction,
-        signedConviction: conviction,
-        netSpread,
-        flowSpread,
-        aligned: aligned && !conflict,
-        squeeze,
+        direction: call.direction,
+        conviction: call.displayConviction,
+        signedConviction: call.conviction,
+        netSpread: call.netSpread,
+        flowSpread: call.flowSpread,
+        aligned: call.aligned,
+        squeeze: call.squeeze,
+        conflict: call.conflict,
         priceBias,
+        reason: call.reason,
       };
     })
       .filter((x): x is NonNullable<typeof x> => !!x)
