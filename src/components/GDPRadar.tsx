@@ -109,7 +109,10 @@ const GDPRadar = () => {
                   border: '1px solid hsl(var(--border))',
                   borderRadius: '12px',
                   fontSize: '13px',
+                  color: 'hsl(var(--foreground))',
                 }}
+                labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
+                itemStyle={{ color: 'hsl(var(--foreground))' }}
                 formatter={(value: number, name: string) => [`${value}%`, name === 'gdp' ? 'Current' : name === 'previous' ? 'Previous' : 'Forecast']}
               />
               <Bar dataKey="gdp" name="Current GDP" radius={[6, 6, 0, 0]}>
@@ -159,9 +162,11 @@ const GDPRadar = () => {
                 <span className="text-muted-foreground">vs prev</span>
               </div>
 
-              <div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground">
-                <span>Forecast: {entry.forecast}%</span>
-                <span>{entry.source}</span>
+              <div className="mt-3 pt-2 border-t border-border/30 flex items-center justify-between text-xs">
+                <span className="text-foreground/90 font-medium">
+                  Forecast: <span className="font-mono font-bold text-primary">{entry.forecast}%</span>
+                </span>
+                <span className="text-foreground/70">{entry.source}</span>
               </div>
             </div>
           );
