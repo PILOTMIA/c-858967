@@ -222,7 +222,7 @@ const EconomicCalendar = () => {
                         ) : e.when.getTime() > now ? (
                           <>
                             <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Awaiting release</p>
-                            <p className="text-2xl font-bold text-muted-foreground/50">—</p>
+                            <p className="text-2xl font-bold text-muted-foreground">—</p>
                             <p className="text-[10px] text-muted-foreground">{e.source}</p>
                           </>
                         ) : (

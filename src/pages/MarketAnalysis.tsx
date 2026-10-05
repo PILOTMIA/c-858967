@@ -79,7 +79,7 @@ const MarketAnalysis = () => {
               <div className="flex items-center justify-between">
                 <span className="ma-mono text-xs text-foreground">{s.name}</span>
                 <Circle
-                  className={`h-2 w-2 ${s.open ? "fill-emerald-400 text-emerald-400" : "fill-muted-foreground/40 text-muted-foreground/40"}`}
+                  className={`h-2 w-2 ${s.open ? "fill-emerald-400 text-emerald-400" : "fill-muted-foreground/40 text-muted-foreground"}`}
                 />
               </div>
               <p className={`text-[11px] mt-2 font-semibold ${s.open ? "text-emerald-400" : "text-muted-foreground"}`}>

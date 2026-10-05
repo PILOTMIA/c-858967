@@ -91,11 +91,11 @@ const Index = () => {
 
         {/* Footer */}
         <footer className="text-center pt-12 border-t border-border/20">
-          <p className="text-sm text-muted-foreground/60 tracking-wide uppercase mb-2">Men In Action LLC</p>
-          <p className="text-xs text-muted-foreground/40 mb-4">© 2024–2026 · Professional Trading Education & Analysis</p>
+          <p className="text-sm text-muted-foreground tracking-wide uppercase mb-2">Men In Action LLC</p>
+          <p className="text-xs text-muted-foreground mb-4">© 2024–2026 · Professional Trading Education & Analysis</p>
           <button
             onClick={() => navigate('/risk-disclaimer')}
-            className="text-xs text-muted-foreground/40 hover:text-destructive transition-colors underline underline-offset-4"
+            className="text-xs text-muted-foreground hover:text-destructive transition-colors underline underline-offset-4"
           >
             Risk Disclaimer
           </button>
