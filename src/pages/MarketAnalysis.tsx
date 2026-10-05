@@ -55,6 +55,7 @@ const MarketAnalysis = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 lg:gap-3">
+            <DataTrustBadge />
             <div className="ma-chip">
               <span className="ma-mono text-[11px] text-foreground/90">{utcStr} UTC</span>
             </div>
