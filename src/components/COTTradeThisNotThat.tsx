@@ -1,25 +1,16 @@
 import { useMemo } from "react";
 import { CheckCircle2, XCircle, ArrowRight, Zap, Shield, Flame } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useSpotMomentum, squeezeCheck } from "@/hooks/useSpotMomentum";
+import { useSpotMomentum } from "@/hooks/useSpotMomentum";
 import { useLatestCOT, latestReportDate, type CotPosition } from "@/hooks/useLatestCOT";
 
-/** Used only until the stored CFTC report loads. */
-const FALLBACK_POSITIONS: Record<string, { net: number; weekly: number }> = {
-  EUR: { net: -38173, weekly: 186 },
-  GBP: { net: 43167, weekly: -4742 },
-  JPY: { net: -102188, weekly: -25146 },
-  CAD: { net: -68750, weekly: 3342 },
-  AUD: { net: 49662, weekly: -4399 },
-  NZD: { net: -22338, weekly: 9656 },
-  CHF: { net: -10298, weekly: -1473 },
-  USD: { net: 7133, weekly: -2056 },
-  MXN: { net: 93247, weekly: 10865 },
-};
+import { computePairCall } from "@/lib/pairBias";
+import { pairSpotBias } from "@/lib/tradeTiming";
+import TradeTimingGuide from "@/components/TradeTimingGuide";
 
 interface TradeIdea {
   pair: string;
-  direction: "BUY" | "SELL";
+  direction: "BUY" | "SELL" | "WAIT";
   reason: string;
   conviction: "High" | "Medium" | "Low";
   netDiff: number;
@@ -51,46 +42,15 @@ const PAIR_MAP: [string, string, string][] = [
 
 function buildIdeas(
   momentum: Record<string, number>,
-  positions: Record<string, { net: number; weekly: number }>,
+  positions: Record<string, { net: number; weekly: number; reportDate: string }>,
 ): TradeIdea[] {
   return PAIR_MAP.map(([pair, base, quote]) => {
-    const b = positions[base] ?? { net: 0, weekly: 0 };
-    const q = positions[quote] ?? { net: 0, weekly: 0 };
-    const netDiff = b.net - q.net;
-    const flowDiff = b.weekly - q.weekly;
-    const absNet = Math.abs(netDiff);
-
-    // Live price bias for the pair: base strength minus quote strength (last ~5 sessions)
-    const priceBias = (momentum[base] ?? 0) - (momentum[quote] ?? 0);
-    const { conflict, squeeze } = squeezeCheck(netDiff, priceBias);
-
-    // When crowded positioning is being run over by price, follow price, not the crowd.
-    const bullish = squeeze ? priceBias > 0 : netDiff > 0;
-    const flowAlign = squeeze ? true : netDiff > 0 ? flowDiff > 0 : flowDiff < 0;
-
-    const conviction: "High" | "Medium" | "Low" = squeeze
-      ? "High"
-      : conflict
-      ? "Low"
-      : absNet > 60000 && flowAlign
-      ? "High"
-      : absNet > 20000
-      ? "Medium"
-      : "Low";
-
-    const direction: "BUY" | "SELL" = bullish ? "BUY" : "SELL";
-    const crowdSide = netDiff > 0 ? base : quote;
-    const squeezedSide = netDiff > 0 ? quote : base;
-
-    const reason = squeeze
-      ? `Crowded ${crowdSide} longs are being squeezed — ${squeezedSide} has gained ${Math.abs(priceBias).toFixed(2)}% in the last week while positioning still sits ${(absNet / 1000).toFixed(0)}K the other way`
-      : conflict
-      ? `Positioning favours ${netDiff > 0 ? base : quote}, but price is moving ${Math.abs(priceBias).toFixed(2)}% the other way — no clean edge`
-      : netDiff > 0
-      ? `${base} net longs dominate over ${quote} by ${(absNet / 1000).toFixed(0)}K contracts`
-      : `${quote} net longs dominate over ${base} by ${(absNet / 1000).toFixed(0)}K contracts`;
-
-    return { pair, direction, reason, conviction, netDiff, flowAlign, squeeze, conflict, priceBias };
+    const b = positions[base];
+    const q = positions[quote];
+    const call = computePairCall(base, quote, b ?? {}, q ?? {}, b && q && b.reportDate === q.reportDate ? pairSpotBias(base, quote, momentum) : undefined);
+    const conviction: TradeIdea["conviction"] = call.direction === "WAIT" ? "Low" : call.displayConviction >= 60 ? "High" : "Medium";
+    return { pair, direction: call.direction === "LONG" ? "BUY" : call.direction === "SHORT" ? "SELL" : "WAIT", reason: call.reason, conviction,
+      netDiff: call.netSpread, flowAlign: call.aligned, squeeze: call.squeeze, conflict: call.conflict, priceBias: call.priceBias };
   });
 }
 
@@ -101,9 +61,9 @@ const COTTradeThisNotThat = () => {
   const reportDate = latestReportDate(cot);
 
   const positions = useMemo(() => {
-    const merged: Record<string, { net: number; weekly: number }> = { ...FALLBACK_POSITIONS };
+    const merged: Record<string, { net: number; weekly: number; reportDate: string }> = {};
     for (const [code, p] of Object.entries((cot ?? {}) as Record<string, CotPosition>)) {
-      merged[code] = { net: p.net, weekly: p.weekly };
+      merged[code] = { net: p.net, weekly: p.weekly, reportDate: p.reportDate };
     }
     return merged;
   }, [cot]);
@@ -119,9 +79,9 @@ const COTTradeThisNotThat = () => {
       );
     });
 
-    const tradeThis = sorted.filter((i) => i.conviction !== "Low").slice(0, 4);
+    const tradeThis = sorted.filter((i) => i.direction !== "WAIT").slice(0, 4);
     const notThat = sorted
-      .filter((i) => !i.squeeze && (i.conviction === "Low" || i.conflict || !i.flowAlign))
+      .filter((i) => i.direction === "WAIT")
       .slice(0, 4);
 
     return { tradeThis, notThat };
@@ -142,9 +102,9 @@ const COTTradeThisNotThat = () => {
             <Zap className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-foreground">Trade This, Not That</h2>
+            <h2 className="text-xl font-bold text-foreground">Consider or Stand Aside</h2>
             <p className="text-sm text-muted-foreground">
-              COT positioning checked against live price — when a crowded position is moving the wrong way, we follow price
+              Weekly directional context, not a live entry signal; price confirmation and wait conditions come first
             </p>
           </div>
         </div>
@@ -155,7 +115,7 @@ const COTTradeThisNotThat = () => {
         <div className="p-5">
           <div className="flex items-center gap-2 mb-4">
             <CheckCircle2 className="h-5 w-5 text-success" />
-            <span className="font-bold text-success text-base">Trade This</span>
+            <span className="font-bold text-success text-base">Directional watchlist</span>
             <Badge className="bg-success/10 text-success border-success/20 text-[10px]">Favored</Badge>
           </div>
           <div className="space-y-3">
@@ -176,10 +136,11 @@ const COTTradeThisNotThat = () => {
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">{idea.reason}</p>
+                <TradeTimingGuide base={idea.pair.slice(0, 3)} quote={idea.pair.slice(3)} direction={idea.direction === "BUY" ? "LONG" : idea.direction === "SELL" ? "SHORT" : "WAIT"} />
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   {idea.squeeze ? (
                     <span className="inline-flex items-center gap-1 text-[10px] text-warning font-medium">
-                      <Flame className="h-3 w-3" /> Short squeeze — price leads
+                      <Flame className="h-3 w-3" /> Possible squeeze — daily evidence
                     </span>
                   ) : (
                     idea.flowAlign && (
@@ -204,7 +165,7 @@ const COTTradeThisNotThat = () => {
         <div className="p-5">
           <div className="flex items-center gap-2 mb-4">
             <XCircle className="h-5 w-5 text-destructive" />
-            <span className="font-bold text-destructive text-base">Not That</span>
+            <span className="font-bold text-destructive text-base">Stand aside</span>
             <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[10px]">Avoid</Badge>
           </div>
           <div className="space-y-3">
@@ -225,6 +186,7 @@ const COTTradeThisNotThat = () => {
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">{idea.reason}</p>
+                <TradeTimingGuide base={idea.pair.slice(0, 3)} quote={idea.pair.slice(3)} direction={idea.direction === "BUY" ? "LONG" : idea.direction === "SELL" ? "SHORT" : "WAIT"} />
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   {idea.conflict ? (
                     <span className="inline-flex items-center gap-1 text-[10px] text-destructive/80 font-medium">
@@ -252,7 +214,7 @@ const COTTradeThisNotThat = () => {
 
       <div className="px-6 py-3 border-t border-border bg-muted/30">
         <p className="text-[10px] text-muted-foreground text-center">
-          CFTC Traders in Financial Futures{reportDate ? `, report of ${reportDate}` : ""} • Leveraged fund net positioning and weekly flow, cross-checked against live ECB spot moves • Not financial advice
+          CFTC Traders in Financial Futures{reportDate ? `, report of ${reportDate}` : ""} • Leveraged fund net positioning and weekly flow, cross-checked against ECB daily reference-rate moves • Not financial advice
         </p>
       </div>
     </div>

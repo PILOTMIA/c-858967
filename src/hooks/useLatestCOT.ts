@@ -39,6 +39,10 @@ async function fetchLatestCOT(): Promise<Record<string, CotPosition>> {
 
   for (const row of rows) {
     if (out[row.currency]) continue; // newest report wins; a verified upload wins only for the same date
+    const long = Number(row.long_positions);
+    const short = Number(row.short_positions);
+    const net = Number(row.net_position);
+    if (!Number.isInteger(long) || !Number.isInteger(short) || long < 0 || short < 0 || net !== long - short) continue;
     out[row.currency] = {
       net: Number(row.net_position ?? 0),
       weekly: Number(row.change_long ?? 0) - Number(row.change_short ?? 0),

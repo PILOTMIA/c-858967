@@ -5,6 +5,8 @@ import { TrendingUp, TrendingDown, ArrowRight, Flame, Target, Sparkles, Zap } fr
 import { useSpotMomentum } from "@/hooks/useSpotMomentum";
 import { computePairCall } from "@/lib/pairBias";
 import { useLatestCOT } from "@/hooks/useLatestCOT";
+import { pairSpotBias } from "@/lib/tradeTiming";
+import TradeTimingGuide from "@/components/TradeTimingGuide";
 
 // Tradeable pairs we recommend (majors + key crosses)
 const PAIR_UNIVERSE: { base: string; quote: string }[] = [
@@ -40,15 +42,15 @@ const COTTradeRecommendations = () => {
   const recommendations = useMemo(() => {
     if (!latest || !Object.keys(latest).length) return [];
 
-    const usd = latest.USD ?? { net: 0, weekly: 0 };
+    const usd = latest.USD;
 
     return PAIR_UNIVERSE.map(({ base, quote }) => {
       const b = base === "USD" ? usd : latest[base];
       const q = quote === "USD" ? usd : latest[quote];
-      if (!b || !q) return null;
+      if (!b || !q || b.reportDate !== q.reportDate) return null;
 
       const mom = spot?.momentum ?? {};
-      const priceBias = (mom[base] ?? 0) - (mom[quote] ?? 0);
+      const priceBias = pairSpotBias(base, quote, mom);
       const call = computePairCall(base, quote, b, q, priceBias);
 
       return {
@@ -63,7 +65,7 @@ const COTTradeRecommendations = () => {
         aligned: call.aligned,
         squeeze: call.squeeze,
         conflict: call.conflict,
-        priceBias,
+        priceBias: priceBias ?? null,
         reason: call.reason,
       };
     })
@@ -88,13 +90,13 @@ const COTTradeRecommendations = () => {
           </Badge>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          Pairs ranked by net institutional position spread and week-over-week flow, then checked against the last week of
-          live spot moves. Where a crowded position is being run over by price, the call follows price and is flagged as a squeeze.
+          Directional watchlist from futures positioning and weekly flow, checked against daily reference rates.
+          A direction is not permission to enter now; timing and wait conditions appear under each pair.
         </p>
       </CardHeader>
       <CardContent className="pt-5 space-y-5">
         {top.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-6">Loading COT history…</p>
+          <p className="text-sm text-muted-foreground text-center py-6">No directional setups available. Check the wait list and data freshness.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {top.map((r, i) => {
@@ -150,7 +152,7 @@ const COTTradeRecommendations = () => {
                   {/* Conviction bar */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-foreground/70 font-medium uppercase tracking-wider">Conviction</span>
+                      <span className="text-foreground/70 font-medium uppercase tracking-wider">Positioning score</span>
                       <span className={`font-mono font-bold ${isLong ? "text-success" : "text-destructive"}`}>
                         {r.conviction.toFixed(0)}/100
                       </span>
@@ -164,6 +166,8 @@ const COTTradeRecommendations = () => {
                   </div>
 
                   <p className="text-[11px] text-foreground/75 mt-2 leading-snug">{r.reason}</p>
+
+                  <TradeTimingGuide base={r.base} quote={r.quote} direction={r.direction} />
 
                   {/* Detail row */}
                   <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-border/30">
@@ -180,9 +184,9 @@ const COTTradeRecommendations = () => {
                       </div>
                     </div>
                     <div>
-                      <div className="text-[9px] text-foreground/60 uppercase tracking-wider">1W Price</div>
-                      <div className={`text-sm font-mono font-bold ${r.priceBias >= 0 ? "text-success" : "text-destructive"}`}>
-                        {r.priceBias >= 0 ? "+" : ""}{r.priceBias.toFixed(2)}%
+                      <div className="text-[9px] text-foreground/60 uppercase tracking-wider">Daily 1W move</div>
+                      <div className={`text-sm font-mono font-bold ${(r.priceBias ?? 0) >= 0 ? "text-success" : "text-destructive"}`}>
+                        {(r.priceBias ?? 0) >= 0 ? "+" : ""}{r.priceBias === null ? "Unavailable" : `${r.priceBias.toFixed(2)}%`}
                       </div>
                     </div>
                   </div>
@@ -208,7 +212,7 @@ const COTTradeRecommendations = () => {
         )}
 
         <p className="text-[10px] text-muted-foreground text-center pt-2 border-t border-border/30">
-          Source: latest stored CFTC positioning plus live ECB spot rates • Conviction = position spread (60%) + weekly flow (40%), overridden when price contradicts crowded positioning • Educational only
+          Source: CFTC futures reports + ECB daily reference rates • Score is 60% relative position + 40% weekly flow, not a success probability • Different contract sizes limit comparisons • No live entry confirmation • Educational only
         </p>
       </CardContent>
     </Card>

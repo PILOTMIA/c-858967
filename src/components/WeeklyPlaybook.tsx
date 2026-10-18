@@ -1,10 +1,13 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useLatestCOT, latestReportDate, type CotPosition } from "@/hooks/useLatestCOT";
 import { useSpotMomentum, squeezeCheck } from "@/hooks/useSpotMomentum";
 import { fetchMarketNews } from "@/services/MarketNewsService";
 import { buildCalendar } from "@/lib/economicCalendar";
+import { computePairCall } from "@/lib/pairBias";
+import { pairSpotBias, alignedWeekday } from "@/lib/tradeTiming";
+import { useMarketRhythm, type RhythmRow } from "@/hooks/useMarketRhythm";
+import TradeTimingGuide from "@/components/TradeTimingGuide";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,14 +20,6 @@ import {
 } from "lucide-react";
 
 // ── Types ───────────────────────────────────────────────────────────────────
-interface DowStat { day: string; short: string; avgPct: number; avgRangePct: number; upRate: number; samples: number }
-interface RhythmRow {
-  pair: string; base: string; quote: string; klass: string; ok: boolean;
-  lastClose: number; asOf: string; momentum20: number; momentum60: number; vol20: number;
-  sessions: number; dayOfWeek: DowStat[]; biggestMoveDay: string; strongestDay: string;
-  strongestDayDirection: "up" | "down"; strongestDayAvgPct: number;
-  seasonal: { month: string; avgPct: number; upRate: number; years: number; history: { year: number; pct: number }[] };
-}
 const PAIR_LABELS: Record<string, string> = {
   EURUSD: "EURUSD", GBPUSD: "GBPUSD", USDJPY: "USDJPY", USDCHF: "USDCHF",
   AUDUSD: "AUDUSD", USDCAD: "USDCAD", NZDUSD: "NZDUSD", USDMXN: "USDMXN",
@@ -33,35 +28,24 @@ const PAIR_LABELS: Record<string, string> = {
 };
 
 // ── Data hooks ──────────────────────────────────────────────────────────────
-const useRhythm = () =>
-  useQuery({
-    queryKey: ["market-rhythm"],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("market-rhythm");
-      if (error) throw error;
-      return (data?.data ?? []) as RhythmRow[];
-    },
-    staleTime: 30 * 60 * 1000,
-  });
-
 // ── Scoring ─────────────────────────────────────────────────────────────────
-function buildSignal(row: RhythmRow, cot: Record<string, CotPosition>, scale: number, flowScale: number) {
+function buildSignal(row: RhythmRow, cot: Record<string, CotPosition>, momentum?: Record<string, number>) {
   const baseCot = cot[row.base];
   const quoteCot = cot[row.quote];
-  const isSelfQuoted = row.base === row.quote; // DXY
-
-  const netOf = (c?: CotPosition) => c?.net ?? 0;
-  const flowOf = (c?: CotPosition) => c?.weekly ?? 0;
-
-  const rawPos = isSelfQuoted ? netOf(baseCot) : netOf(baseCot) - netOf(quoteCot);
-  const rawFlow = isSelfQuoted ? flowOf(baseCot) : flowOf(baseCot) - flowOf(quoteCot);
-
-  const posScore = scale ? Math.max(-1, Math.min(1, rawPos / scale)) : 0;
-  const flowScore = flowScale ? Math.max(-1, Math.min(1, rawFlow / flowScale)) : 0;
-
-  const blended = posScore * 0.62 + flowScore * 0.38;
-  const direction: "LONG" | "SHORT" = blended >= 0 ? "LONG" : "SHORT";
-  const conviction = Math.round(Math.abs(blended) * 100);
+  const self = row.base === row.quote;
+  const priceBias = self ? row.momentum20 : row.quote === "USD" && ["XAU", "BTC"].includes(row.base) ? row.momentum20 : pairSpotBias(row.base, row.quote, momentum);
+  const call = computePairCall(row.base, row.quote, baseCot ?? {}, self || ["XAU", "BTC"].includes(row.base) ? { net: 0, weekly: 0 } : quoteCot ?? {}, priceBias);
+  if (!baseCot || (!self && !quoteCot) || (!self && baseCot.reportDate !== quoteCot?.reportDate)) {
+    call.direction = "WAIT";
+    call.reason = "Matching COT reports are unavailable.";
+  }
+  const rawPos = call.netSpread;
+  const rawFlow = call.flowSpread;
+  const posScore = call.positionScore / 100;
+  const flowScore = call.flowScore / 100;
+  const blended = call.direction === "LONG" ? 1 : call.direction === "SHORT" ? -1 : 0;
+  const direction = call.direction;
+  const conviction = Math.round(call.displayConviction);
 
   const momentumAgrees = Math.sign(row.momentum20 || 0) === Math.sign(blended || 0) && row.momentum20 !== 0;
   const seasonalAgrees =
@@ -72,27 +56,16 @@ function buildSignal(row: RhythmRow, cot: Record<string, CotPosition>, scale: nu
   if (momentumAgrees) confirmations++;
   if (seasonalAgrees) confirmations++;
 
-  const verdict =
-    confirmations >= 3 ? "TRADE IT" : confirmations === 2 ? "TRADE SMALL" : "STAND ASIDE";
+  const verdict = direction !== "WAIT" ? "WATCHLIST" : "STAND ASIDE";
 
-  // Expected weekly travel from realised daily range (5 sessions, damped)
-  const expectedWeekPct = row.vol20 * 5 * 0.55;
-  const move = (row.lastClose * expectedWeekPct) / 100;
-  const target = direction === "LONG" ? row.lastClose + move : row.lastClose - move;
-  const invalidation = direction === "LONG" ? row.lastClose - move * 0.5 : row.lastClose + move * 0.5;
-
-  const bestDay = [...row.dayOfWeek].sort(
-    (a, b) => Math.abs(b.avgPct) - Math.abs(a.avgPct),
-  )[0];
-  const bestAligned = [...row.dayOfWeek]
-    .filter((d) => (direction === "LONG" ? d.avgPct > 0 : d.avgPct < 0))
-    .sort((a, b) => Math.abs(b.avgPct) - Math.abs(a.avgPct))[0];
+  const bestDay = alignedWeekday(row.dayOfWeek, direction);
+  const bestAligned = bestDay;
 
   return {
     ...row,
-    rawPos, rawFlow, posScore, flowScore, blended, direction, conviction,
+    rawPos, rawFlow, posScore, flowScore, blended, direction, conviction, reason: call.reason,
     momentumAgrees, seasonalAgrees, confirmations, verdict,
-    expectedWeekPct, target, invalidation, bestDay, bestAligned,
+    bestDay, bestAligned,
     reportDate: baseCot?.reportDate ?? quoteCot?.reportDate ?? "",
   };
 }
@@ -103,7 +76,7 @@ const fmt = (v: number, pair: string) =>
   v.toLocaleString("en-US", { minimumFractionDigits: decimals(pair), maximumFractionDigits: decimals(pair) });
 
 const verdictStyle = (v: string) =>
-  v === "TRADE IT"
+  v === "WATCHLIST"
     ? { cls: "bg-success/15 text-success border-success/40", Icon: ShieldCheck }
     : v === "TRADE SMALL"
     ? { cls: "bg-warning/15 text-warning border-warning/40", Icon: ShieldAlert }
@@ -111,7 +84,7 @@ const verdictStyle = (v: string) =>
 
 // ── Component ───────────────────────────────────────────────────────────────
 const WeeklyPlaybook = () => {
-  const rhythm = useRhythm();
+  const rhythm = useMarketRhythm();
   const cot = useLatestCOT();
   const spot = useSpotMomentum();
   const news = useQuery({
@@ -120,25 +93,23 @@ const WeeklyPlaybook = () => {
     staleTime: 5 * 60_000,
     refetchInterval: 5 * 60_000,
   });
-  const [filter, setFilter] = useState<"tradeable" | "all" | "major" | "cross" | "other">("tradeable");
+  const [filter, setFilter] = useState<"tradeable" | "all" | "major" | "cross" | "other">("all");
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const signals: Signal[] = useMemo(() => {
     const rows = (rhythm.data ?? []).filter((r) => r.ok);
     const c = cot.data ?? {};
     if (!rows.length || !Object.keys(c).length) return [];
-    const scale = Math.max(...Object.values(c).map((v) => Math.abs(v.net)), 1) * 1.4;
-    const flowScale = Math.max(...Object.values(c).map((v) => Math.abs(v.weekly)), 1) * 1.6;
     return rows
-      .map((r) => buildSignal(r, c, scale, flowScale))
+      .map((r) => buildSignal(r, c, spot.data?.momentum))
       .sort((a, b) => b.confirmations - a.confirmations || b.conviction - a.conviction);
-  }, [rhythm.data, cot.data]);
+  }, [rhythm.data, cot.data, spot.data]);
 
   const squeezes = useMemo(() => {
     const momentum = spot.data?.momentum ?? {};
     return signals
       .map((signal) => {
-        const priceBias = (momentum[signal.base] ?? 0) - (momentum[signal.quote] ?? 0);
+        const priceBias = pairSpotBias(signal.base, signal.quote, momentum) ?? 0;
         const check = squeezeCheck(signal.rawPos, priceBias);
         return { ...signal, priceBias, isSqueeze: check.squeeze };
       })
@@ -153,7 +124,8 @@ const WeeklyPlaybook = () => {
       .map((signal) => {
         const sentiment = pairScores[signal.pair];
         const rawScore = Number(sentiment?.score ?? 0);
-        const score = Math.abs(rawScore) <= 1 ? rawScore * 100 : rawScore;
+        const magnitude = Math.abs(rawScore) <= 1 ? Math.abs(rawScore) * 100 : Math.abs(rawScore);
+        const score = sentiment?.sentiment === "BEARISH" ? -magnitude : sentiment?.sentiment === "BULLISH" ? magnitude : 0;
         return { signal, sentiment, score };
       })
       .filter((row) => row.sentiment)
@@ -191,13 +163,13 @@ const WeeklyPlaybook = () => {
   if (!signals.length) {
     return (
       <Card className="p-6 text-sm text-muted-foreground">
-        Playbook data is refreshing. Live COT positioning and 20-month price rhythm will appear here shortly.
+        Playbook data is unavailable or refreshing. Wait for stored COT positioning and historical daily prices.
       </Card>
     );
   }
 
   const filters: { id: typeof filter; label: string }[] = [
-    { id: "tradeable", label: `Worth Trading (${signals.filter((s) => s.verdict !== "STAND ASIDE").length})` },
+    { id: "tradeable", label: `Directional watchlist (${signals.filter((s) => s.verdict !== "STAND ASIDE").length})` },
     { id: "all", label: `All (${signals.length})` },
     { id: "major", label: "Majors" },
     { id: "cross", label: "Crosses" },
@@ -220,9 +192,8 @@ const WeeklyPlaybook = () => {
               </Badge>
             </div>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-              Institutional COT positioning tells you <span className="text-foreground font-medium">where</span> a market
-              is likely headed. Twenty months of daily candles tell you <span className="text-foreground font-medium">when</span> it
-              usually moves. Both are combined below into one plain-English verdict per market.
+              COT is a weekly futures-positioning snapshot, not an entry clock. Separate the directional bias from
+              a suitable entry: review daily evidence, session liquidity, release risk, and your live 4H chart before acting.
             </p>
           </div>
           <div className="shrink-0 text-xs text-muted-foreground space-y-0.5">
@@ -240,7 +211,7 @@ const WeeklyPlaybook = () => {
               <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
                 <Zap className="h-5 w-5 text-warning" /> Top COT squeezes
               </h3>
-              <p className="mt-1 text-xs text-muted-foreground">Crowded positioning moving against the latest five-session price trend.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Possible squeezes from daily reference rates; these are not live execution signals.</p>
             </div>
             <Badge variant="outline">{squeezes.length} active</Badge>
           </div>
@@ -288,7 +259,7 @@ const WeeklyPlaybook = () => {
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
             <h3 id="week-ahead-title" className="flex items-center gap-2 text-lg font-semibold text-foreground"><CalendarClock className="h-5 w-5 text-primary" /> Reports ahead</h3>
-            <p className="mt-1 text-xs text-muted-foreground">Scheduled releases most likely to interrupt this week’s COT setup.</p>
+            <p className="mt-1 text-xs text-muted-foreground">Calendar estimates to review against official schedules before entry; release times can change.</p>
           </div>
         </div>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -356,11 +327,11 @@ const WeeklyPlaybook = () => {
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-border/60 bg-background/50 p-3">
                   <div className="mb-1 flex items-center gap-1 text-[11px] uppercase tracking-wider text-muted-foreground">
-                    <Target className="h-3 w-3" /> COT points to
+                    <Target className="h-3 w-3" /> Directional context
                   </div>
                   <div className={`flex items-center gap-1.5 text-base font-semibold ${long ? "text-success" : "text-destructive"}`}>
                     {long ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                    {long ? "Higher" : "Lower"}
+                    {s.direction === "WAIT" ? "No clear edge" : long ? "Higher" : "Lower"}
                   </div>
                   <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
                     <div
@@ -369,20 +340,19 @@ const WeeklyPlaybook = () => {
                     />
                   </div>
                   <div className="mt-1 text-[11px] text-muted-foreground">
-                    {s.conviction}% conviction
+                    {s.conviction}/100 positioning score · not win probability
                   </div>
                 </div>
 
                 <div className="rounded-xl border border-border/60 bg-background/50 p-3">
                   <div className="mb-1 flex items-center gap-1 text-[11px] uppercase tracking-wider text-muted-foreground">
-                    <CalendarClock className="h-3 w-3" /> Best day to act
+                    <CalendarClock className="h-3 w-3" /> Historical day tendency
                   </div>
                   <div className="text-base font-semibold text-foreground">
-                    {(s.bestAligned ?? s.bestDay).day}
+                    {s.bestAligned?.day ?? "No supported day edge"}
                   </div>
                   <div className="mt-1 text-[11px] text-muted-foreground">
-                    Avg {(s.bestAligned ?? s.bestDay).avgPct > 0 ? "+" : ""}
-                    {(s.bestAligned ?? s.bestDay).avgPct}% · {(s.bestAligned ?? s.bestDay).upRate}% up-days
+                    {s.bestAligned ? `Avg ${s.bestAligned.avgPct}% · ${s.bestAligned.samples} observations · ${s.bestAligned.upRate}% up-days` : "Wait for price confirmation, not a weekday"}
                   </div>
                   <div className="mt-1 text-[11px] text-muted-foreground">
                     Widest range: {s.biggestMoveDay}
@@ -390,40 +360,13 @@ const WeeklyPlaybook = () => {
                 </div>
               </div>
 
-              {/* Row 3 — plain english */}
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                Speculators are net {s.rawPos >= 0 ? "long" : "short"}{" "}
-                <span className="font-mono text-foreground">{Math.abs(Math.round(s.rawPos)).toLocaleString()}</span>{" "}
-                contracts on this spread and {s.rawFlow >= 0 ? "added to" : "cut"} that bet by{" "}
-                <span className="font-mono text-foreground">{Math.abs(Math.round(s.rawFlow)).toLocaleString()}</span>{" "}
-                last week. Price momentum over 20 sessions is{" "}
-                <span className={s.momentum20 >= 0 ? "text-success" : "text-destructive"}>
-                  {s.momentum20 > 0 ? "+" : ""}{s.momentum20}%
-                </span>{" "}
-                ({s.momentumAgrees ? "agrees" : "disagrees"}), and {s.seasonal.month} has averaged{" "}
-                <span className={s.seasonal.avgPct >= 0 ? "text-success" : "text-destructive"}>
-                  {s.seasonal.avgPct > 0 ? "+" : ""}{s.seasonal.avgPct}%
-                </span>{" "}
-                over the last {s.seasonal.years} years ({s.seasonalAgrees ? "agrees" : "disagrees"}).
+              <p className="mt-3 text-sm leading-relaxed text-foreground">{s.reason}</p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                Relative futures net spread: {s.rawPos.toLocaleString()} contracts; weekly change: {s.rawFlow > 0 ? "+" : ""}{s.rawFlow.toLocaleString()}.
+                This compares different contracts, not traded spot volume. {s.seasonal.month} averaged {s.seasonal.avgPct}% across {s.seasonal.years} years
+                ({s.seasonal.history.length} monthly observations); limited seasonality, not an entry trigger.
               </p>
-
-              {/* Row 4 — levels */}
-              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-lg border border-border/50 bg-background/40 p-2">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Projected</div>
-                  <div className={`font-mono text-sm font-semibold ${long ? "text-success" : "text-destructive"}`}>
-                    {fmt(s.target, s.pair)}
-                  </div>
-                </div>
-                <div className="rounded-lg border border-border/50 bg-background/40 p-2">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Invalidation</div>
-                  <div className="font-mono text-sm font-semibold text-foreground">{fmt(s.invalidation, s.pair)}</div>
-                </div>
-                <div className="rounded-lg border border-border/50 bg-background/40 p-2">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Weekly range</div>
-                  <div className="font-mono text-sm font-semibold text-foreground">±{s.expectedWeekPct.toFixed(2)}%</div>
-                </div>
-              </div>
+              <TradeTimingGuide base={s.base} quote={s.quote} direction={s.direction} />
 
               {/* Expand */}
               <Button
@@ -496,7 +439,7 @@ const WeeklyPlaybook = () => {
       </div>
 
       <p className="text-xs leading-relaxed text-muted-foreground">
-        Projections are statistical expectations derived from CFTC positioning and historical price behaviour — not
+        Watchlist directions and weekday averages are context from futures positioning and historical daily prices — not
         predictions or trade advice. Past performance never guarantees future results.
       </p>
     </div>

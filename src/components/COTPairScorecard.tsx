@@ -8,6 +8,8 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from 
 import { latestReportDate, useLatestCOT } from "@/hooks/useLatestCOT";
 import { useSpotMomentum } from "@/hooks/useSpotMomentum";
 import { computePairCall, type PairCall } from "@/lib/pairBias";
+import { pairSpotBias } from "@/lib/tradeTiming";
+import TradeTimingGuide from "@/components/TradeTimingGuide";
 
 // Fallback shape only; verified stored COT rows replace directional fields at runtime.
 interface CurrencyPositioning {
@@ -73,7 +75,7 @@ const clampScore = (raw: number, min: number, max: number) => {
   return Math.max(min, Math.min(max, parseFloat(n.toFixed(2))));
 };
 
-function computeScores(base: string, quote: string, fundamentals: Record<string, typeof FALLBACK_FUNDAMENTALS['USD']>, cotPositions: Record<string, CurrencyPositioning>, priceBias = 0) {
+function computeScores(base: string, quote: string, fundamentals: Record<string, typeof FALLBACK_FUNDAMENTALS['USD']>, cotPositions: Record<string, CurrencyPositioning>, priceBias?: number) {
   const bp = { ...FALLBACK_COT_POSITIONS[base], ...(cotPositions[base] || {}) };
   const qp = { ...FALLBACK_COT_POSITIONS[quote], ...(cotPositions[quote] || {}) };
   const bf = { ...FALLBACK_FUNDAMENTALS[base], ...(fundamentals[base] || {}) };
@@ -287,7 +289,8 @@ const COTPairScorecard = () => {
   }, [baseCurrency, quoteCurrency]);
 
   const { data: spot } = useSpotMomentum();
-  const priceBias = (spot?.momentum?.[baseCurrency] ?? 0) - (spot?.momentum?.[quoteCurrency] ?? 0);
+  const priceBias = latestCot?.[baseCurrency] && latestCot?.[quoteCurrency] && latestCot[baseCurrency].reportDate === latestCot[quoteCurrency].reportDate
+    ? pairSpotBias(baseCurrency, quoteCurrency, spot?.momentum) : undefined;
   const scores = useMemo(() => computeScores(baseCurrency, quoteCurrency, fundamentals, cotPositions, priceBias), [baseCurrency, quoteCurrency, fundamentals, cotPositions, priceBias]);
   const call = scores.call;
   const scoreDisagrees =
@@ -414,8 +417,10 @@ const COTPairScorecard = () => {
             The overall score leans the other way because seasonality and economic data disagree with this week's COT and price action. The Smart Money call is the one used in "What to Trade".
           </p>
         )}
-        <p className="text-[10px] text-muted-foreground mt-2">Same call as "What to Trade" • COT report {cotReportDate ?? '—'} • 1W price {priceBias >= 0 ? '+' : ''}{priceBias.toFixed(2)}%</p>
+        <p className="text-[10px] text-muted-foreground mt-2">Same call as "What to Trade" • COT report {cotReportDate ?? '—'} • Daily 1W move {priceBias === undefined ? "Unavailable" : `${priceBias >= 0 ? "+" : ""}${priceBias.toFixed(2)}%`}</p>
       </div>
+
+      <TradeTimingGuide base={baseCurrency} quote={quoteCurrency} direction={call.direction} />
 
       {/* TradingView Chart */}
       <div className="rounded-2xl border border-border/30 bg-card/30 backdrop-blur-sm overflow-hidden">

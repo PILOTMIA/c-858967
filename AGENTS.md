@@ -1,1 +1,3 @@
 - AI chat features run in Supabase Edge Functions via Lovable AI Gateway (Responses API, streamed UI-message protocol) with AI Elements on the client — keeps keys server-side and one consistent chat stack.
+- COT recommendation surfaces share pairBias and tradeTiming rules; directional scores are not entry signals, and daily evidence cannot validate intraday execution.
+- Market rhythm consumers use the shared useMarketRhythm query so timing evidence and historical charts read the same feed.
