@@ -42,12 +42,12 @@ const PAIR_MAP: [string, string, string][] = [
 
 function buildIdeas(
   momentum: Record<string, number>,
-  positions: Record<string, { net: number; weekly: number }>,
+  positions: Record<string, { net: number; weekly: number; reportDate: string }>,
 ): TradeIdea[] {
   return PAIR_MAP.map(([pair, base, quote]) => {
     const b = positions[base];
     const q = positions[quote];
-    const call = computePairCall(base, quote, b ?? {}, q ?? {}, b && q ? pairSpotBias(base, quote, momentum) : undefined);
+    const call = computePairCall(base, quote, b ?? {}, q ?? {}, b && q && b.reportDate === q.reportDate ? pairSpotBias(base, quote, momentum) : undefined);
     const conviction: TradeIdea["conviction"] = call.direction === "WAIT" ? "Low" : call.displayConviction >= 60 ? "High" : "Medium";
     return { pair, direction: call.direction === "LONG" ? "BUY" : call.direction === "SHORT" ? "SELL" : "WAIT", reason: call.reason, conviction,
       netDiff: call.netSpread, flowAlign: call.aligned, squeeze: call.squeeze, conflict: call.conflict, priceBias: call.priceBias };
@@ -61,9 +61,9 @@ const COTTradeThisNotThat = () => {
   const reportDate = latestReportDate(cot);
 
   const positions = useMemo(() => {
-    const merged: Record<string, { net: number; weekly: number }> = {};
+    const merged: Record<string, { net: number; weekly: number; reportDate: string }> = {};
     for (const [code, p] of Object.entries((cot ?? {}) as Record<string, CotPosition>)) {
-      merged[code] = { net: p.net, weekly: p.weekly };
+      merged[code] = { net: p.net, weekly: p.weekly, reportDate: p.reportDate };
     }
     return merged;
   }, [cot]);

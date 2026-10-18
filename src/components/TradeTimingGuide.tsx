@@ -12,12 +12,12 @@ export default function TradeTimingGuide({ base, quote, direction }: { base: str
   const rhythm = useMarketRhythm();
   const [now, setNow] = useState(() => new Date());
   useEffect(() => { const timer = setInterval(() => setNow(new Date()), 60_000); return () => clearInterval(timer); }, []);
-  const row = rhythm.data?.find(r => r.ok && r.pair === `${base}${quote}`);
+  const row = rhythm.data?.find(r => r.ok && (r.pair === `${base}${quote}` || (base === quote && r.pair === "DXY")));
   const isForex = !["XAU", "BTC", "USDINDEX"].includes(base) && base !== quote;
   const dates = base === quote ? [cot?.[base]?.reportDate ?? ""] : [cot?.[base]?.reportDate ?? "", cot?.[quote]?.reportDate ?? ""];
   const assessment = timingAssessment({ direction, reportDates: dates, priceDate: isForex ? spot?.to : row?.asOf, now, isForex });
   const day = alignedWeekday(row?.dayOfWeek ?? [], direction);
-  const session = [base, quote].some(c => ["EUR", "GBP", "CHF", "CAD", "USD", "MXN"].includes(c))
+  const session = [base, quote].some(c => ["EUR", "GBP", "CHF", "CAD", "MXN"].includes(c))
     ? "London / New York overlap" : "Tokyo / Sydney sessions";
 
   return <div className="mt-3 space-y-3 border-t border-border/60 pt-3 text-xs" aria-label={`Entry timing for ${base}${quote}`}>

@@ -289,7 +289,8 @@ const COTPairScorecard = () => {
   }, [baseCurrency, quoteCurrency]);
 
   const { data: spot } = useSpotMomentum();
-  const priceBias = pairSpotBias(baseCurrency, quoteCurrency, spot?.momentum);
+  const priceBias = latestCot?.[baseCurrency] && latestCot?.[quoteCurrency] && latestCot[baseCurrency].reportDate === latestCot[quoteCurrency].reportDate
+    ? pairSpotBias(baseCurrency, quoteCurrency, spot?.momentum) : undefined;
   const scores = useMemo(() => computeScores(baseCurrency, quoteCurrency, fundamentals, cotPositions, priceBias), [baseCurrency, quoteCurrency, fundamentals, cotPositions, priceBias]);
   const call = scores.call;
   const scoreDisagrees =

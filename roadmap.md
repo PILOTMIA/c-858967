@@ -1,8 +1,7 @@
-## Weekly Playbook and automatic COT refresh
 ## October 13 COT and entry timing
-- [ ] Reconcile uploaded October 13 reports and persist matching positions and weekly changes.
-- [ ] Unify trade direction and present conditional timing, wait reasons, and honest source confidence.
-- [ ] Test decision rules and verify populated pages and preview status.
+- [x] Reconcile uploaded October 13 reports and persist matching positions and weekly changes.
+- [x] Unify trade direction and present conditional timing, wait reasons, and honest source confidence.
+- [x] Test decision rules and verify populated pages and preview status.
 
 ## Weekly Playbook and automatic COT refresh
 - [x] Build a unified Weekly Playbook with top COT squeezes, sentiment, and upcoming reports.

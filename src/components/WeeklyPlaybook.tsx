@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useLatestCOT, latestReportDate, type CotPosition } from "@/hooks/useLatestCOT";
 import { useSpotMomentum, squeezeCheck } from "@/hooks/useSpotMomentum";
 import { fetchMarketNews } from "@/services/MarketNewsService";
@@ -57,14 +56,7 @@ function buildSignal(row: RhythmRow, cot: Record<string, CotPosition>, momentum?
   if (momentumAgrees) confirmations++;
   if (seasonalAgrees) confirmations++;
 
-  const verdict =
-    direction !== "WAIT" && momentumAgrees ? "WATCHLIST" : "STAND ASIDE";
-
-  // Expected weekly travel from realised daily range (5 sessions, damped)
-  const expectedWeekPct = row.vol20 * 5 * 0.55;
-  const move = (row.lastClose * expectedWeekPct) / 100;
-  const target = direction === "LONG" ? row.lastClose + move : row.lastClose - move;
-  const invalidation = direction === "LONG" ? row.lastClose - move * 0.5 : row.lastClose + move * 0.5;
+  const verdict = direction !== "WAIT" ? "WATCHLIST" : "STAND ASIDE";
 
   const bestDay = alignedWeekday(row.dayOfWeek, direction);
   const bestAligned = bestDay;
@@ -73,7 +65,7 @@ function buildSignal(row: RhythmRow, cot: Record<string, CotPosition>, momentum?
     ...row,
     rawPos, rawFlow, posScore, flowScore, blended, direction, conviction, reason: call.reason,
     momentumAgrees, seasonalAgrees, confirmations, verdict,
-    expectedWeekPct, target, invalidation, bestDay, bestAligned,
+    bestDay, bestAligned,
     reportDate: baseCot?.reportDate ?? quoteCot?.reportDate ?? "",
   };
 }
@@ -132,7 +124,8 @@ const WeeklyPlaybook = () => {
       .map((signal) => {
         const sentiment = pairScores[signal.pair];
         const rawScore = Number(sentiment?.score ?? 0);
-        const score = Math.abs(rawScore) <= 1 ? rawScore * 100 : rawScore;
+        const magnitude = Math.abs(rawScore) <= 1 ? Math.abs(rawScore) * 100 : Math.abs(rawScore);
+        const score = sentiment?.sentiment === "BEARISH" ? -magnitude : sentiment?.sentiment === "BULLISH" ? magnitude : 0;
         return { signal, sentiment, score };
       })
       .filter((row) => row.sentiment)
@@ -170,7 +163,7 @@ const WeeklyPlaybook = () => {
   if (!signals.length) {
     return (
       <Card className="p-6 text-sm text-muted-foreground">
-        Playbook data is refreshing. Live COT positioning and 20-month price rhythm will appear here shortly.
+        Playbook data is unavailable or refreshing. Wait for stored COT positioning and historical daily prices.
       </Card>
     );
   }
