@@ -41,7 +41,7 @@ async function fetchSpotMomentum(): Promise<SpotMomentum> {
     const b = now?.[c];
     if (!Number.isFinite(a) || !Number.isFinite(b) || !a || !b) continue;
     // rates are "units of c per USD" — a fall means the currency strengthened
-    const pct = ((a - b) / a) * 100;
+    const pct = ((a / b) - 1) * 100;
     momentum[c] = pct;
     moves.push(pct);
   }
