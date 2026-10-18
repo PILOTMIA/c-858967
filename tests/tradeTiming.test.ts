@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { alignedWeekday, forexIsOpen, pairSpotBias, timingAssessment } from "./tradeTiming";
-import { computePairCall } from "./pairBias";
+import { alignedWeekday, forexIsOpen, pairSpotBias, timingAssessment } from "../src/lib/tradeTiming";
+import { computePairCall } from "../src/lib/pairBias";
 
 describe("COT direction is not entry timing", () => {
   test("USDJPY uses USD as the reference, not a synthetic basket subtraction", () => {
