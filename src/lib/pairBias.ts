@@ -30,7 +30,7 @@ export function computePairCall(
   quote: string,
   b: { net?: number; weekly?: number },
   q: { net?: number; weekly?: number },
-  priceBias = 0
+  priceBias?: number
 ): PairCall {
   const netSpread = (b.net ?? 0) - (q.net ?? 0);
   const flowSpread = (b.weekly ?? 0) - (q.weekly ?? 0);
@@ -38,7 +38,9 @@ export function computePairCall(
   const flowScore = clamp((flowSpread / FLOW_SCALE) * 100);
   const conviction = positionScore * 0.6 + flowScore * 0.4;
   const alignedRaw = Math.sign(positionScore) === Math.sign(flowScore) && Math.abs(positionScore) > 5;
-  const { conflict, squeeze } = squeezeCheck(netSpread, priceBias);
+  const priceAvailable = priceBias !== undefined && Number.isFinite(priceBias);
+  const priceMove = priceAvailable ? priceBias : 0;
+  const { conflict, squeeze } = squeezeCheck(netSpread, priceMove);
 
   let direction: PairCall["direction"] =
     Math.abs(conviction) < WAIT_THRESHOLD ? "WAIT" : conviction > 0 ? "LONG" : "SHORT";
@@ -48,10 +50,12 @@ export function computePairCall(
   const favoured = conviction > 0 ? base : quote;
   const other = conviction > 0 ? quote : base;
 
-  if (squeeze) {
-    direction = priceBias > 0 ? "LONG" : "SHORT";
-    displayConviction = Math.max(displayConviction, 70);
-    reason = `Big traders are crowded the other way, but price is running against them (${priceBias.toFixed(2)}% this week). Following price — squeeze risk.`;
+  if (!priceAvailable) {
+    direction = "WAIT";
+    reason = "Daily price confirmation is unavailable. COT positioning alone cannot establish entry timing.";
+  } else if (squeeze) {
+    direction = priceMove > 0 ? "LONG" : "SHORT";
+    reason = `Crowded futures positioning conflicts with the daily reference-rate move (${priceMove.toFixed(2)}%). Possible squeeze; a watchlist direction, not a confirmed entry.`;
   } else if (conflict) {
     direction = "WAIT";
     reason = `COT favours ${favoured} over ${other}, but price moved the opposite way this week. Wait for price to confirm.`;
@@ -69,10 +73,10 @@ export function computePairCall(
     conviction,
     displayConviction,
     direction,
-    aligned: alignedRaw && !conflict,
+    aligned: alignedRaw && !conflict && priceAvailable,
     conflict,
     squeeze,
-    priceBias,
+    priceBias: priceMove,
     reason,
   };
 }
