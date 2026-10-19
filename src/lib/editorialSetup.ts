@@ -20,3 +20,14 @@ export const bitcoinEditorialSetup = {
   receivedOn: "2026-10-19",
   confirmation: "UNVERIFIED",
 } as const;
+
+export const bitcoinPullbackSetup = {
+  pair: "BTCUSD",
+  timeframe: "2 days",
+  fibonacciRange: [50, 61.8],
+  retracementZone: [68000, 71000],
+  objective: 130000,
+  invalidationLevel: 57750,
+  requiredConfirmations: ["BULLISH_REJECTION", "DESCENDING_TRENDLINE_BREAK"],
+  confirmation: "UNVERIFIED",
+} as const;

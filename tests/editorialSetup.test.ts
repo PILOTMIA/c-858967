@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { bitcoinEditorialSetup, usdchfEditorialSetup } from "../src/lib/editorialSetup";
+import { bitcoinEditorialSetup, bitcoinPullbackSetup, usdchfEditorialSetup } from "../src/lib/editorialSetup";
 
 test("USDCHF scenario preserves the author's Fibonacci rejection level", () => {
   expect(usdchfEditorialSetup.rejectionLevel).toBe(0.8400);
@@ -24,4 +24,22 @@ test("Bitcoin pullback has no invented price", () => {
 });
 test("Bitcoin wave thesis is not confirmed", () => {
   expect(bitcoinEditorialSetup.confirmation).toBe("UNVERIFIED");
+});
+test("nearer-term pullback preserves the 68000 to 71000 zone", () => {
+  expect(bitcoinPullbackSetup.retracementZone).toEqual([68000, 71000]);
+});
+test("pullback preserves 50 to 61.8 percent Fibonacci range", () => {
+  expect(bitcoinPullbackSetup.fibonacciRange).toEqual([50, 61.8]);
+});
+test("pullback wave C objective is 130000", () => {
+  expect(bitcoinPullbackSetup.objective).toBe(130000);
+});
+test("pullback broader count invalidation is 57750", () => {
+  expect(bitcoinPullbackSetup.invalidationLevel).toBe(57750);
+});
+test("pullback requires rejection before descending trendline break", () => {
+  expect(bitcoinPullbackSetup.requiredConfirmations).toEqual(["BULLISH_REJECTION", "DESCENDING_TRENDLINE_BREAK"]);
+});
+test("pullback confirmations are not verified by the uploaded reference", () => {
+  expect(bitcoinPullbackSetup.confirmation).toBe("UNVERIFIED");
 });
