@@ -24,7 +24,6 @@ export default function BitcoinScenarioChart() {
       <text x="595" y="140" className="fill-foreground" fontSize="18" fontWeight="600">(A) {dollars(setup.firstObjective)}</text>
       <text x="650" y="310" className="fill-foreground" fontSize="16">(B) Pullback</text>
       <text x="650" y="330" className="fill-muted-foreground" fontSize="13">Level unspecified</text>
-      <text x="710" y=" sixty" className="fill-primary" fontSize="18" />
       <text x="695" y="60" className="fill-primary" fontSize="18" fontWeight="600">(C) {dollars(setup.finalTargetRange[0])}</text>
       <text x="735" y="82" className="fill-primary" fontSize="18" fontWeight="600">–{dollars(setup.finalTargetRange[1])}</text>
       <line x1="35" x2="865" y1="398" y2="398" className="stroke-destructive" strokeWidth="1.5" strokeDasharray="6 5" />
