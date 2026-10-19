@@ -1,6 +1,6 @@
 ## Bitcoin ending-diagonal scenario
-- [ ] Add the nearer-term pullback diagram and confirmation sequence, preserving the distinction from the later pullback.
-- [ ] Test new supplied levels and verify the pullback chart opens.
+- [x] Add the nearer-term pullback diagram and confirmation sequence, preserving the distinction from the later pullback.
+- [x] Test new supplied levels and verify the pullback chart opens.
 - [x] Add an original two-week Bitcoin diagram, attributed thesis, three-stage path and invalidation.
 - [x] Test supplied levels and verify chart enlargement and preview rendering.
 
