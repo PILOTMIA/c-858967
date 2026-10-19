@@ -1,3 +1,7 @@
+## Bitcoin ending-diagonal scenario
+- [ ] Add an original two-week Bitcoin diagram, attributed thesis, three-stage path and invalidation.
+- [ ] Test supplied levels and verify chart enlargement and preview rendering.
+
 ## USDCHF conditional chart setup
 - [x] Replace the uploaded public-facing chart with an original, clearly labelled scenario diagram and verify it opens.
 - [x] Add the supplied chart and plain-language entry, invalidation, targets, and wait conditions to the Playbook.
