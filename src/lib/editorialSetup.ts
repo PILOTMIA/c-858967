@@ -8,3 +8,15 @@ export const usdchfEditorialSetup = {
   receivedOn: "2026-10-19",
   confirmation: "UNVERIFIED",
 } as const;
+
+export const bitcoinEditorialSetup = {
+  pair: "BTCUSD",
+  timeframe: "2 weeks",
+  firstObjective: 130000,
+  finalTargetRange: [150000, 200000],
+  invalidationLevel: 57750,
+  pullbackLevel: null,
+  attribution: "Men In Action LLC",
+  receivedOn: "2026-10-19",
+  confirmation: "UNVERIFIED",
+} as const;
