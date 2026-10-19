@@ -1,3 +1,7 @@
+## USDCHF conditional chart setup
+- [x] Add the supplied chart and plain-language entry, invalidation, targets, and wait conditions to the Playbook.
+- [x] Verify the chart opens and scenario levels remain attributed rather than live signals (local browser used uploaded bytes because hosted asset serving is unavailable on localhost).
+
 ## October 13 COT and entry timing
 - [x] Reconcile uploaded October 13 reports and persist matching positions and weekly changes.
 - [x] Unify trade direction and present conditional timing, wait reasons, and honest source confidence.
