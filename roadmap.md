@@ -1,4 +1,5 @@
 ## USDCHF conditional chart setup
+- [ ] Replace the uploaded public-facing chart with an original, clearly labelled scenario diagram and verify it opens.
 - [x] Add the supplied chart and plain-language entry, invalidation, targets, and wait conditions to the Playbook.
 - [x] Verify the chart opens and scenario levels remain attributed rather than live signals (local browser used uploaded bytes because hosted asset serving is unavailable on localhost).
 

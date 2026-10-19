@@ -1,5 +1,5 @@
 import { Expand, ShieldAlert, TrendingDown } from "lucide-react";
-import chart from "@/assets/usdchf-daily-setup.asset.json";
+import USDCHFScenarioChart from "@/components/USDCHFScenarioChart";
 import { usdchfEditorialSetup as setup } from "@/lib/editorialSetup";
 import { useLatestCOT } from "@/hooks/useLatestCOT";
 import { useSpotMomentum } from "@/hooks/useSpotMomentum";
@@ -22,7 +22,7 @@ export default function FeaturedTradeSetup() {
       <div>
         <p className="mb-2 text-xs font-medium uppercase text-primary">Chart thesis · {setup.attribution}</p>
         <h2 id="featured-setup-title" className="flex items-center gap-2 text-2xl font-semibold text-foreground"><TrendingDown className="h-6 w-6 text-destructive" /> USDCHF: recovery or breakdown?</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Daily swing scenario · shared October 19, 2026 · chart capture date unknown</p>
+        <p className="mt-2 text-sm text-muted-foreground">Daily swing scenario · shared October 19, 2026 · original scenario diagram</p>
       </div>
       <Badge variant="outline" className="border-warning/40 text-warning">WAIT · break not verified</Badge>
     </div>
@@ -31,22 +31,22 @@ export default function FeaturedTradeSetup() {
         <Dialog>
           <DialogTrigger asChild>
             <Button variant="outline" className="relative h-auto w-full overflow-hidden rounded-lg p-0" aria-label="Enlarge USDCHF daily chart">
-              <img src={chart.url} alt="Author's USDCHF daily chart showing a descending channel, rising recovery trendline, Fibonacci rejection and downside targets" className="max-h-[480px] w-full object-contain" />
+              <USDCHFScenarioChart />
               <span className="absolute bottom-3 right-3 flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs text-foreground"><Expand className="h-4 w-4" /> View chart</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="max-h-[94dvh] w-[94vw] max-w-4xl overflow-auto">
-            <DialogTitle>USDCHF · author's daily chart</DialogTitle>
-            <DialogDescription>Static chart supplied by Men In Action LLC; not live market data.</DialogDescription>
-            <img src={chart.url} alt="Expanded USDCHF daily setup chart" className="max-h-[75dvh] w-full object-contain" />
+            <DialogTitle>USDCHF · conditional scenario</DialogTitle>
+            <DialogDescription>Original diagram of the Men In Action LLC thesis. Illustrative only: not live prices, observed history or a confirmed entry.</DialogDescription>
+            <USDCHFScenarioChart />
           </DialogContent>
         </Dialog>
-        <figcaption className="mt-2 text-xs leading-relaxed text-muted-foreground">Original chart, not a live feed. Displayed levels belong to this scenario only; the additional 0.7200 label in the image is not part of the three-target plan.</figcaption>
+        <figcaption className="mt-2 text-xs leading-relaxed text-muted-foreground">Original scenario diagram, not market history. Levels are the author's unverified thesis; the dashed path is hypothetical, not a live forecast.</figcaption>
       </figure>
       <div className="min-w-0 space-y-5">
         <div>
           <h3 className="font-semibold text-foreground">Why lower is on the watchlist</h3>
-          <p className="mt-2 text-sm leading-relaxed text-foreground">The supplied chart shows rejection near the 50% Fibonacci level at {setup.rejectionLevel.toFixed(4)} and a recovery testing its rising trendline. The author's Elliott Wave interpretation is that wave 4 may be complete and wave 5 lower could follow. That is a scenario, not proof that the downtrend has resumed.</p>
+          <p className="mt-2 text-sm leading-relaxed text-foreground">The author's thesis describes rejection near the 50% Fibonacci level at {setup.rejectionLevel.toFixed(4)} and a recovery testing its rising trendline. The Elliott Wave interpretation is that wave 4 may be complete and wave 5 lower could follow. The diagram illustrates that scenario, not proof that the downtrend has resumed.</p>
         </div>
         <ol className="divide-y divide-border border-y border-border">
           {[
