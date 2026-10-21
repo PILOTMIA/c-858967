@@ -5,7 +5,7 @@ export default function USDCHFScenarioChart() {
   const W = 520, top = 40, bottom = 380;
   const hi = 0.9, lo = 0.74;
   const y = (p: number) => top + ((hi - p) / (hi - lo)) * (bottom - top);
-  const levels = [0.90, 0.88, 0.86, 0.85, 0.84, 0.82, 0.80, 0.78, 0.76, 0.74];
+  const levels = [0.90, 0.88, 0.86, 0.84, 0.82, 0.80, 0.78, 0.76, 0.74];
   // Channel: lower 0.757 -> 0.805, upper 0.802 -> 0.850 across the plot.
   const x0 = 12, x1 = 455;
   const ch = (a: number, b: number) => `M${x0} ${y(a)} L${x1} ${y(b)}`;
