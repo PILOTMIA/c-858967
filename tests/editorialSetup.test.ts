@@ -43,3 +43,7 @@ test("pullback requires rejection before descending trendline break", () => {
 test("pullback confirmations are not verified by the uploaded reference", () => {
   expect(bitcoinPullbackSetup.confirmation).toBe("UNVERIFIED");
 });
+test("USDCHF Oct 21 update keeps break near 0.8300 and channel support near 0.8040", () => {
+  expect(usdchfEditorialSetup.trendlineBreakLevel).toBe(0.8300);
+  expect(usdchfEditorialSetup.channelSupport).toBe(0.8040);
+});

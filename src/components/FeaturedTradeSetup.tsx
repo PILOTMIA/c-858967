@@ -21,8 +21,8 @@ export default function FeaturedTradeSetup() {
     <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
       <div>
         <p className="mb-2 text-xs font-medium uppercase text-primary">Chart thesis · {setup.attribution}</p>
-        <h2 id="featured-setup-title" className="flex items-center gap-2 text-2xl font-semibold text-foreground"><TrendingDown className="h-6 w-6 text-destructive" /> USDCHF: recovery or breakdown?</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Daily swing scenario · shared October 19, 2026 · original scenario diagram</p>
+        <h2 id="featured-setup-title" className="flex items-center gap-2 text-2xl font-semibold text-foreground"><TrendingDown className="h-6 w-6 text-destructive" /> USDCHF: trendline broken inside the rising channel</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Daily swing scenario · updated October 21, 2026 · original scenario diagram</p>
       </div>
       <Badge variant="outline" className="border-warning/40 text-warning">WAIT · break not verified</Badge>
     </div>
@@ -46,17 +46,18 @@ export default function FeaturedTradeSetup() {
       <div className="min-w-0 space-y-5">
         <div>
           <h3 className="font-semibold text-foreground">Why lower is on the watchlist</h3>
-          <p className="mt-2 text-sm leading-relaxed text-foreground">The author's thesis describes rejection near the 50% Fibonacci level at {setup.rejectionLevel.toFixed(4)} and a recovery testing its rising trendline. The Elliott Wave interpretation is that wave 4 may be complete and wave 5 lower could follow. The diagram illustrates that scenario, not proof that the downtrend has resumed.</p>
+          <p className="mt-2 text-sm leading-relaxed text-foreground">Latest update: USDCHF has spent months climbing inside a rising daily channel (roughly {setup.channelRange[0].toFixed(4)} to {setup.channelRange[1].toFixed(4)}). Each leg higher followed a steep red trendline, and each time that trendline broke, price pulled back toward the channel's lower edge. After rejecting near {setup.rejectionLevel.toFixed(4)}, price has now slipped below the latest trendline around {setup.trendlineBreakLevel.toFixed(4)}. The author's first objective is channel support near {setup.channelSupport.toFixed(4)}; the deeper targets only come into play if that support also fails. This is the author's reading, not proof the move will happen.</p>
         </div>
         <ol className="divide-y divide-border border-y border-border">
           {[
-            ["01", "Entry trigger", "Wait for a completed daily candle to close below the rising trendline. An intraday dip or an unfinished candle does not confirm this setup. Check the same broker's daily close and trendline anchors."],
+            ["01", "Entry trigger", "Wait for a completed daily candle to close below the broken trendline and hold beneath it. An intraday dip or an unfinished candle does not confirm this setup. Check the same broker's daily close and trendline anchors."],
             ["02", "Stop & invalidation", "After a confirmed break, place the stop above the rejection high. No exact stop is supplied. A recovery back above the broken trendline weakens the thesis; a move above the rejection high invalidates it."],
             ["03", "Manage the move", "Take partial profits at each target and tighten stops as price moves lower. Do not widen the stop or add to a failed setup. Size risk only after the actual entry and stop are known."],
           ].map(([number, title, text]) => <li key={number} className="flex gap-3 py-3"><span className="pt-0.5 font-mono text-xs text-primary">{number}</span><div><h3 className="text-sm font-semibold text-foreground">{title}</h3><p className="mt-1 text-sm leading-relaxed text-muted-foreground">{text}</p></div></li>)}
         </ol>
         <div>
           <h3 className="text-xs font-medium uppercase text-muted-foreground">Author's targets · not live calculated levels</h3>
+          <p className="mt-1 text-xs text-muted-foreground">First objective: channel support near <span className="font-mono text-foreground">{setup.channelSupport.toFixed(4)}</span>. Deeper targets need a daily close below the channel.</p>
           <div className="mt-2 grid grid-cols-3 gap-3">{setup.targets.map((target, index) => <div key={target} className="border-l-2 border-destructive/50 pl-3"><p className="text-xs text-muted-foreground">Target {index + 1}</p><p className="mt-1 font-mono text-lg font-semibold text-foreground">{target.toFixed(4)}</p></div>)}</div>
           <p className="mt-2 text-xs text-muted-foreground">A 1,000-pip move is not promised; the actual distance and reward-to-risk depend on the confirmed entry.</p>
         </div>
