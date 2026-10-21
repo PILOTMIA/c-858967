@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { bitcoinEditorialSetup, bitcoinPullbackSetup, usdchfEditorialSetup } from "../src/lib/editorialSetup";
+import { bitcoinEditorialSetup, bitcoinPullbackSetup, usdchfEditorialSetup, describeUsdchfQuote } from "../src/lib/editorialSetup";
 
 test("USDCHF scenario preserves the author's Fibonacci rejection level", () => {
   expect(usdchfEditorialSetup.rejectionLevel).toBe(0.8400);
@@ -46,4 +46,10 @@ test("pullback confirmations are not verified by the uploaded reference", () => 
 test("USDCHF Oct 21 update keeps break near 0.8300 and channel support near 0.8040", () => {
   expect(usdchfEditorialSetup.trendlineBreakLevel).toBe(0.8300);
   expect(usdchfEditorialSetup.channelSupport).toBe(0.8040);
+});
+
+test("USDCHF quote status: above 0.8400 invalidates, 0.8239 is 199 pips above support", () => {
+  expect(describeUsdchfQuote(0.8410)).toContain("invalidated");
+  expect(describeUsdchfQuote(0.8239)).toContain("199 pips");
+  expect(describeUsdchfQuote(0.8030)).toContain("first objective reached");
 });
