@@ -13,7 +13,7 @@ export default function USDCHFScenarioChart() {
   return <div className="w-full bg-background p-4 text-left sm:p-5">
     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
       <span className="font-semibold text-foreground">USDCHF <span className="text-xs font-normal text-muted-foreground">· 1D · rising channel</span></span>
-      <span className="text-xs font-medium text-warning">Conditional · not live</span>
+      <span className="text-xs font-medium text-warning">Illustrative levels · not live</span>
     </div>
     <svg viewBox={`0 0 ${W} 410`} className="h-auto w-full" role="img" aria-label={`Original USDCHF daily diagram: rising channel, latest trendline broken near ${setup.trendlineBreakLevel.toFixed(4)}, projected move to channel support near ${setup.channelSupport.toFixed(4)}. Schematic, not observed price history.`}>
       {levels.map((l) => <g key={l}>

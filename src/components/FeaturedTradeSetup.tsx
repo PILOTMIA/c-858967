@@ -1,5 +1,6 @@
 import { Expand, ShieldAlert, TrendingDown } from "lucide-react";
 import USDCHFScenarioChart from "@/components/USDCHFScenarioChart";
+import USDCHFVerifiedQuote from "@/components/USDCHFVerifiedQuote";
 import { usdchfEditorialSetup as setup } from "@/lib/editorialSetup";
 import { useLatestCOT } from "@/hooks/useLatestCOT";
 import { useSpotMomentum } from "@/hooks/useSpotMomentum";
@@ -44,6 +45,7 @@ export default function FeaturedTradeSetup() {
         <figcaption className="mt-2 text-xs leading-relaxed text-muted-foreground">Original scenario diagram, not market history. Levels are the author's unverified thesis; the dashed path is hypothetical, not a live forecast.</figcaption>
       </figure>
       <div className="min-w-0 space-y-5">
+        <USDCHFVerifiedQuote />
         <div>
           <h3 className="font-semibold text-foreground">Why lower is on the watchlist</h3>
           <p className="mt-2 text-sm leading-relaxed text-foreground">Latest update: USDCHF has spent months climbing inside a rising daily channel (roughly {setup.channelRange[0].toFixed(4)} to {setup.channelRange[1].toFixed(4)}). Each leg higher followed a steep red trendline, and each time that trendline broke, price pulled back toward the channel's lower edge. After rejecting near {setup.rejectionLevel.toFixed(4)}, price has now slipped below the latest trendline around {setup.trendlineBreakLevel.toFixed(4)}. The author's first objective is channel support near {setup.channelSupport.toFixed(4)}; the deeper targets only come into play if that support also fails. This is the author's reading, not proof the move will happen.</p>
@@ -56,7 +58,7 @@ export default function FeaturedTradeSetup() {
           ].map(([number, title, text]) => <li key={number} className="flex gap-3 py-3"><span className="pt-0.5 font-mono text-xs text-primary">{number}</span><div><h3 className="text-sm font-semibold text-foreground">{title}</h3><p className="mt-1 text-sm leading-relaxed text-muted-foreground">{text}</p></div></li>)}
         </ol>
         <div>
-          <h3 className="text-xs font-medium uppercase text-muted-foreground">Author's targets · not live calculated levels</h3>
+          <h3 className="text-xs font-medium uppercase text-muted-foreground">Illustrative · author's targets, not verified live levels</h3>
           <p className="mt-1 text-xs text-muted-foreground">First objective: channel support near <span className="font-mono text-foreground">{setup.channelSupport.toFixed(4)}</span>. Deeper targets need a daily close below the channel.</p>
           <div className="mt-2 grid grid-cols-3 gap-3">{setup.targets.map((target, index) => <div key={target} className="border-l-2 border-destructive/50 pl-3"><p className="text-xs text-muted-foreground">Target {index + 1}</p><p className="mt-1 font-mono text-lg font-semibold text-foreground">{target.toFixed(4)}</p></div>)}</div>
           <p className="mt-2 text-xs text-muted-foreground">A 1,000-pip move is not promised; the actual distance and reward-to-risk depend on the confirmed entry.</p>
