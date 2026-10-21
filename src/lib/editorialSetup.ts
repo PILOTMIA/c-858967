@@ -3,6 +3,12 @@ export const usdchfEditorialSetup = {
   pair: "USDCHF",
   timeframe: "Daily",
   rejectionLevel: 0.8400,
+  // Oct 21 update: rising daily channel, latest swing trendline broken near 0.8300,
+  // first projected leg toward channel support near 0.8040.
+  trendlineBreakLevel: 0.8300,
+  channelSupport: 0.8040,
+  channelRange: [0.7600, 0.8500],
+  updatedOn: "2026-10-21",
   targets: [0.7900, 0.7600, 0.7400],
   attribution: "Men In Action LLC",
   receivedOn: "2026-10-19",
