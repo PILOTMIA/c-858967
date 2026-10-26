@@ -90,9 +90,9 @@ const FedWatchTool = () => {
       <div className="glass-card p-6 rounded-lg mb-8 animate-fade-in">
         <h2 className="text-xl font-semibold mb-4">FED Watch Tool</h2>
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded"></div>
+          <div className="h-4 bg-muted rounded mb-2"></div>
+          <div className="h-4 bg-muted rounded mb-2"></div>
+          <div className="h-4 bg-muted rounded"></div>
         </div>
       </div>
     );
@@ -145,7 +145,7 @@ const FedWatchTool = () => {
                   {fedData?.probabilities.rateCut}%
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-muted rounded-full h-2">
                 <div 
                   className="bg-red-500 h-2 rounded-full" 
                   style={{ width: `${fedData?.probabilities.rateCut}%` }}
@@ -160,9 +160,9 @@ const FedWatchTool = () => {
                   {fedData?.probabilities.rateHold}%
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-muted rounded-full h-2">
                 <div 
-                  className="bg-gray-500 h-2 rounded-full" 
+                  className="bg-muted-foreground h-2 rounded-full" 
                   style={{ width: `${fedData?.probabilities.rateHold}%` }}
                 ></div>
               </div>
@@ -175,7 +175,7 @@ const FedWatchTool = () => {
                   {fedData?.probabilities.rateHike}%
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-muted rounded-full h-2">
                 <div 
                   className="bg-green-500 h-2 rounded-full" 
                   style={{ width: `${fedData?.probabilities.rateHike}%` }}

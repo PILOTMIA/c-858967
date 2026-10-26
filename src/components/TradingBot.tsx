@@ -172,7 +172,7 @@ const TradingBot = () => {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 w-96 max-w-[calc(100vw-2rem)]">
-      <Card className="bg-gray-900 border-border">
+      <Card className="bg-card border-border">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-foreground flex items-center gap-2 text-base">
