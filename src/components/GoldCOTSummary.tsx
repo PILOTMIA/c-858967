@@ -144,7 +144,7 @@ const GoldCOTSummary = () => {
               <span className="text-[10px] text-muted-foreground">{fmt(totalContracts)} total contracts</span>
             </div>
             <div className="h-3 rounded-full overflow-hidden flex">
-              <div className="bg-gradient-to-r from-success to-success/80 flex items-center justify-end pr-2 text-[10px] font-bold text-success-foreground" style={{ width: `${longPct}%` }}>
+              <div className="bg-gradient-to-r from-success to-success/80 flex items-center justify-end pr-2 text-[10px] font-bold text-background" style={{ width: `${longPct}%` }}>
                 {longPct >= 12 && `${longPct.toFixed(0)}%`}
               </div>
               <div className="bg-gradient-to-r from-destructive/80 to-destructive flex items-center justify-start pl-2 text-[10px] font-bold text-destructive-foreground" style={{ width: `${shortPct}%` }}>

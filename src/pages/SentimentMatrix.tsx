@@ -327,7 +327,7 @@ const SentimentMatrix = () => {
             {/* Quadrant labels */}
             <div className="absolute top-2 left-2 text-[8px] sm:text-[11px] font-bold text-emerald-500 uppercase tracking-widest font-mono">Bullish · Unexpected</div>
             <div className="absolute top-2 right-2 text-[8px] sm:text-[11px] font-bold text-emerald-500/60 uppercase tracking-widest font-mono">Bullish · Expected</div>
-            <div className="absolute bottom-2 left-2 text-[8px] sm:text-[11px] font-bold text-rose-500/60 uppercase tracking-widest font-mono">Bearish · Expected</div>
+            <div className="absolute bottom-2 left-2 text-[8px] sm:text-[11px] font-bold text-destructive uppercase tracking-widest font-mono">Bearish · Expected</div>
             <div className="absolute bottom-2 right-2 text-[8px] sm:text-[11px] font-bold text-rose-500 uppercase tracking-widest font-mono">Bearish · Unexpected</div>
 
             {/* Quadrant tints */}
