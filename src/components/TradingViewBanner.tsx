@@ -17,12 +17,12 @@ const TradingViewBanner = () => {
     script.async = true;
     script.textContent = JSON.stringify({
       symbols: [
-        { proName: "FX:EURUSD", title: "EUR/USD" },
-        { proName: "FX:GBPUSD", title: "GBP/USD" },
-        { proName: "FX:USDJPY", title: "USD/JPY" },
-        { proName: "FX:AUDUSD", title: "AUD/USD" },
-        { proName: "FX:USDCAD", title: "USD/CAD" },
-        { proName: "FX:NZDUSD", title: "NZD/USD" },
+        { proName: "FX:EURUSD", title: "EURUSD" },
+        { proName: "FX:GBPUSD", title: "GBPUSD" },
+        { proName: "FX:USDJPY", title: "USDJPY" },
+        { proName: "FX:AUDUSD", title: "AUDUSD" },
+        { proName: "FX:USDCAD", title: "USDCAD" },
+        { proName: "FX:NZDUSD", title: "NZDUSD" },
         { proName: "OANDA:XAUUSD", title: "Gold" },
         { proName: "BITSTAMP:BTCUSD", title: "BTC" },
         { proName: "FOREXCOM:SPXUSD", title: "S&P 500" },
@@ -30,7 +30,7 @@ const TradingViewBanner = () => {
         { proName: "TVC:US10Y", title: "US10Y" },
       ],
       showSymbolLogo: true,
-      isTransparent: true,
+      isTransparent: false,
       displayMode: "adaptive",
       colorTheme: "dark",
       locale: "en",

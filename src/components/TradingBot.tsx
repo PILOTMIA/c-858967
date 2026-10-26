@@ -172,7 +172,7 @@ const TradingBot = () => {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 w-96 max-w-[calc(100vw-2rem)]">
-      <Card className="bg-gray-900 border-border">
+      <Card className="bg-card border-border">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-foreground flex items-center gap-2 text-base">
@@ -213,7 +213,7 @@ const TradingBot = () => {
           {showHistory ? (
             <div className="h-72 overflow-y-auto space-y-2 pr-1 scrollbar-thin">
               {conversations.length === 0 ? (
-                <p className="text-gray-500 text-sm text-center py-8">No saved conversations yet</p>
+                <p className="text-muted-foreground text-sm text-center py-8">No saved conversations yet</p>
               ) : (
                 conversations.map((conv) => (
                   <div
@@ -229,7 +229,7 @@ const TradingBot = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-gray-500 hover:text-red-400 h-6 w-6 p-0 shrink-0"
+                      className="text-muted-foreground hover:text-red-400 h-6 w-6 p-0 shrink-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         deleteConversation(conv.id);
