@@ -105,7 +105,7 @@ const FedWatchTool = () => {
       case 'HAWKISH':
         return <TrendingUp className="w-5 h-5 text-green-500" />;
       default:
-        return <Minus className="w-5 h-5 text-gray-500" />;
+        return <Minus className="w-5 h-5 text-muted-foreground" />;
     }
   };
 
@@ -128,7 +128,7 @@ const FedWatchTool = () => {
             <span className={`px-3 py-1 rounded-full text-sm ${
               fedData?.sentiment === 'DOVISH' ? 'bg-red-100 text-red-800' :
               fedData?.sentiment === 'HAWKISH' ? 'bg-green-100 text-green-800' :
-              'bg-gray-100 text-gray-800'
+              'bg-muted text-foreground'
             }`}>
               {fedData?.sentiment}
             </span>
@@ -156,7 +156,7 @@ const FedWatchTool = () => {
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-sm">Rate Hold</span>
-                <span className="text-sm font-bold text-gray-500">
+                <span className="text-sm font-bold text-muted-foreground">
                   {fedData?.probabilities.rateHold}%
                 </span>
               </div>
