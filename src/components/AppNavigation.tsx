@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, Home, TrendingUp, BookOpen, Users, BarChart3, Calendar, Settings, Activity, Newspaper, Gem, Compass, Globe2, Gauge, ClipboardList } from 'lucide-react';
+import { Menu, X, Home, TrendingUp, BookOpen, Users, BarChart3, Calendar, Settings, Activity, Newspaper, Gem, Compass, Globe2, Gauge, ClipboardList, Calculator } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from './ui/button';
@@ -12,6 +12,7 @@ const AppNavigation = () => {
     { path: '/', label: 'Dashboard', icon: Home },
     { path: '/market-analysis', label: 'Market Analysis', icon: TrendingUp },
     { path: '/weekly-playbook', label: 'Weekly Playbook', icon: ClipboardList },
+    { path: '/compounding', label: 'Compounding Planner', icon: Calculator },
     { path: '/cot-analysis', label: 'COT Analysis', icon: BarChart3 },
     { path: '/sentiment-matrix', label: 'Sentiment Matrix', icon: Compass },
     { path: '/currency-flow', label: 'Currency Flow', icon: Globe2 },
@@ -63,7 +64,7 @@ const AppNavigation = () => {
       )}
 
       {/* Menu Panel */}
-      <div className={`fixed top-0 right-0 h-full w-[min(22rem,92vw)] bg-card/95 backdrop-blur-2xl border-l border-border/70 shadow-2xl transform transition-all duration-300 ease-in-out z-50 ${
+      <div className={`fixed top-0 right-0 h-full overflow-y-auto w-[min(22rem,92vw)] bg-card/95 backdrop-blur-2xl border-l border-border/70 shadow-2xl transform transition-all duration-300 ease-in-out z-50 ${
         isOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
       }`}>
         <div className="p-6 pt-20">
