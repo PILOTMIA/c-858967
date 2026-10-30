@@ -1,4 +1,5 @@
 ## Compounding planner
+- [x] Simplify lot sizing, hide technical broker settings by default, and verify calculations remain unchanged.
 - [x] Add stop-based lot sizing and per-session lots using verified currency conversions and broker contract settings.
 - [x] Test sizing and verify the populated lot-sizing flow and exports.
 - [x] Move the planner to its own navigable page and confirm existing production analytics provides page-path breakdowns; new-page traffic will appear after publication and visits.
