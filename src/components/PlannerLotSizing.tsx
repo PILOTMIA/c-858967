@@ -53,38 +53,42 @@ export default function PlannerLotSizing({ rows }: { rows: CompoundSession[] }) 
   };
   return (
     <section aria-labelledby="planner-lot-title" className="border-t border-border mt-8 pt-8 text-foreground">
-      <h3 id="planner-lot-title" className="text-xl font-bold">Risk-based lot sizing</h3>
-      <p className="text-sm text-muted-foreground mt-2 mb-5">USD account · Balance and risk from your plan · Lot sizes rounded down</p>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="space-y-2"><Label htmlFor="planner-instrument">Instrument</Label><Select value={symbol} onValueChange={value => {
+      <h3 id="planner-lot-title" className="text-xl font-bold">Lot size for your first trade</h3>
+      <p className="text-sm text-muted-foreground mt-2 mb-5">USD account · Starting balance {dollars(rows[0]?.balance ?? 0)} · Risk per trade {dollars(rows[0]?.riskAmount ?? 0)}</p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2"><Label htmlFor="planner-instrument">Trading pair</Label><Select value={symbol} onValueChange={value => {
           const next = sizingInstruments.find(item => item.symbol === value);
           if (!next) return;
           setSymbol(value); setValues(current => ({ ...current, contract: String(next.contract), pip: String(next.pip) }));
         }}><SelectTrigger id="planner-instrument"><SelectValue /></SelectTrigger><SelectContent>{sizingInstruments.map(item => <SelectItem key={item.symbol} value={item.symbol}>{item.symbol}</SelectItem>)}</SelectContent></Select></div>
-        {controls.slice(0, 2).map(([key, label]) => <div key={key} className="space-y-2"><Label htmlFor={`size-${key}`}>{label}</Label><Input id={`size-${key}`} type="number" min={key === "stopPips" ? "0.01" : "0"} step="any" value={values[key]} onChange={e => setValues(current => ({ ...current, [key]: e.target.value }))} /></div>)}
+        <div className="space-y-2"><Label htmlFor="size-stopPips">Stop-loss distance (pips)</Label><Input id="size-stopPips" type="number" min="0.01" step="any" value={values.stopPips} onChange={e => setValues(current => ({ ...current, stopPips: e.target.value }))} /></div>
       </div>
-      <details className="mt-4" open>
-        <summary className="cursor-pointer text-sm py-2">Broker contract, costs and lot limits</summary>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-3">{controls.slice(2).map(([key, label]) => <div key={key} className="space-y-2"><Label htmlFor={`size-${key}`}>{label}</Label><Input id={`size-${key}`} type="number" min="0" step="any" value={values[key]} onChange={e => setValues(current => ({ ...current, [key]: e.target.value }))} /></div>)}</div>
-      </details>
-      <p className="text-sm text-muted-foreground mt-4">Forex defaults to 100,000 base units per lot; gold to 100 oz and silver to 5,000 oz. Pip conventions and volume limits vary by broker: verify every contract setting before trading. For gold, the default 0.01 pip means a $5 price distance is 500 pips.</p>
-      <div className="flex flex-wrap items-center gap-3 mt-4 text-sm">
-        <span>{quote === "USD" ? "USD quote currency — no exchange-rate conversion needed." : conversion.data && !conversion.error ? `ECB daily reference via Frankfurter · ${conversion.data.date} · 1 ${quote} = ${conversion.data.rate.toFixed(6)} USD` : "Official conversion reference unavailable."}</span>
+      <p className="text-sm text-muted-foreground mt-3">Estimate uses standard contract sizes and excludes trading costs unless added below. Check your broker’s settings before trading.</p>
+      {quote !== "USD" && <div className="flex flex-wrap items-center gap-3 mt-4 text-sm">
+        <span>{conversion.data && !conversion.error ? `ECB daily reference via Frankfurter · ${conversion.data.date} · 1 ${quote} = ${conversion.data.rate.toFixed(6)} USD` : "Official conversion reference unavailable."}</span>
         {quote !== "USD" && <Button variant="outline" size="icon-sm" title="Refresh conversion" aria-label="Refresh conversion" onClick={() => conversion.refetch()}><RefreshCw className="h-4 w-4" /></Button>}
-      </div>
-      <p className="text-sm text-muted-foreground mt-2">Daily reference rates are not tradable broker quotes. Future session sizes use this same conversion and stop distance; recalculate with actual equity and broker rates before each trade.</p>
+        <span className="text-muted-foreground">Daily reference, not a live broker quote.</span>
+      </div>}
       {error && <p role="alert" className="mt-4 border-l-2 border-warning bg-warning/10 p-3 text-foreground">{error}</p>}
       {first && last && <>
-        <div className="grid gap-5 sm:grid-cols-3 border-y border-border py-5 mt-5" aria-live="polite">
-          <div><p className="text-sm text-muted-foreground">First session · Lots per trade</p><p data-testid="first-session-lots" className="text-2xl text-success font-bold mt-1 break-words">{lotsLabel(first.lots)}</p><p className="text-sm mt-1">{dollars(first.riskAtStop)} modeled loss at stop</p></div>
-          <div><p className="text-sm text-muted-foreground">Last projected session · Lots</p><p className="text-xl font-bold mt-1 break-words">{lotsLabel(last.lots)}</p></div>
-          <div><p className="text-sm text-muted-foreground">Pip value · One full lot</p><p className="text-xl font-bold mt-1">{dollars(first.pipValue)}</p></div>
+        <div className="grid gap-5 sm:grid-cols-2 border-y border-border py-5 mt-5" aria-live="polite">
+          <div><p className="text-sm text-muted-foreground">Estimated lot size · Per trade</p><p data-testid="first-session-lots" className="text-3xl text-success font-bold mt-1 break-words">{lotsLabel(first.lots)}{first.lots > 0 && <span className="text-base font-medium"> lots</span>}</p></div>
+          <div><p className="text-sm text-muted-foreground">Estimated loss if stop is hit</p><p className="text-2xl font-bold mt-1">{dollars(first.riskAtStop)}</p></div>
         </div>
-        <p className="text-sm text-muted-foreground mt-4">Lots = risk budget ÷ [(stop pips + buffer pips) × pip value per lot + round-trip commission], rounded down to the lot step and capped at the broker maximum. A zero result means the minimum lot exceeds your risk budget. This is per trade, not split across your trades per session.</p>
-        <p className="text-sm text-muted-foreground mt-2">This sizes stop-loss risk, not margin affordability. Leverage, available margin, open positions and broker limits still apply; gaps can exceed the modeled loss. Concurrent trades add their risk together.</p>
+        <p className="text-sm text-muted-foreground mt-3">Estimate only, not a trade recommendation. Actual losses may be larger. Available margin and other open trades still matter.</p>
+      </>}
+      <details className="mt-4">
+        <summary className="cursor-pointer text-sm py-2 font-medium">Advanced broker settings & trading costs</summary>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-3">{controls.slice(1).map(([key, label]) => <div key={key} className="space-y-2"><Label htmlFor={`size-${key}`}>{label}</Label><Input id={`size-${key}`} type="number" min="0" step="any" value={values[key]} onChange={e => setValues(current => ({ ...current, [key]: e.target.value }))} /></div>)}</div>
+        <p className="text-sm text-muted-foreground mt-4">Forex defaults to 100,000 base units per lot; gold to 100 oz and silver to 5,000 oz. Pip conventions and volume limits vary by broker. For gold, the default 0.01 pip means a $5 price distance is 500 pips.</p>
+        {first && <p className="text-sm text-muted-foreground mt-3">Pip value per full lot: {dollars(first.pipValue)}. Lot size is risk budget divided by stop-loss cost plus commission, rounded down to your broker’s lot step and capped at its maximum. A zero result means the minimum lot exceeds your risk budget.</p>}
+      </details>
+      {first && last && <details className="mt-3">
+        <summary className="cursor-pointer text-sm py-2 font-medium">Future session estimates</summary>
+        <p className="text-sm text-muted-foreground mt-3">Last projected session: {lotsLabel(last.lots)} lots per trade. These hypothetical sizes reuse today’s settings; recalculate with your actual balance and broker rates before each trade.</p>
         <div className="flex flex-wrap justify-between items-center gap-3 mt-5"><h4 className="font-semibold">Projected lot sizes by session</h4><Button variant="outline" size="sm" onClick={download}><Download className="h-4 w-4 mr-2" /> Download lot sizes</Button></div>
         <details className="mt-3"><summary className="text-sm cursor-pointer py-2">View session lot sizes</summary><div className="overflow-auto max-h-[420px] border border-border rounded-md mt-2"><table className="w-full text-sm text-left whitespace-nowrap tabular-nums"><thead className="sticky top-0 bg-secondary text-secondary-foreground"><tr>{["Session", "Opening balance", "Risk budget", "Lots per trade", "Modeled stop loss"].map(label => <th key={label} className="px-4 py-3" scope="col">{label}</th>)}</tr></thead><tbody>{rows.slice(1).map((row, i) => <tr key={row.session} className="border-t border-border"><td className="px-4 py-3">{row.session}</td><td className="px-4 py-3">{dollars(row.openingBalance)}</td><td className="px-4 py-3">{dollars(row.riskAmount)}</td><td className="px-4 py-3">{lotsLabel(sized[i]?.lots ?? 0)}</td><td className="px-4 py-3">{dollars(sized[i]?.riskAtStop ?? 0)}</td></tr>)}</tbody></table></div></details>
-      </>}
+      </details>}
     </section>
   );
 }
