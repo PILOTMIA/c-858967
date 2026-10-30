@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { calculateCompounding, compoundCsv, compoundExample, lossStressPercent, type CompoundPlan } from "@/lib/compounding";
+import PlannerLotSizing from "@/components/PlannerLotSizing";
 
 const defaults = { startingBalance: "1000", riskPercent: "1", returnPercent: "2", sessions: "30", tradesPerSession: "3" };
 const fields = [
@@ -119,6 +120,7 @@ export default function CompoundingPlanner() {
         <ShieldAlert className="h-5 w-5 shrink-0 text-warning mt-0.5" />
         <p className="text-sm text-foreground">This is a mathematical illustration, not a forecast, trade signal, or recommended risk level. A consistent 24% return per session is an aggressive assumption, not an expected result. Risking 5–8% per trade can cause substantial drawdowns. Actual results vary; losing sessions, fees, spreads, slippage, taxes and withdrawals are not included in this projection.</p>
       </div>
+      {final && <PlannerLotSizing rows={rows} />}
       {final && <div className="mt-6">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h3 className="text-lg font-semibold">Session-by-session plan</h3>
