@@ -2,7 +2,6 @@ import RealTimeData from "@/components/RealTimeData";
 import SentimentWidget from "@/components/SentimentWidget";
 import TradingBot from "@/components/TradingBot";
 import MarketClock from "@/components/MarketClock";
-import CompoundingPlanner from "@/components/CompoundingPlanner";
 import { Shield, Zap, TrendingUp, ArrowUpRight, Globe2 } from "lucide-react";
 
 const Tools = () => {
@@ -20,7 +19,6 @@ const Tools = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 pb-16 space-y-8">
-        <CompoundingPlanner />
         {/* Preferred broker CTA */}
         <section className="rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-card/50 to-card/30 backdrop-blur-sm p-6 sm:p-8">
           <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center">

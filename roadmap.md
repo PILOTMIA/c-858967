@@ -1,4 +1,5 @@
 ## Compounding planner
+- [x] Move the planner to its own navigable page and confirm existing production analytics provides page-path breakdowns; new-page traffic will appear after publication and visits.
 - [x] Add adjustable session-based projection, risk amounts, chart, and downloadable session sheet to Trading Tools.
 - [x] Test the supplied example and verify calculator interactions and dark-mode readability.
 
