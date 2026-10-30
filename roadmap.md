@@ -1,3 +1,7 @@
+## Compounding planner
+- [ ] Add adjustable session-based projection, risk amounts, chart, and downloadable session sheet to Trading Tools.
+- [ ] Test the supplied example and verify calculator interactions and dark-mode readability.
+
 ## Bitcoin ending-diagonal scenario
 - [x] Add the nearer-term pullback diagram and confirmation sequence, preserving the distinction from the later pullback.
 - [x] Test new supplied levels and verify the pullback chart opens.
