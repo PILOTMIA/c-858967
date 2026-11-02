@@ -1,3 +1,8 @@
+## Ticker and API refresh
+- [ ] Update the top ticker with accurately attributed API data and visible source timestamps.
+- [ ] Refresh and verify all active market feeds; flag failures without inventing values.
+- [ ] Test quote freshness rules and verify the populated ticker.
+
 ## October 27 COT update
 - [x] Reconcile all six supplied reports; all 28 tracked markets already matched, now protected as verified uploads.
 - [x] Improve COT freshness labels, tooltip contrast, and chart spacing without changing trade rules.
