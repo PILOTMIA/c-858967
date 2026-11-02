@@ -31,6 +31,7 @@ import TermsAgreementModal from "./components/TermsAgreementModal";
 import FirstTimeUserTutorial from "./components/FirstTimeUserTutorial";
 import PageTransition from "./components/PageTransition";
 import ScrollToTop from "./components/ScrollToTop";
+import FeedRefreshSchedule from "./components/FeedRefreshSchedule";
 
 // Global data policy: every API-backed query refreshes at least every 10 minutes.
 const TEN_MIN = 1000 * 60 * 10;
@@ -49,6 +50,7 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <FeedRefreshSchedule />
     <ThemeProvider
       attribute="class"
       defaultTheme="system"

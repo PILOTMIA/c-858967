@@ -241,8 +241,10 @@ const COTDetailModal = ({ open, onOpenChange, data }: COTDetailModalProps) => {
     try {
       const price = await fetchForexPrice(data.currency);
       setCurrentPrice(price);
-      setPriceSource('Live');
+      setPriceSource('API indicative quote');
     } catch (error) {
+      setCurrentPrice(0);
+      setPriceSource('Unavailable');
       console.error('Failed to refresh price:', error);
     } finally {
       setIsLoadingPrice(false);

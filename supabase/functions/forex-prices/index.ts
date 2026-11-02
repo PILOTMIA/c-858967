@@ -73,7 +73,7 @@ serve(async (req) => {
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), ms);
       try {
-        return await fetch(url, { signal: ctrl.signal, headers: { Accept: 'application/json' } });
+        return await fetch(url, { signal: ctrl.signal, headers: { Accept: 'application/json', 'User-Agent': 'Mozilla/5.0' } });
       } finally {
         clearTimeout(t);
       }
