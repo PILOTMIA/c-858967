@@ -9,6 +9,7 @@ const PROJECT = import.meta.env.VITE_SUPABASE_PROJECT_ID as string;
 export const BOARD_PAIRS = [
   "EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD",
   "EURJPY", "GBPJPY", "EURGBP", "AUDJPY", "EURCHF",
+  "XAUUSD", "BTCUSD", "SP500", "DXY", "US10Y",
 ];
 
 export interface LiveRate extends QuoteEvidence {
@@ -57,7 +58,7 @@ export function useLiveBoard() {
   });
 }
 
-const decimals = (pair: string) => (pair.includes("JPY") ? 3 : 5);
+const decimals = (pair: string) => (["XAUUSD", "BTCUSD", "SP500", "DXY"].includes(pair) ? 2 : pair.includes("JPY") || pair === "US10Y" ? 3 : 5);
 
 const LivePriceBoard = () => {
   const { data, isLoading, isFetching, refetch, error } = useLiveBoard();

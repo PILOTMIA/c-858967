@@ -1,7 +1,8 @@
 ## Ticker and API refresh
-- [ ] Update the top ticker with accurately attributed API data and visible source timestamps.
-- [ ] Refresh and verify all active market feeds; flag failures without inventing values.
-- [ ] Test quote freshness rules and verify the populated ticker.
+- [x] Update the top ticker with source observation timestamps; verify all 17 instruments return API prices.
+- [x] Invoke price, news, rhythm, VIX, COT, health, and BLS macro feeds; add mounted-query refreshes at Arizona checkpoints.
+- [ ] Restore FRED-backed macro feeds: blocked by invalid saved FRED key; secure replacement was declined. Existing macro fallback displays are not verified current data.
+- [x] Remove synthetic forex history and gold comparison history, test freshness rules, and verify ticker refresh and narrow-screen fit.
 
 ## October 27 COT update
 - [x] Reconcile all six supplied reports; all 28 tracked markets already matched, now protected as verified uploads.
