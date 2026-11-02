@@ -153,7 +153,7 @@
   /* Lift muted / low-opacity text for dark-mode readability */
   .cot-readable .text-muted-foreground,
   .news-readable .text-muted-foreground {
-    color: hsl(210 40% 92%);
+    color: hsl(var(--muted-foreground));
   }
   .cot-readable .text-foreground\/50,
   .cot-readable .text-foreground\/60,
@@ -410,4 +410,16 @@
   .recharts-polar-angle-axis-tick-value tspan,
   .recharts-polar-radius-axis-tick-value tspan,
   .recharts-legend-item-text { fill: hsl(var(--muted-foreground)); color: hsl(var(--muted-foreground)) !important; }
+}
+
+/* Unlayered rules must outrank Recharts' unlayered default tooltip styles. */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: hsl(var(--popover)) !important;
+  border-color: hsl(var(--border)) !important;
+  color: hsl(var(--popover-foreground)) !important;
+}
+.recharts-tooltip-wrapper .recharts-default-tooltip p,
+.recharts-tooltip-wrapper .recharts-default-tooltip li,
+.recharts-tooltip-wrapper .recharts-default-tooltip span {
+  color: hsl(var(--popover-foreground)) !important;
 }
