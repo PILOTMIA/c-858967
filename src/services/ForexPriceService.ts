@@ -1,3 +1,4 @@
+import { usableQuote } from "@/lib/quoteQuality";
 // Forex Price Service - Uses edge function for real-time prices
 // Falls back to fallback prices if edge function unavailable
 
@@ -28,23 +29,6 @@ const getPairCode = (currency: string): string => {
     return `USD${currency}`;
   }
   return `${currency}USD`;
-};
-
-// Fallback prices - Updated September 7, 2026 (ECB reference close)
-// JPY strengthened sharply (USDJPY ~160.4 -> ~154.75) on BoJ rate-hike expectations.
-const fallbackPrices: Record<string, number> = {
-  // USD majors
-  EURUSD: 1.16220, GBPUSD: 1.35307, USDJPY: 154.75, USDCHF: 0.80924,
-  AUDUSD: 0.72145, USDCAD: 1.3820, USDMXN: 16.9121, NZDUSD: 0.58758, USDBRL: 5.1261,
-  // Common crosses
-  EURJPY: 179.850, GBPJPY: 209.388, EURGBP: 0.85893, GBPCAD: 1.86991,
-  AUDJPY: 111.645, EURAUD: 1.61091, GBPAUD: 1.87560, EURCAD: 1.60614,
-  NZDJPY: 90.928, CADJPY: 111.976,
-  // Additional crosses (all G10 combos)
-  AUDNZD: 1.22783, AUDCAD: 0.99704, AUDCHF: 0.58382,
-  NZDCAD: 0.81203, NZDCHF: 0.47549, CADCHF: 0.58556,
-  EURCHF: 0.94050, GBPCHF: 1.09496, GBPNZD: 2.30278,
-  EURNZD: 1.97794, MXNJPY: 9.150, XAUUSD: 4424.70,
 };
 
 export const fetchForexPrice = async (currency: string): Promise<number> => {
@@ -81,7 +65,7 @@ export const fetchForexPrice = async (currency: string): Promise<number> => {
       const data = await response.json();
       console.log(`Edge function response for ${pairCode}:`, data);
       
-      if (data.rates && data.rates[pairCode]) {
+      if (usableQuote(data.rates?.[pairCode])) {
         const price = data.rates[pairCode].rate;
         priceCache[pairCode] = {
           price: { rate: price, timestamp: Date.now() },
@@ -97,9 +81,7 @@ export const fetchForexPrice = async (currency: string): Promise<number> => {
     console.error('Edge function failed:', error);
   }
 
-  // Return fallback price if API calls fail
-  console.log(`Using fallback price for ${pairCode}`);
-  return fallbackPrices[pairCode] || 1.0;
+  throw new Error(`No verified price is available for ${pairCode}`);
 };
 
 export const fetchMultipleForexPrices = async (currencies: string[]): Promise<Record<string, number>> => {

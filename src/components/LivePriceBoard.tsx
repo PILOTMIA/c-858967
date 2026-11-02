@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import { usableQuote, quoteStatus, type QuoteEvidence } from "@/lib/quoteQuality";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowDownRight, ArrowUpRight, Minus, RefreshCw } from "lucide-react";
 
@@ -9,7 +11,7 @@ export const BOARD_PAIRS = [
   "EURJPY", "GBPJPY", "EURGBP", "AUDJPY", "EURCHF",
 ];
 
-export interface LiveRate {
+export interface LiveRate extends QuoteEvidence {
   pair: string;
   rate: number;
   prevClose?: number;
@@ -22,52 +24,23 @@ export interface LiveBoard {
   latencyMs: number;
 }
 
-/** Real prior official close per pair, derived from Frankfurter (ECB reference rates). */
-async function fetchPrevCloses(): Promise<Record<string, number>> {
-  const end = new Date();
-  const start = new Date(Date.now() - 12 * 86400000);
-  const iso = (d: Date) => d.toISOString().slice(0, 10);
-  try {
-    const res = await fetch(
-      `https://api.frankfurter.dev/v1/${iso(start)}..${iso(end)}?base=USD&symbols=EUR,GBP,JPY,CHF,AUD,CAD,NZD`
-    );
-    if (!res.ok) return {};
-    const json = await res.json();
-    const dates = Object.keys(json?.rates ?? {}).sort();
-    if (dates.length < 2) return {};
-    const prev = json.rates[dates[dates.length - 2]] as Record<string, number>;
-    const perUsd = (c: string) => (c === "USD" ? 1 : prev[c]); // units of c per 1 USD
-    const out: Record<string, number> = {};
-    for (const pair of BOARD_PAIRS) {
-      const base = pair.slice(0, 3);
-      const quote = pair.slice(3);
-      const b = perUsd(base);
-      const q = perUsd(quote);
-      if (Number.isFinite(b) && Number.isFinite(q) && b) out[pair] = q / b;
-    }
-    return out;
-  } catch {
-    return {};
-  }
-}
-
 export async function fetchLiveBoard(): Promise<LiveBoard> {
   const started = performance.now();
   const url = `https://${PROJECT}.supabase.co/functions/v1/forex-prices?pairs=${BOARD_PAIRS.join(",")}`;
-  const [res, prevCloses] = await Promise.all([
-    fetch(url, { cache: "no-store", headers: { apikey: ANON, Authorization: `Bearer ${ANON}` } }),
-    fetchPrevCloses(),
-  ]);
+  const res = await fetch(url, { cache: "no-store", headers: { apikey: ANON, Authorization: `Bearer ${ANON}` } });
   if (!res.ok) throw new Error(`Price feed returned ${res.status}`);
   const json = await res.json();
   const rates: Record<string, LiveRate> = {};
   for (const pair of BOARD_PAIRS) {
     const r = json?.rates?.[pair];
-    if (!r || !Number.isFinite(Number(r.rate))) continue;
+    if (!usableQuote(r)) continue;
     rates[pair] = {
       pair,
       rate: Number(r.rate),
-      prevClose: prevCloses[pair],
+      prevClose: r.previousClose,
+      previousClose: r.previousClose,
+      asOf: r.asOf,
+      kind: r.kind,
       source: r.source ?? "unknown",
     };
   }
@@ -89,7 +62,7 @@ const decimals = (pair: string) => (pair.includes("JPY") ? 3 : 5);
 const LivePriceBoard = () => {
   const { data, isLoading, isFetching, refetch, error } = useLiveBoard();
 
-  const rows = data ? BOARD_PAIRS.map((p) => data.rates[p]).filter(Boolean) : [];
+  const rows = data && !error ? BOARD_PAIRS.map((p) => data.rates[p]).filter(Boolean) : [];
 
   return (
     <section className="ma-panel p-5 sm:p-6">
@@ -97,10 +70,10 @@ const LivePriceBoard = () => {
         <div className="flex items-start gap-3">
           <div className="ma-accent-bar h-10 mt-1" />
           <div>
-            <p className="ma-eyebrow">Live quotes</p>
+            <p className="ma-eyebrow">API market rates</p>
             <h2 className="ma-serif text-xl sm:text-2xl font-bold text-foreground">Rate Board</h2>
             <p className="text-xs text-muted-foreground mt-1">
-              Live quotes from the price feed. Daily change is measured against the previous official ECB reference close — no simulated data.
+              Provider quotes with observation times. Daily references are labeled separately; changes use the same provider’s prior close.
             </p>
           </div>
         </div>
@@ -110,14 +83,14 @@ const LivePriceBoard = () => {
               {new Date(data.fetchedAt).toLocaleTimeString()} · {data.latencyMs}ms
             </span>
           )}
-          <button
+          <Button variant="outline" size="sm"
             onClick={() => refetch()}
             className="ma-chip hover:!border-primary/50 transition-colors"
             aria-label="Refresh quotes"
           >
             <RefreshCw className={`h-3 w-3 ${isFetching ? "animate-spin" : ""}`} />
             Refresh
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -156,9 +129,9 @@ const LivePriceBoard = () => {
                   {flat ? (
                     <Minus className="h-3.5 w-3.5 text-muted-foreground" />
                   ) : up ? (
-                    <ArrowUpRight className="h-3.5 w-3.5 text-emerald-400" />
+                    <ArrowUpRight className="h-3.5 w-3.5 text-success" />
                   ) : (
-                    <ArrowDownRight className="h-3.5 w-3.5 text-rose-400" />
+                    <ArrowDownRight className="h-3.5 w-3.5 text-destructive" />
                   )}
                 </div>
                 <p className="ma-mono text-lg font-semibold text-foreground mt-2 tabular-nums">
@@ -170,17 +143,17 @@ const LivePriceBoard = () => {
                       flat
                         ? "text-muted-foreground bg-muted/20"
                         : up
-                        ? "text-emerald-300 bg-emerald-500/10"
-                        : "text-rose-300 bg-rose-500/10"
+                        ? "text-success bg-success/10"
+                        : "text-destructive bg-destructive/10"
                     }`}
                   >
                     {change === undefined ? "—" : `${up ? "+" : ""}${change.toFixed(2)}%`}
                   </span>
                   <span
-                    className={`text-[10px] truncate ${isFallback ? "text-amber-400" : "text-muted-foreground"}`}
+                    className={`text-[10px] truncate ${isFallback ? "text-warning" : "text-muted-foreground"}`}
                     title={`Source: ${r.source}`}
                   >
-                    {isFallback ? "cached" : r.source}
+                    {quoteStatus(r)} · {r.asOf ? new Date(r.asOf).toLocaleString() : "Time unavailable"}
                   </span>
                 </div>
               </div>

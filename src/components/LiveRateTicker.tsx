@@ -1,95 +1,32 @@
 import { useEffect, useState } from "react";
-import { ArrowDownRight, ArrowUpRight, Minus, Radio } from "lucide-react";
-import { useLiveBoard, BOARD_PAIRS } from "@/components/LivePriceBoard";
+import { ArrowDownRight, ArrowUpRight, Radio, RefreshCw } from "lucide-react";
+import { useLiveBoard, BOARD_PAIRS } from "./LivePriceBoard";
+import { quoteStatus, quoteChange } from "@/lib/quoteQuality";
+import { Button } from "@/components/ui/button";
 
-/**
- * Scrolling live rate ticker with an explicit freshness indicator so traders
- * always know whether a quote is live, delayed, or coming from cache.
- */
-
-const decimals = (pair: string) => (pair.includes("JPY") ? 3 : 5);
-
-const LiveRateTicker = () => {
-  const { data, isLoading, error } = useLiveBoard();
+export default function LiveRateTicker({ compact = false }: { compact?: boolean }) {
+  const { data, isLoading, error, refetch, isFetching } = useLiveBoard();
   const [now, setNow] = useState(Date.now());
-
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  const ageSec = data ? Math.max(0, Math.round((now - data.fetchedAt) / 1000)) : null;
-  const anyCached = data ? Object.values(data.rates).some((r) => r.source.includes("fallback")) : false;
-
-  const status = (() => {
-    if (error || !data) return { label: "Feed unavailable", tone: "bad" as const };
-    if (anyCached) return { label: "Some quotes cached", tone: "warn" as const };
-    if (ageSec !== null && ageSec > 180) return { label: `Delayed · ${Math.floor(ageSec / 60)}m old`, tone: "warn" as const };
-    if (ageSec !== null && ageSec > 90) return { label: `Delayed · ${ageSec}s old`, tone: "warn" as const };
-    return { label: `Live · updated ${ageSec ?? 0}s ago`, tone: "good" as const };
-  })();
-
-  const toneClass =
-    status.tone === "good"
-      ? "text-emerald-400 border-emerald-500/40 bg-emerald-500/10"
-      : status.tone === "warn"
-      ? "text-amber-400 border-amber-500/40 bg-amber-500/10"
-      : "text-rose-400 border-rose-500/40 bg-rose-500/10";
-
-  const rows = data ? BOARD_PAIRS.map((p) => data.rates[p]).filter(Boolean) : [];
-  const items = rows.length ? [...rows, ...rows] : [];
-
-  return (
-    <div className="relative overflow-hidden rounded-xl border border-border/40 bg-card/40 backdrop-blur-sm">
-      <div className="flex items-stretch">
-        <div
-          className={`flex shrink-0 items-center gap-2 border-r border-border/40 px-3 sm:px-4 py-2 text-[10px] sm:text-[11px] font-semibold whitespace-nowrap ${toneClass}`}
-        >
-          <Radio className={`h-3 w-3 ${status.tone === "good" ? "animate-pulse" : ""}`} />
-          <span>{status.label}</span>
-        </div>
-
-        <div className="relative flex-1 overflow-hidden">
-          {isLoading || !items.length ? (
-            <div className="px-4 py-2 text-[11px] text-muted-foreground">
-              {error ? "Quotes are temporarily unavailable — nothing shown rather than stale prices." : "Loading live quotes…"}
-            </div>
-          ) : (
-            <div className="flex w-max animate-ticker gap-6 py-2 pl-4 hover:[animation-play-state:paused]">
-              {items.map((r, i) => {
-                const change =
-                  r.prevClose && r.prevClose > 0 ? ((r.rate - r.prevClose) / r.prevClose) * 100 : undefined;
-                const up = (change ?? 0) > 0;
-                const flat = change === undefined || Math.abs(change) < 0.01;
-                const cached = r.source.includes("fallback");
-                return (
-                  <span key={`${r.pair}-${i}`} className="flex items-center gap-1.5 whitespace-nowrap text-[11px] sm:text-xs">
-                    <span className="font-semibold tracking-wide text-muted-foreground">{r.pair}</span>
-                    <span className="font-semibold tabular-nums text-foreground">{r.rate.toFixed(decimals(r.pair))}</span>
-                    {flat ? (
-                      <Minus className="h-3 w-3 text-muted-foreground" />
-                    ) : up ? (
-                      <ArrowUpRight className="h-3 w-3 text-emerald-400" />
-                    ) : (
-                      <ArrowDownRight className="h-3 w-3 text-rose-400" />
-                    )}
-                    <span
-                      className={`tabular-nums ${
-                        flat ? "text-muted-foreground" : up ? "text-emerald-400" : "text-rose-400"
-                      }`}
-                    >
-                      {change === undefined ? "—" : `${up ? "+" : ""}${change.toFixed(2)}%`}
-                    </span>
-                    {cached && <span className="text-[9px] text-amber-400 uppercase">cached</span>}
-                  </span>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
+  useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 30000); return () => clearInterval(timer); }, []);
+  const rows = data && !error ? BOARD_PAIRS.map(p => data.rates[p]).filter(Boolean) : [];
+  return <div className={`flex overflow-hidden bg-card text-foreground ${compact ? "h-[45px]" : "min-h-12 rounded-md border border-border"}`}>
+    <div className="flex shrink-0 items-center gap-2 border-r border-border px-3 text-xs text-muted-foreground">
+      <Radio className="h-3 w-3" /><span className="hidden sm:inline">{error ? "Feed unavailable" : "API quotes"}</span>
+      <Button variant="ghost" size="icon" className="h-7 w-7" title="Refresh market quotes" aria-label="Refresh market quotes" disabled={isFetching} onClick={() => refetch()}><RefreshCw className={`h-3 w-3 ${isFetching ? "animate-spin" : ""}`} /></Button>
     </div>
-  );
-};
-
-export default LiveRateTicker;
+    <div className="min-w-0 flex-1 overflow-hidden">
+      {!rows.length ? <p className="px-4 py-3 text-xs text-muted-foreground">{isLoading ? "Loading market quotes…" : "Quotes unavailable — no substitute prices."}</p> :
+      <div className="flex h-full w-max items-center gap-8 px-4 animate-ticker hover:[animation-play-state:paused]">
+        {[...rows, ...rows].map((r,i) => {
+          const change = quoteChange(r), status = quoteStatus(r,now);
+          const sourceTime = r.asOf ? new Date(r.asOf).toLocaleString() : "Time unavailable";
+          return <span key={`${r.pair}-${i}`} title={`${r.source} · ${sourceTime} · ${status}`} className="flex shrink-0 items-center gap-2 whitespace-nowrap text-xs">
+            <span className="font-semibold text-foreground">{r.pair}</span><span className="font-mono tabular-nums">{r.rate.toFixed(r.pair.includes("JPY") ? 3 : 5)}</span>
+            {change !== undefined && <span className={`flex items-center gap-0.5 ${change >= 0 ? "text-success" : "text-destructive"}`}>{change >= 0 ? <ArrowUpRight className="h-3 w-3"/> : <ArrowDownRight className="h-3 w-3"/>}{change >= 0 ? "+" : ""}{change.toFixed(2)}%</span>}
+            <span className={status === "Market quote" ? "text-muted-foreground" : "text-warning"}>{status} · {r.asOf ? new Date(r.asOf).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) : "—"}</span>
+          </span>;
+        })}
+      </div>}
+    </div>
+  </div>;
+}

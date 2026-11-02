@@ -15,12 +15,6 @@ type PriceResponse = {
   history?: Record<string, HistoryPoint[]>;
 };
 
-const fallbackHistory = (start: number, direction: 1 | -1) =>
-  Array.from({ length: 28 }, (_, index) => ({
-    date: `D${index + 1}`,
-    close: Number((start * (1 + direction * index * 0.002 + Math.sin(index / 3) * 0.004)).toFixed(4)),
-  }));
-
 const fetchComparisonData = async (pair: string): Promise<PriceResponse> => {
   const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
   const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -65,10 +59,11 @@ const COTGoldUsdComparison = () => {
     staleTime: 1000 * 60 * 15,
   });
 
-  const xauHistory = data?.history?.XAUUSD?.length ? data.history.XAUUSD : fallbackHistory(4476.2, 1);
-  const pairHistory = data?.history?.[pair]?.length ? data.history[pair] : fallbackHistory(pair.startsWith("USD") ? 156.01 : 1.16, pair.startsWith("USD") ? 1 : -1);
+  const xauHistory = data?.history?.XAUUSD ?? [];
+  const pairHistory = data?.history?.[pair] ?? [];
 
   const chartData = useMemo(() => {
+    if (!xauHistory.length || !pairHistory.length) return [];
     const count = Math.min(xauHistory.length, pairHistory.length, 45);
     const gold = xauHistory.slice(-count);
     const fx = pairHistory.slice(-count);
@@ -86,6 +81,8 @@ const COTGoldUsdComparison = () => {
   const corr = correlation(returns(xauHistory), returns(pairHistory));
   const source = data?.rates?.XAUUSD?.source || data?.rates?.[pair]?.source || "live/fallback blend";
   const goldSupportsUsdWeakness = goldChange > 0 && (!pair.startsWith("USD") ? pairChange > 0 : pairChange < 0);
+
+  if (!chartData.length) return <Card className="border-border bg-card"><CardHeader><CardTitle>XAUUSD vs USD Pair Comparison</CardTitle></CardHeader><CardContent className="text-sm text-muted-foreground">{isLoading ? "Loading observed history…" : "Verified gold spot history is unavailable. No generated history or correlation is shown."}</CardContent></Card>;
 
   return (
     <Card className="rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
