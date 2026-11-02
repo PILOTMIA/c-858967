@@ -1,7 +1,7 @@
 ## October 27 COT update
-- [ ] Reconcile all six supplied reports, update matching tracked markets, and verify stored weekly changes.
-- [ ] Improve COT freshness labels and chart readability without changing trade rules.
-- [ ] Test data integrity and verify populated COT and Playbook views.
+- [x] Reconcile all six supplied reports; all 28 tracked markets already matched, now protected as verified uploads.
+- [x] Improve COT freshness labels, tooltip contrast, and chart spacing without changing trade rules.
+- [x] Test all stored positions and weekly changes; verify populated October 27 COT and Playbook views.
 
 ## Compounding planner
 - [x] Simplify lot sizing, hide technical broker settings by default, and verify calculations remain unchanged.
