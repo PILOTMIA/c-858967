@@ -54,7 +54,7 @@ serve(async (req) => {
     // Validate and sanitize pairs input
     const pairs = pairsParam.split(',')
       .map(p => p.trim().toUpperCase())
-      .filter(p => /^[A-Z]{6}$/.test(p))
+      .filter(p => /^[A-Z]{6}$/.test(p) || ['DXY', 'SP500', 'US10Y'].includes(p))
       .slice(0, 20); // Limit to 20 pairs max
     
     if (pairs.length === 0) {
@@ -81,7 +81,7 @@ serve(async (req) => {
 
     const resolvePair = async (pairCode: string): Promise<Quote | null> => {
       // Provider timestamps and observed closes only; no invented history or prices.
-      const symbol = pairCode === 'XAUUSD' ? null : pairCode === 'BTCUSD' ? 'BTC-USD' : `${pairCode}=X`;
+      const symbol = pairCode === 'XAUUSD' ? null : pairCode === 'BTCUSD' ? 'BTC-USD' : pairCode === 'DXY' ? 'DX-Y.NYB' : pairCode === 'SP500' ? '^GSPC' : pairCode === 'US10Y' ? '^TNX' : `${pairCode}=X`;
       if (symbol) {
         try {
           const r = await fetchWithTimeout(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${includeHistory ? '3mo' : '5d'}&interval=1d`, 6000);
@@ -99,6 +99,7 @@ serve(async (req) => {
           }
         } catch { /* try a dated reference */ }
       }
+      if (['BTCUSD', 'DXY', 'SP500', 'US10Y'].includes(pairCode)) return null;
       if (pairCode === 'XAUUSD') {
         try {
           const r = await fetchWithTimeout('https://api.gold-api.com/price/XAU');
