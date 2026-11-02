@@ -177,8 +177,8 @@ const COTAnalysisContent = () => {
 
           {/* MidasFX Banner */}
           <div className="flex justify-center">
-            <a href="https://www.midasfx.com/?ib=1127736" target="_blank" rel="noopener noreferrer" className="opacity-50 hover:opacity-100 transition-opacity duration-500">
-              <img src="https://my.midasfx.com/themes/midasfx/img/b/468x60.png" alt="MidasFX Trading" className="rounded-xl max-w-[468px]" />
+            <a href="https://www.midasfx.com/?ib=1127736" target="_blank" rel="noopener noreferrer" className="max-w-full opacity-50 hover:opacity-100 transition-opacity duration-500">
+              <img src="https://my.midasfx.com/themes/midasfx/img/b/468x60.png" alt="MidasFX Trading" className="h-auto w-full rounded-xl max-w-[468px]" />
             </a>
           </div>
         </div>
