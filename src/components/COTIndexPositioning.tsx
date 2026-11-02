@@ -24,7 +24,7 @@ const INDEX_DEFS = [
     name: "US Dollar Index",
     driver: "USD",
     sign: 1,
-    accent: "38 92% 50%",
+    accent: "var(--chart-3)",
     note: "Direct — CFTC ICE USD Index net positioning",
   },
   {
@@ -32,7 +32,7 @@ const INDEX_DEFS = [
     name: "Nikkei 225 (proxy)",
     driver: "JPY",
     sign: -1,
-    accent: "0 84% 60%",
+    accent: "var(--chart-2)",
     note: "Inverse of yen positioning — weak JPY supports Japanese exporters",
   },
   {
@@ -40,7 +40,7 @@ const INDEX_DEFS = [
     name: "DAX 40 (proxy)",
     driver: "EUR",
     sign: -1,
-    accent: "199 89% 55%",
+    accent: "var(--chart-4)",
     note: "Inverse of euro positioning — weak EUR supports German exporters",
   },
 ] as const;
@@ -87,7 +87,7 @@ const COTIndexPositioning = () => {
   if (!indices.length) return null;
 
   return (
-    <Card className="border-border/30 bg-card/30 backdrop-blur-sm">
+    <Card className="cot-readable border-border/30 bg-card/30 backdrop-blur-sm">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
@@ -112,15 +112,11 @@ const COTIndexPositioning = () => {
               key={idx.code}
               className="relative overflow-hidden rounded-xl border border-border/50 bg-background/40 p-4"
             >
-              <div
-                className="absolute inset-0 pointer-events-none opacity-25"
-                style={{ background: `radial-gradient(circle at 15% 0%, hsl(${idx.accent} / 0.35), transparent 60%)` }}
-              />
               <div className="relative">
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="text-lg font-bold text-foreground tracking-tight">{idx.code}</div>
-                    <div className="text-[11px] text-foreground/60">{idx.name}</div>
+                    <div className="text-xs text-muted-foreground">{idx.name}</div>
                   </div>
                   <Badge
                     className={`text-[10px] border ${
@@ -141,7 +137,7 @@ const COTIndexPositioning = () => {
                     {idx.score > 0 ? "+" : ""}
                     {idx.score}
                   </div>
-                  <div className="text-[11px] text-foreground/60 pb-1">
+                  <div className="text-xs text-muted-foreground pb-1">
                     bias score · net {idx.value >= 0 ? "+" : ""}
                     {fmt(idx.value)}
                   </div>
@@ -166,7 +162,7 @@ const COTIndexPositioning = () => {
                           border: "1px solid hsl(var(--border))",
                           borderRadius: 8,
                           color: "hsl(var(--foreground))",
-                          fontSize: 11,
+                          fontSize: 13,
                         }}
                         formatter={(v: number) => [fmt(v), "Net bias"]}
                         labelFormatter={(_l, p: any) => p?.[0]?.payload?.label ?? ""}
@@ -182,7 +178,7 @@ const COTIndexPositioning = () => {
                   </ResponsiveContainer>
                 </div>
 
-                <p className="text-[10px] text-foreground/55 mt-1 leading-snug">{idx.note}</p>
+                <p className="text-xs text-muted-foreground mt-1 leading-snug">{idx.note}</p>
               </div>
             </div>
           );
