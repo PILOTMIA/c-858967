@@ -1,3 +1,8 @@
+## October 27 COT update
+- [ ] Reconcile all six supplied reports, update matching tracked markets, and verify stored weekly changes.
+- [ ] Improve COT freshness labels and chart readability without changing trade rules.
+- [ ] Test data integrity and verify populated COT and Playbook views.
+
 ## Compounding planner
 - [x] Simplify lot sizing, hide technical broker settings by default, and verify calculations remain unchanged.
 - [x] Add stop-based lot sizing and per-session lots using verified currency conversions and broker contract settings.
