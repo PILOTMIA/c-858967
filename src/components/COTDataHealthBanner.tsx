@@ -59,6 +59,8 @@ const COTDataHealthBanner = () => {
       toast.success(`Synced — ${r.inserted ?? 0} rows verified, ${r.rejected ?? 0} rejected`);
       await Promise.all([
         refetch(),
+        qc.invalidateQueries({ queryKey: ["latest-cot"] }),
+        qc.invalidateQueries({ queryKey: ["cot-history-indices"] }),
         qc.invalidateQueries({ queryKey: ["cot-wow"] }),
         qc.invalidateQueries({ queryKey: ["cot-history-recos"] }),
         qc.invalidateQueries({ queryKey: ["cot-history"] }),
@@ -77,7 +79,7 @@ const COTDataHealthBanner = () => {
       ? { bg: "from-destructive/15 to-destructive/[0.04]", border: "border-destructive/40", text: "text-destructive", Icon: AlertOctagon, label: "Action Needed" }
       : data.overall === "warning"
       ? { bg: "from-warning/15 to-warning/[0.04]", border: "border-warning/40", text: "text-warning", Icon: AlertTriangle, label: "Stale Feed" }
-      : { bg: "from-success/15 to-success/[0.04]", border: "border-success/40", text: "text-success", Icon: CheckCircle2, label: "All Feeds Verified" };
+      : { bg: "from-success/15 to-success/[0.04]", border: "border-success/40", text: "text-success", Icon: CheckCircle2, label: "COT checks passed" };
 
   const flagged = data.instruments.filter((i) => i.status !== "fresh");
   const totalIssues = data.instruments.reduce((s, i) => s + i.field_issues.length, 0);
@@ -90,15 +92,15 @@ const COTDataHealthBanner = () => {
         </div>
         <div className="flex-1 min-w-[240px]">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-display-hero text-lg font-bold text-foreground">Data Integrity</h3>
+            <h3 className="font-display-hero text-lg font-bold text-foreground">COT Report Health</h3>
             <Badge variant="outline" className={`text-[10px] border-border/50 ${tone.text}`}>
               <ShieldCheck className="w-3 h-3 mr-1" />
               {tone.label}
             </Badge>
           </div>
           <p className="text-xs text-foreground/75 mt-1">
-            {data.fresh}/{data.instruments.length} feeds fresh • {totalIssues} field {totalIssues === 1 ? "issue" : "issues"} •
-            Auto-syncs {data.next_cron_runs_utc.join(" + ")} • Last checked {new Date(data.generated_at).toLocaleTimeString()}
+            {data.fresh}/{data.instruments.length} COT markets within freshness window • {totalIssues} field {totalIssues === 1 ? "issue" : "issues"} •
+            Scheduled checks {data.next_cron_runs_utc.join(" + ")} • Status checked {new Date(data.generated_at).toLocaleString()}
           </p>
 
           {flagged.length > 0 && (

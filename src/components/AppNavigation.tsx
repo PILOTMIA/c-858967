@@ -64,8 +64,8 @@ const AppNavigation = () => {
       )}
 
       {/* Menu Panel */}
-      <div className={`fixed top-0 right-0 h-full overflow-y-auto w-[min(22rem,92vw)] bg-card/95 backdrop-blur-2xl border-l border-border/70 shadow-2xl transform transition-all duration-300 ease-in-out z-50 ${
-        isOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+      <div aria-hidden={!isOpen} className={`fixed top-0 right-0 h-full overflow-y-auto w-[min(22rem,92vw)] bg-card/95 backdrop-blur-2xl border-l border-border/70 shadow-2xl transform transition-all duration-300 ease-in-out z-50 ${
+        isOpen ? 'visible translate-x-0 opacity-100' : 'hidden translate-x-full opacity-0'
       }`}>
         <div className="p-6 pt-20">
           <div className="mb-6 border-b border-border/70 pb-4"><p className="hq-kicker">MIA FX Labs</p><p className="mt-1 text-xl font-black uppercase text-foreground">Trading terminal</p></div>

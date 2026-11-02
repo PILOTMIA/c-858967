@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Legend,
@@ -22,11 +23,11 @@ const COLOR_MAP: Record<string, string> = {
   JPY: "hsl(var(--chart-3))",
   CHF: "hsl(var(--chart-4))",
   AUD: "hsl(var(--chart-5))",
-  CAD: "hsl(142 71% 45%)",
-  NZD: "hsl(262 83% 58%)",
-  USD: "hsl(38 92% 50%)",
-  XAU: "hsl(45 93% 47%)",
-  BTC: "hsl(25 95% 53%)",
+  CAD: "hsl(var(--success))",
+  NZD: "hsl(var(--chart-4))",
+  USD: "hsl(var(--warning))",
+  XAU: "hsl(var(--chart-3))",
+  BTC: "hsl(var(--chart-5))",
 };
 
 const TIMEFRAMES = [
@@ -78,7 +79,7 @@ const DetailedTooltip = ({ active, payload, label, history, focusCurrency }: any
                   Net {row.net_position >= 0 ? "+" : ""}{fmt(row.net_position)}
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-[10px] text-muted-foreground pl-1">
+              <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground pl-1">
                 <div>
                   <div className="flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-success" />
@@ -186,7 +187,7 @@ const COTHistoryTrends = () => {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="cot-readable space-y-6">
       {/* Multi-currency Net Trend */}
       <Card className="border-border/30 bg-card/30 backdrop-blur-sm">
         <CardHeader className="pb-3">
@@ -196,9 +197,10 @@ const COTHistoryTrends = () => {
               {/* Timeframe selector */}
               <div className="flex items-center gap-1 rounded-lg bg-muted/30 p-1 border border-border/40">
                 {TIMEFRAMES.map((tf) => (
-                  <button
+                  <Button variant="ghost" size="sm"
                     key={tf.label}
                     onClick={() => setTimeframe(tf.weeks)}
+                    aria-pressed={timeframe === tf.weeks}
                     className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
                       timeframe === tf.weeks
                         ? "bg-primary text-primary-foreground"
@@ -206,13 +208,13 @@ const COTHistoryTrends = () => {
                     }`}
                   >
                     {tf.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
               {dataUpdatedAt && (
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Clock className="w-3 h-3" />
-                  {new Date(dataUpdatedAt).toLocaleString()}
+                  Retrieved {new Date(dataUpdatedAt).toLocaleString()}
                 </span>
               )}
             </div>
@@ -225,9 +227,10 @@ const COTHistoryTrends = () => {
                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{group}</span>
                 <div className="flex gap-1">
                   {currencies.map((c) => (
-                    <button
+                    <Button variant="ghost" size="sm"
                       key={c}
                       onClick={() => toggle(c)}
+                      aria-pressed={selected.includes(c)}
                       className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${
                         selected.includes(c)
                           ? "bg-primary/20 text-primary border border-primary/40"
@@ -235,7 +238,7 @@ const COTHistoryTrends = () => {
                       }`}
                     >
                       {c}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -248,16 +251,16 @@ const COTHistoryTrends = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.2} />
                 <XAxis
                   dataKey="label"
-                  tick={{ fill: "hsl(var(--foreground))", fillOpacity: 0.85, fontSize: 11, fontWeight: 600 }}
+                  tick={{ fill: "hsl(var(--foreground))", fillOpacity: 1, fontSize: 13, fontWeight: 600 }}
                   interval="preserveStartEnd"
                 />
                 <YAxis
-                  tick={{ fill: "hsl(var(--foreground))", fillOpacity: 0.85, fontSize: 11, fontWeight: 600 }}
+                  tick={{ fill: "hsl(var(--foreground))", fillOpacity: 1, fontSize: 13, fontWeight: 600 }}
                   tickFormatter={fmt}
                 />
                 <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" opacity={0.5} />
                 <Tooltip content={<DetailedTooltip history={history} />} />
-                <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
+                <Legend wrapperStyle={{ fontSize: 13 }} iconType="circle" />
                 {selected.map((c) => (
                   <Line
                     key={c}
@@ -273,17 +276,14 @@ const COTHistoryTrends = () => {
               </ComposedChart>
             </ResponsiveContainer>
           </div>
-          <p className="text-[10px] text-muted-foreground text-center mt-1">
-            Source: CFTC Non-Commercial Positions — verified weekly reports. Hover for long/short breakdown.
+          <p className="text-xs text-muted-foreground text-center mt-1">
+            Source: CFTC weekly futures positions — leveraged funds for financial markets; managed money for commodities.
           </p>
         </CardContent>
       </Card>
 
       {/* Single-currency Long vs Short Focus Chart — premium visual */}
       <Card className="relative border-border/30 bg-gradient-to-br from-card/40 via-card/20 to-card/40 backdrop-blur-md overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none opacity-30" style={{
-          background: `radial-gradient(circle at 20% 0%, ${COLOR_MAP[focusCurrency]}22, transparent 50%)`,
-        }} />
         <CardHeader className="pb-3 relative">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
@@ -295,9 +295,10 @@ const COTHistoryTrends = () => {
             </div>
             <div className="flex flex-wrap gap-1">
               {Object.values(CURRENCY_GROUPS).flat().map((c) => (
-                <button
+                <Button variant="ghost" size="sm"
                   key={c}
                   onClick={() => setFocusCurrency(c)}
+                  aria-pressed={focusCurrency === c}
                   className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
                     focusCurrency === c
                       ? "bg-primary text-primary-foreground shadow-md"
@@ -305,7 +306,7 @@ const COTHistoryTrends = () => {
                   }`}
                 >
                   {c}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -339,7 +340,7 @@ const COTHistoryTrends = () => {
                   <div className={`text-xl font-bold font-mono ${netNow >= 0 ? "text-success" : "text-destructive"}`}>
                     {netNow >= 0 ? "+" : ""}{fmt(netNow)}
                   </div>
-                  <div className="text-[10px] text-foreground/60 font-mono">{netNow >= 0 ? "Net Long bias" : "Net Short bias"}</div>
+                  <div className="text-xs text-muted-foreground font-mono">{netNow >= 0 ? "Net Long bias" : "Net Short bias"}</div>
                 </div>
               </div>
             );
@@ -359,18 +360,18 @@ const COTHistoryTrends = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.2} />
-                <XAxis dataKey="label" tick={{ fill: "hsl(var(--foreground))", fillOpacity: 0.85, fontSize: 11, fontWeight: 600 }} interval="preserveStartEnd" />
-                <YAxis tick={{ fill: "hsl(var(--foreground))", fillOpacity: 0.85, fontSize: 11, fontWeight: 600 }} tickFormatter={(v) => fmt(Math.abs(v))} />
+                <XAxis dataKey="label" tick={{ fill: "hsl(var(--foreground))", fillOpacity: 1, fontSize: 13, fontWeight: 600 }} interval="preserveStartEnd" />
+                <YAxis tick={{ fill: "hsl(var(--foreground))", fillOpacity: 1, fontSize: 13, fontWeight: 600 }} tickFormatter={(v) => fmt(Math.abs(v))} />
                 <ReferenceLine y={0} stroke="hsl(var(--foreground))" strokeOpacity={0.4} />
                 <Tooltip content={<DetailedTooltip history={history} focusCurrency={focusCurrency} />} />
-                <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} iconType="circle" />
+                <Legend wrapperStyle={{ fontSize: 13, paddingTop: 8 }} iconType="circle" />
                 <Bar dataKey="long" stackId="pos" fill="url(#longGrad)" name="Long" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="short" stackId="pos" fill="url(#shortGrad)" name="Short" radius={[0, 0, 4, 4]} />
                 <Line type="monotone" dataKey="net" stroke={COLOR_MAP[focusCurrency]} strokeWidth={3} dot={{ r: 3.5, strokeWidth: 0, fill: COLOR_MAP[focusCurrency] }} activeDot={{ r: 6, strokeWidth: 2, stroke: "hsl(var(--background))" }} name="Net" />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
-          <p className="text-[10px] text-muted-foreground text-center mt-2">
+          <p className="text-xs text-muted-foreground text-center mt-2">
             Green = long contracts, red = short contracts (negative axis), colored line = net position.
           </p>
         </CardContent>
@@ -384,16 +385,16 @@ const COTHistoryTrends = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[260px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData} layout="vertical" barSize={18}>
+          <div className="overflow-x-auto">
+            <ResponsiveContainer width="100%" height={Math.max(260, barData.length * 32 + 48)} minWidth={300}>
+              <BarChart data={barData} layout="vertical" barSize={18} margin={{ top: 8, right: 24, bottom: 8, left: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.15} />
-                <XAxis type="number" tick={{ fill: "hsl(var(--foreground))", fillOpacity: 0.85, fontSize: 11, fontWeight: 600 }} tickFormatter={fmt} />
+                <XAxis type="number" tick={{ fill: "hsl(var(--foreground))", fillOpacity: 1, fontSize: 13, fontWeight: 600 }} tickFormatter={fmt} />
                 <YAxis
                   type="category"
                   dataKey="currency"
                   tick={{ fill: "hsl(var(--foreground))", fontSize: 12, fontWeight: 700 }}
-                  width={40}
+                  width={72}
                 />
                 <ReferenceLine x={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" opacity={0.5} />
                 <Tooltip
