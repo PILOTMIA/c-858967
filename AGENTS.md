@@ -6,3 +6,4 @@
 - Compounding projections use a pure, tested session-based calculator separate from market feeds; risk sizing never implies or derives an expected return.
 - The compounding planner has a dedicated public route and navigation entry so native production analytics can distinguish its page traffic without custom visitor storage.
 - Planner lot sizing uses a tested risk/stop-cost formula, rounds down to broker volume steps, and labels dated official conversion references; projected future lots reuse current settings and are not execution recommendations.
+- Uploaded COT report fixtures are reconciled against stored positions and prior-week deltas in integration tests; age-based badges describe freshness, not independent source verification.
