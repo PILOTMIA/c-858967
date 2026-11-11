@@ -75,7 +75,7 @@ const GDPRadar = () => {
     );
   }
 
-  if (!entries.length) return <div className="p-5 text-foreground"><h2 className="text-xl font-bold">GDP Growth Monitor</h2><p className="mt-3 text-sm text-warning">GDP observations are unavailable from FRED. Cached comparisons and forecasts are not shown.</p><GDPChat /></div>;
+  if (!entries.length) return <div className="p-5 text-foreground"><h2 className="text-xl font-bold">GDP Growth Monitor</h2><p className="mt-3 text-sm text-warning">GDP observations are unavailable from FRED. Cached comparisons and forecasts are not shown.</p></div>;
 
   return (
     <div className="space-y-6 p-4">

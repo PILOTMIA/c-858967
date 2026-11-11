@@ -167,7 +167,7 @@ const JobsRadar = () => {
             </div>
             <div className="text-right">
               <div className={`text-2xl font-bold ${latestNfp >= 0 ? 'text-success' : 'text-destructive'}`}>
-                {latestNfp >= 0 ? '+' : ''}{latestNfp}K
+                {nfpHistory.length ? `${latestNfp >= 0 ? '+' : ''}${latestNfp}K` : 'Unavailable'}
               </div>
               <div className="text-xs text-muted-foreground">
                 prior {previousNfp >= 0 ? '+' : ''}{previousNfp}K • 12-mo avg {avgNfp >= 0 ? '+' : ''}{avgNfp}K
@@ -203,9 +203,8 @@ const JobsRadar = () => {
             </ResponsiveContainer>
           </div>
           <p className="text-[10px] text-muted-foreground mt-2">
-            Released the first Friday of each month at 8:30 AM ET (5:30 AM MST), covering the prior month.
-            Next release: <span className="text-foreground font-semibold">{nextNfpRelease()}</span>. Data pulled automatically from the
-            Bureau of Labor Statistics each time this page loads, and refreshed every 30 minutes.
+            Published payroll observations from the Bureau of Labor Statistics, refreshed every 30 minutes.
+            <a href="https://www.bls.gov/schedule/news_release/empsit.htm" target="_blank" rel="noopener noreferrer" className="ml-1 text-primary underline">Official release calendar</a>
           </p>
 
         </div>

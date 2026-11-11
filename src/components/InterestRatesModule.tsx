@@ -15,7 +15,7 @@ const InterestRatesModule = () => {
   const { data, isLoading, isFetching, refetch } = useQuery({
     queryKey: ["interest-rates-module"],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("fred-proxy?series=FEDFUNDS,DGS2,DGS10,DGS30&limit=5");
+      const { data, error } = await supabase.functions.invoke("fred-proxy?series=FEDFUNDS,DGS2,DGS10,DGS30&limit=5", { method: "GET" });
       if (error) throw error;
       return data as { data: Record<string, { observations: RateObservation[] }> };
     },

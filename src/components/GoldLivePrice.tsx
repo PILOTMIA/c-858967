@@ -8,7 +8,7 @@ const GoldLivePrice = () => {
   const { data: quotes } = useQuery({
     queryKey: ["gold-live"],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("forex-prices?pairs=XAUUSD,US10Y");
+      const { data, error } = await supabase.functions.invoke("forex-prices?pairs=XAUUSD,US10Y", { method: "GET" });
       if (error) throw error;
       return data as { rates: Record<string, QuoteEvidence> };
     }, refetchInterval: 60_000,
@@ -16,7 +16,7 @@ const GoldLivePrice = () => {
   const { data: rates } = useQuery({
     queryKey: ["yield-live"],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("fred-proxy?series=FEDFUNDS&limit=2");
+      const { data, error } = await supabase.functions.invoke("fred-proxy?series=FEDFUNDS&limit=2", { method: "GET" });
       if (error) throw error;
       return data as { data: Record<string, { observations: RateObservation[] }> };
     }, refetchInterval: 30 * 60_000,
