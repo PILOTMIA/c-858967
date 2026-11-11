@@ -1,3 +1,8 @@
+## November 3 COT and feed update
+- [ ] Reconcile the six uploaded November 3 reports against all tracked markets and preserve verified positions.
+- [ ] Refresh active APIs and news, clearly show unavailable or delayed evidence.
+- [ ] Verify populated consumer pages, dark-mode charts and mobile controls; run data and timing tests.
+
 ## Ticker and API refresh
 - [x] Update the top ticker with source observation timestamps; verify all 17 instruments return API prices.
 - [x] Invoke price, news, rhythm, VIX, COT, health, and BLS macro feeds; add mounted-query refreshes at Arizona checkpoints.
