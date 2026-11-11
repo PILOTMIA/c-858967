@@ -1,0 +1,226 @@
+[
+  {
+    "currency": "EUR",
+    "report_date": "2026-11-03",
+    "long_positions": 119238,
+    "short_positions": 197797,
+    "change_long": -5808,
+    "change_short": 1177
+  },
+  {
+    "currency": "GBP",
+    "report_date": "2026-11-03",
+    "long_positions": 63342,
+    "short_positions": 36679,
+    "change_long": 4000,
+    "change_short": -5468
+  },
+  {
+    "currency": "JPY",
+    "report_date": "2026-11-03",
+    "long_positions": 82058,
+    "short_positions": 96875,
+    "change_long": 5693,
+    "change_short": 5880
+  },
+  {
+    "currency": "CHF",
+    "report_date": "2026-11-03",
+    "long_positions": 7441,
+    "short_positions": 24286,
+    "change_long": -980,
+    "change_short": -1637
+  },
+  {
+    "currency": "AUD",
+    "report_date": "2026-11-03",
+    "long_positions": 89778,
+    "short_positions": 39672,
+    "change_long": 3042,
+    "change_short": 1350
+  },
+  {
+    "currency": "CAD",
+    "report_date": "2026-11-03",
+    "long_positions": 25334,
+    "short_positions": 111636,
+    "change_long": 2910,
+    "change_short": -7535
+  },
+  {
+    "currency": "NZD",
+    "report_date": "2026-11-03",
+    "long_positions": 12225,
+    "short_positions": 35379,
+    "change_long": 1319,
+    "change_short": 1919
+  },
+  {
+    "currency": "MXN",
+    "report_date": "2026-11-03",
+    "long_positions": 101683,
+    "short_positions": 30302,
+    "change_long": 2058,
+    "change_short": -988
+  },
+  {
+    "currency": "USD",
+    "report_date": "2026-11-03",
+    "long_positions": 18677,
+    "short_positions": 15366,
+    "change_long": 1770,
+    "change_short": 1617
+  },
+  {
+    "currency": "XAU",
+    "report_date": "2026-11-03",
+    "long_positions": 122283,
+    "short_positions": 18669,
+    "change_long": -225,
+    "change_short": 1723
+  },
+  {
+    "currency": "XAG",
+    "report_date": "2026-11-03",
+    "long_positions": 17522,
+    "short_positions": 13487,
+    "change_long": 658,
+    "change_short": -56
+  },
+  {
+    "currency": "HG",
+    "report_date": "2026-11-03",
+    "long_positions": 58634,
+    "short_positions": 23744,
+    "change_long": -3565,
+    "change_short": 2120
+  },
+  {
+    "currency": "XPT",
+    "report_date": "2026-11-03",
+    "long_positions": 17831,
+    "short_positions": 19114,
+    "change_long": 491,
+    "change_short": 3539
+  },
+  {
+    "currency": "WTI",
+    "report_date": "2026-11-03",
+    "long_positions": 147382,
+    "short_positions": 125654,
+    "change_long": -10051,
+    "change_short": -651
+  },
+  {
+    "currency": "NG",
+    "report_date": "2026-11-03",
+    "long_positions": 198985,
+    "short_positions": 424344,
+    "change_long": 85,
+    "change_short": 19127
+  },
+  {
+    "currency": "CORN",
+    "report_date": "2026-11-03",
+    "long_positions": 229341,
+    "short_positions": 220546,
+    "change_long": -20010,
+    "change_short": 52308
+  },
+  {
+    "currency": "WHEAT",
+    "report_date": "2026-11-03",
+    "long_positions": 78779,
+    "short_positions": 165905,
+    "change_long": -848,
+    "change_short": 11672
+  },
+  {
+    "currency": "SOYBEAN",
+    "report_date": "2026-11-03",
+    "long_positions": 187713,
+    "short_positions": 44986,
+    "change_long": -38502,
+    "change_short": 12552
+  },
+  {
+    "currency": "SUGAR",
+    "report_date": "2026-11-03",
+    "long_positions": 317360,
+    "short_positions": 93576,
+    "change_long": -10958,
+    "change_short": 2969
+  },
+  {
+    "currency": "COTTON",
+    "report_date": "2026-11-03",
+    "long_positions": 69927,
+    "short_positions": 25759,
+    "change_long": 608,
+    "change_short": 4317
+  },
+  {
+    "currency": "COFFEE",
+    "report_date": "2026-11-03",
+    "long_positions": 34613,
+    "short_positions": 19881,
+    "change_long": -2943,
+    "change_short": 2429
+  },
+  {
+    "currency": "COCOA",
+    "report_date": "2026-11-03",
+    "long_positions": 17238,
+    "short_positions": 29491,
+    "change_long": -907,
+    "change_short": 406
+  },
+  {
+    "currency": "CATTLE",
+    "report_date": "2026-11-03",
+    "long_positions": 72793,
+    "short_positions": 23102,
+    "change_long": -4604,
+    "change_short": 2278
+  },
+  {
+    "currency": "HOGS",
+    "report_date": "2026-11-03",
+    "long_positions": 70680,
+    "short_positions": 129752,
+    "change_long": -711,
+    "change_short": 6715
+  },
+  {
+    "currency": "BTC",
+    "report_date": "2026-11-03",
+    "long_positions": 5114,
+    "short_positions": 7705,
+    "change_long": -773,
+    "change_short": -2161
+  },
+  {
+    "currency": "SP500",
+    "report_date": "2026-11-03",
+    "long_positions": 125269,
+    "short_positions": 497587,
+    "change_long": 23190,
+    "change_short": -5096
+  },
+  {
+    "currency": "NASDAQ",
+    "report_date": "2026-11-03",
+    "long_positions": 62698,
+    "short_positions": 52625,
+    "change_long": 11527,
+    "change_short": 3755
+  },
+  {
+    "currency": "VIX",
+    "report_date": "2026-11-03",
+    "long_positions": 66970,
+    "short_positions": 98449,
+    "change_long": -6636,
+    "change_short": -1491
+  }
+]

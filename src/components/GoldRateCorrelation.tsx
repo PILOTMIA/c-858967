@@ -15,7 +15,7 @@ const fetchGoldYieldHistory = async () => {
       headers: { Authorization: `Bearer ${anonKey}`, apikey: anonKey },
       signal: AbortSignal.timeout(15000),
     }),
-    fetch(`https://${projectId}.supabase.co/functions/v1/macro-data?currencies=USD&us10y=true`, {
+    fetch(`https://${projectId}.supabase.co/functions/v1/fred-proxy?series=DGS10&limit=90`, {
       headers: { Authorization: `Bearer ${anonKey}`, apikey: anonKey },
       signal: AbortSignal.timeout(15000),
     }),
@@ -23,7 +23,7 @@ const fetchGoldYieldHistory = async () => {
 
   const goldData = goldRes.ok ? await goldRes.json() : null;
   const yieldData = yieldRes.ok ? await yieldRes.json() : null;
-  return { goldHistory: goldData?.history?.XAUUSD, us10y: yieldData?.us10y };
+  return { goldHistory: goldData?.history?.XAUUSD, yieldHistory: yieldData?.data?.DGS10?.observations };
 };
 
 const GoldRateCorrelation = () => {
@@ -36,20 +36,9 @@ const GoldRateCorrelation = () => {
 
   const chartData = useMemo(() => {
     const goldHist = data?.goldHistory;
-    if (!goldHist?.length) {
-      return Array.from({ length: 30 }, (_, i) => {
-        const yieldVal = 4.5 - Math.sin(i / 5) * 0.3;
-        const goldVal = 4476 + Math.sin(i / 5) * 80;
-        return { date: `D${i + 1}`, gold: Math.round(goldVal), yield10y: Number(yieldVal.toFixed(2)) };
-      });
-    }
-
-    const currentYield = data?.us10y?.yield ?? 4.32;
-    return goldHist.map((point: any, i: number) => ({
-      date: point.date?.slice(5) || `D${i}`,
-      gold: point.close,
-      yield10y: Number((currentYield + Math.sin(i / 4) * 0.15 - 0.05 * (i - goldHist.length)).toFixed(2)),
-    }));
+    if (!goldHist?.length || !data?.yieldHistory?.length) return [];
+    const yields = new Map<string, number>(data.yieldHistory.filter((o: any) => o.value !== '.' && Number.isFinite(Number(o.value))).map((o: any) => [o.date, Number(o.value)]));
+    return goldHist.filter((point: any) => yields.has(point.date?.slice(0, 10)) && Number.isFinite(point.close)).map((point: any) => ({ date: point.date.slice(0, 10), gold: point.close, yield10y: yields.get(point.date.slice(0, 10)) }));
   }, [data]);
 
   const impactSteps = [
@@ -74,7 +63,7 @@ const GoldRateCorrelation = () => {
           )}
         </div>
         <p className="text-sm text-muted-foreground">
-          XAUUSD indexed against US 10Y Treasury yields — inverse correlation is the dominant driver.
+          Gold and Treasury yields require matching dated observations. Their relationship can change over time.
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -98,6 +87,8 @@ const GoldRateCorrelation = () => {
         <div className="h-80 rounded-lg border border-border bg-background p-3">
           {isLoading ? (
             <div className="flex h-full items-center justify-center text-muted-foreground text-sm">Loading correlation data...</div>
+          ) : chartData.length < 2 ? (
+            <div className="flex h-full items-center justify-center p-5 text-center text-sm text-muted-foreground">Historical comparison unavailable: no matching observed gold and Treasury histories. No generated chart is shown.</div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>

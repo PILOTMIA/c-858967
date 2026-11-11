@@ -1,7 +1,12 @@
+## November 3 COT and feed update
+- [x] Reconcile six November 3 reports: all 28 markets and 112 position/change fields matched; protect rows as verified uploads.
+- [x] Refresh price, news, rhythm, VIX, COT, health and macro feeds; remove invented news, gold/yield histories and unverified summary yields.
+- [x] Verify November 3 COT and Playbook, observed gold quotes, dated news, Jobs/Inflation charts, GDP/Bond unavailable states and mobile news; all 55 tests passed.
+
 ## Ticker and API refresh
 - [x] Update the top ticker with source observation timestamps; verify all 17 instruments return API prices.
 - [x] Invoke price, news, rhythm, VIX, COT, health, and BLS macro feeds; add mounted-query refreshes at Arizona checkpoints.
-- [ ] Restore FRED-backed macro feeds: blocked by invalid saved FRED key; secure replacement was declined. Existing macro fallback displays are not verified current data.
+- [ ] Restore FRED-backed macro feeds: blocked by invalid saved FRED key; secure replacement was declined. GDP/Bond and Treasury summaries now show unavailable states; remaining macro consumers are not certified current.
 - [x] Remove synthetic forex history and gold comparison history, test freshness rules, and verify ticker refresh and narrow-screen fit.
 
 ## October 27 COT update

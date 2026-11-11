@@ -1,116 +1,41 @@
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, TrendingDown, Minus, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-
-const fetchGoldPrice = async () => {
-  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-  const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  if (!projectId || !anonKey) return null;
-
-  const res = await fetch(`https://${projectId}.supabase.co/functions/v1/forex-prices?pairs=XAUUSD`, {
-    headers: { Authorization: `Bearer ${anonKey}`, apikey: anonKey },
-    signal: AbortSignal.timeout(12000),
-  });
-  if (!res.ok) throw new Error("Failed");
-  return res.json();
-};
-
-const fetchYield = async () => {
-  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-  const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  if (!projectId || !anonKey) return null;
-
-  const res = await fetch(`https://${projectId}.supabase.co/functions/v1/macro-data?currencies=USD&us10y=true`, {
-    headers: { Authorization: `Bearer ${anonKey}`, apikey: anonKey },
-    signal: AbortSignal.timeout(12000),
-  });
-  if (!res.ok) throw new Error("Failed");
-  return res.json();
-};
-
-const formatTime = (ts: number) => {
-  try {
-    return new Date(ts).toLocaleString("en-US", {
-      month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short",
-    });
-  } catch { return ""; }
-};
+import { usableQuote, quoteStatus, quoteChange, type QuoteEvidence } from "@/lib/quoteQuality";
+import { latestRate, basisPointChange, type RateObservation } from "@/lib/rateEvidence";
+import { supabase } from "@/integrations/supabase/client";
 
 const GoldLivePrice = () => {
-  const { data: goldData, dataUpdatedAt: goldUpdated } = useQuery({
+  const { data: quotes } = useQuery({
     queryKey: ["gold-live"],
-    queryFn: fetchGoldPrice,
-    staleTime: 1000 * 60 * 5,
-    refetchInterval: 1000 * 60 * 15,
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("forex-prices?pairs=XAUUSD,US10Y", { method: "GET" });
+      if (error) throw error;
+      return data as { rates: Record<string, QuoteEvidence> };
+    }, refetchInterval: 60_000,
   });
-  const { data: yieldData, dataUpdatedAt: yieldUpdated } = useQuery({
+  const { data: rates } = useQuery({
     queryKey: ["yield-live"],
-    queryFn: fetchYield,
-    staleTime: 1000 * 60 * 10,
-    refetchInterval: 1000 * 60 * 30,
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("fred-proxy?series=FEDFUNDS&limit=2", { method: "GET" });
+      if (error) throw error;
+      return data as { data: Record<string, { observations: RateObservation[] }> };
+    }, refetchInterval: 30 * 60_000,
   });
-
-  const goldPrice = goldData?.rates?.XAUUSD?.rate ?? 4476.20;
-  const goldSource = goldData?.rates?.XAUUSD?.source ?? "fallback";
-  const us10y = yieldData?.us10y?.yield ?? 4.32;
-  const us10yPrev = yieldData?.us10y?.previousYield ?? 4.40;
-  const yieldChange = us10y - us10yPrev;
-  const fedRate = yieldData?.data?.USD?.interestRate ?? 4.50;
-
-  const goldDirection = goldPrice >= 2400 ? "up" : goldPrice <= 2200 ? "down" : "flat";
-  const lastUpdate = Math.max(goldUpdated || 0, yieldUpdated || 0);
-
-  return (
-    <div className="space-y-2">
-      {lastUpdate > 0 && (
-        <div className="flex items-center justify-end gap-1 text-[10px] text-muted-foreground">
-          <Clock className="h-3 w-3" />
-          Last updated: {formatTime(lastUpdate)}
-        </div>
-      )}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Gold Price */}
-        <div className="rounded-2xl border border-warning/20 bg-gradient-to-br from-warning/[0.06] to-transparent p-6">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">XAUUSD Spot</span>
-            <Badge variant="outline" className="text-[10px] border-warning/30 text-warning">{goldSource}</Badge>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-4xl font-bold text-warning">${goldPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-            {goldDirection === "up" && <TrendingUp className="h-6 w-6 text-success" />}
-            {goldDirection === "down" && <TrendingDown className="h-6 w-6 text-destructive" />}
-            {goldDirection === "flat" && <Minus className="h-6 w-6 text-muted-foreground" />}
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">Gold pays no yield — it competes with rate-bearing assets.</p>
-        </div>
-
-        {/* US 10Y */}
-        <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] to-transparent p-6">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">US 10Y Yield</span>
-            <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">FRED</Badge>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-4xl font-bold text-primary">{us10y.toFixed(2)}%</span>
-            {yieldChange > 0 ? <TrendingUp className="h-5 w-5 text-destructive" /> : <TrendingDown className="h-5 w-5 text-success" />}
-          </div>
-          <p className={`text-sm font-semibold mt-1 ${yieldChange > 0 ? "text-destructive" : "text-success"}`}>
-            {yieldChange > 0 ? "+" : ""}{yieldChange.toFixed(2)} bps — {yieldChange > 0 ? "bearish for gold" : "bullish for gold"}
-          </p>
-        </div>
-
-        {/* Fed Funds */}
-        <div className="rounded-2xl border border-border bg-gradient-to-br from-muted/30 to-transparent p-6">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Fed Funds Rate</span>
-            <Badge variant="outline" className="text-[10px] border-border text-foreground">FRED</Badge>
-          </div>
-          <span className="text-4xl font-bold text-foreground">{fedRate.toFixed(2)}%</span>
-          <p className="text-xs text-muted-foreground mt-3">Rate cuts weaken USD and tend to boost gold. Hikes do the opposite.</p>
-        </div>
-      </div>
-    </div>
-  );
+  const gold = quotes?.rates?.XAUUSD;
+  const yieldQuote = quotes?.rates?.US10Y;
+  const fed = latestRate(rates?.data?.FEDFUNDS?.observations);
+  const change = gold && usableQuote(gold) ? quoteChange(gold) : undefined;
+  const items = [
+    { title: "XAUUSD Spot", value: usableQuote(gold) ? `$${gold.rate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "Unavailable", source: gold && usableQuote(gold) ? `${gold.source} · ${quoteStatus(gold)}` : "No verified quote", date: gold?.asOf, detail: change !== undefined ? `${change.toFixed(2)}% vs provider previous close` : "Price change unavailable without a same-provider previous close" },
+    { title: "US 10Y Yield", value: usableQuote(yieldQuote) ? `${yieldQuote.rate.toFixed(3)}%` : "Unavailable", source: yieldQuote && usableQuote(yieldQuote) ? `${yieldQuote.source} · ${quoteStatus(yieldQuote)}` : "No verified quote", date: yieldQuote?.asOf, detail: yieldQuote && usableQuote(yieldQuote) && yieldQuote.previousClose !== undefined ? `${basisPointChange(yieldQuote.rate, yieldQuote.previousClose).toFixed(1)} basis points vs provider previous close` : "Yield change unavailable" },
+    { title: "Effective Fed Funds", value: fed ? `${fed.value.toFixed(2)}%` : "Unavailable", source: fed ? "FRED · Monthly effective rate" : "FRED observation unavailable", date: fed?.date, detail: "Monthly effective rate, not the Federal Reserve target range" },
+  ];
+  return <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">{items.map(item => <div key={item.title} className="rounded-lg border border-border bg-card p-5">
+    <p className="mb-3 text-sm font-semibold text-foreground">{item.title}</p>
+    <p className="break-words text-3xl font-bold text-foreground">{item.value}</p>
+    <Badge variant="outline" className="mt-3 whitespace-normal text-xs text-foreground">{item.source}</Badge>
+    {item.date && <p className="mt-2 text-xs text-muted-foreground">Observation: {item.date}</p>}
+    <p className="mt-3 text-sm text-muted-foreground">{item.detail}</p>
+  </div>)}</div>;
 };
-
 export default GoldLivePrice;

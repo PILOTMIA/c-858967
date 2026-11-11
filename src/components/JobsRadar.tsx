@@ -63,11 +63,11 @@ interface JobsResult {
 
 const fetchLiveJobs = async (): Promise<JobsResult> => {
   const fallback: JobsResult = {
-    entries: JOBS_DATA,
-    nfpHistory: US_NFP_HISTORY_FALLBACK,
-    nfpSource: 'BLS (cached)',
-    nfpLatestMonth: 'Aug 2026',
-    nfpPrevious: 21,
+    entries: [],
+    nfpHistory: [],
+    nfpSource: 'Unavailable',
+    nfpLatestMonth: '',
+    nfpPrevious: null,
   };
   try {
     const currencies = JOBS_DATA.map(j => j.currency).join(',');
@@ -87,8 +87,11 @@ const fetchLiveJobs = async (): Promise<JobsResult> => {
     const result = await res.json();
     const nfp = result.nfp;
     return {
-      entries: JOBS_DATA.map(entry => ({
+      entries: JOBS_DATA.filter(entry => result.data?.[entry.currency]?.source === 'fred').map(entry => ({
         ...entry,
+        flag: '',
+        wageGrowth: undefined,
+        previous: result.data?.[entry.currency]?.unemployment,
         unemployment: result.data?.[entry.currency]?.unemployment ?? entry.unemployment,
         source: result.data?.[entry.currency]?.source === 'fred' ? 'FRED API (live)' : entry.source,
       })),
@@ -98,7 +101,7 @@ const fetchLiveJobs = async (): Promise<JobsResult> => {
           ? 'BLS Public API (live)'
           : nfp?.source === 'fred'
             ? 'FRED / BLS (live)'
-            : 'BLS (cached)',
+            : 'Unavailable',
       nfpLatestMonth: nfp?.latestMonth ?? fallback.nfpLatestMonth,
       nfpPrevious: typeof nfp?.previous === 'number' ? nfp.previous : fallback.nfpPrevious,
     };
@@ -114,8 +117,8 @@ const JobsRadar = () => {
     refetchInterval: 30 * 60 * 1000,
   });
 
-  const entries = jobsData?.entries || JOBS_DATA;
-  const nfpHistory = jobsData?.nfpHistory || US_NFP_HISTORY_FALLBACK;
+  const entries = jobsData?.entries || [];
+  const nfpHistory = jobsData?.nfpHistory || [];
   const latestNfp = nfpHistory[nfpHistory.length - 1]?.value ?? 0;
   const previousNfp = jobsData?.nfpPrevious ?? nfpHistory[nfpHistory.length - 2]?.value ?? 0;
   const latestMonthLabel = jobsData?.nfpLatestMonth || 'Latest';
@@ -134,6 +137,8 @@ const JobsRadar = () => {
 
   return (
     <div className="space-y-6 p-4">
+      {entries.length === 0 && <p className="text-sm text-warning">International unemployment and wage comparisons are unavailable; no cached estimates are shown.</p>}
+      {nfpHistory.length === 0 && <p className="text-sm text-warning">The official payroll history is unavailable.</p>}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -162,7 +167,7 @@ const JobsRadar = () => {
             </div>
             <div className="text-right">
               <div className={`text-2xl font-bold ${latestNfp >= 0 ? 'text-success' : 'text-destructive'}`}>
-                {latestNfp >= 0 ? '+' : ''}{latestNfp}K
+                {nfpHistory.length ? `${latestNfp >= 0 ? '+' : ''}${latestNfp}K` : 'Unavailable'}
               </div>
               <div className="text-xs text-muted-foreground">
                 prior {previousNfp >= 0 ? '+' : ''}{previousNfp}K • 12-mo avg {avgNfp >= 0 ? '+' : ''}{avgNfp}K
@@ -198,9 +203,8 @@ const JobsRadar = () => {
             </ResponsiveContainer>
           </div>
           <p className="text-[10px] text-muted-foreground mt-2">
-            Released the first Friday of each month at 8:30 AM ET (5:30 AM MST), covering the prior month.
-            Next release: <span className="text-foreground font-semibold">{nextNfpRelease()}</span>. Data pulled automatically from the
-            Bureau of Labor Statistics each time this page loads, and refreshed every 30 minutes.
+            Published payroll observations from the Bureau of Labor Statistics, refreshed every 30 minutes.
+            <a href="https://www.bls.gov/schedule/news_release/empsit.htm" target="_blank" rel="noopener noreferrer" className="ml-1 text-primary underline">Official release calendar</a>
           </p>
 
         </div>

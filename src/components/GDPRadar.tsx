@@ -29,10 +29,6 @@ const GDP_DATA: GDPEntry[] = [
 const fetchLiveGDP = async (): Promise<GDPEntry[]> => {
   try {
     const currencies = GDP_DATA.map(g => g.currency).join(',');
-    const { data } = await supabase.functions.invoke('macro-data', {
-      body: undefined,
-      headers: { 'Content-Type': 'application/json' },
-    });
 
     // Use URL-based approach
     const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
@@ -50,13 +46,13 @@ const fetchLiveGDP = async (): Promise<GDPEntry[]> => {
     if (!res.ok) throw new Error('Failed to fetch');
     const result = await res.json();
 
-    return GDP_DATA.map(entry => ({
+    return GDP_DATA.filter(entry => result.data?.[entry.currency]?.source === 'fred').map(entry => ({
       ...entry,
       gdp: result.data?.[entry.currency]?.gdp ?? entry.gdp,
       source: result.data?.[entry.currency]?.source === 'fred' ? 'FRED API 🟢' : entry.source,
     }));
   } catch {
-    return GDP_DATA;
+    return [];
   }
 };
 
@@ -67,7 +63,7 @@ const GDPRadar = () => {
     refetchInterval: 6 * 60 * 60 * 1000,
   });
 
-  const entries = gdpData || GDP_DATA;
+  const entries = gdpData || [];
   const chartData = entries.map(e => ({ name: e.currency, gdp: e.gdp, previous: e.previous, forecast: e.forecast }));
 
   if (isLoading) {
@@ -78,6 +74,8 @@ const GDPRadar = () => {
       </div>
     );
   }
+
+  if (!entries.length) return <div className="p-5 text-foreground"><h2 className="text-xl font-bold">GDP Growth Monitor</h2><p className="mt-3 text-sm text-warning">GDP observations are unavailable from FRED. Cached comparisons and forecasts are not shown.</p></div>;
 
   return (
     <div className="space-y-6 p-4">

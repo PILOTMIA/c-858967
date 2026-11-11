@@ -50,10 +50,10 @@ export const fetchInflation = async (): Promise<InflationPayload> => {
     if (!d || !Number.isFinite(Number(d.current))) return;
     out[key] = {
       current: Number(d.current),
-      previous: Number.isFinite(Number(d.previous)) ? Number(d.previous) : null,
+      previous: d.previous !== null && d.previous !== undefined && Number.isFinite(Number(d.previous)) ? Number(d.previous) : null,
       latestPeriod: d.latestPeriod ?? '',
       history: Array.isArray(d.history) ? d.history : [],
-      source: d.source === 'bls' ? 'BLS live' : String(d.source ?? 'unknown'),
+      source: d.source === 'bls' ? 'BLS published data' : String(d.source ?? 'unknown'),
     };
   });
   return out;
@@ -136,7 +136,7 @@ const InflationRadar = () => {
 
           <div className="border border-border/30 rounded-xl p-3 flex items-center gap-2">
             <Calendar className="w-3 h-3 text-muted-foreground" />
-            <p className="text-xs text-muted-foreground">Next scheduled release: <span className="text-foreground font-semibold">{nextCpiRelease()}</span></p>
+            <p className="text-xs text-muted-foreground"><a href="https://www.bls.gov/schedule/news_release/cpi.htm" target="_blank" rel="noopener noreferrer" className="text-primary underline">Official BLS release calendar</a></p>
           </div>
 
           {d.history.length > 1 && (

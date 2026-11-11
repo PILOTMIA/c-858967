@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, Calendar, Clock, Globe, Newspaper, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { fetchMarketNews, type MarketNewsArticle } from '@/services/MarketNewsService';
 
 const getSentimentIcon = (sentiment: string) => {
@@ -37,7 +38,7 @@ const NewsArticleRow = ({ article }: { article: MarketNewsArticle }) => (
         <Calendar className="h-4 w-4" />
         {new Date(article.publishedAt).toLocaleString()}
       </span>
-      <span className="font-medium text-foreground">Confidence {article.confidence}%</span>
+      <span className="font-medium text-foreground">Keyword sentiment</span>
     </div>
     <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
       {article.pairs.map((pair) => (
@@ -82,7 +83,7 @@ const NewsSentimentAnalysis = () => {
           <div>
             <CardTitle className="flex items-center gap-2 text-xl text-foreground">
               <Newspaper className="h-5 w-5 text-primary" />
-              Market News Sentiment — Live
+              Market News Sentiment
             </CardTitle>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               Live market headlines with source links, refreshed automatically and scheduled for 2:00 PM and 3:00 PM Arizona checks.
@@ -91,16 +92,16 @@ const NewsSentimentAnalysis = () => {
            {dataUpdatedAt > 0 && (
              <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-1">
                <Clock className="h-3 w-3" />
-               Last updated: {new Date(dataUpdatedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" })}
+               Feed checked: {new Date(dataUpdatedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" })}
              </div>
            )}
-          <button
+          <Button variant="outline" disabled={isFetching}
             onClick={() => refetch()}
             className="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
           >
             <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
             Refresh
-          </button>
+          </Button>
         </div>
       </CardHeader>
 
@@ -116,13 +117,13 @@ const NewsSentimentAnalysis = () => {
               <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                   {getSentimentIcon(data?.overall || 'NEUTRAL')}
-                  <span className="text-xl font-bold text-foreground">Overall: {data?.overall}</span>
+                  <span className="text-xl font-bold text-foreground">{articles.length ? `Headline read: ${data?.overall}` : 'News unavailable'}</span>
                 </div>
-                <span className="text-2xl font-bold text-foreground">{Math.round((data?.score || 0) * 100)}%</span>
+                {articles.length > 0 && <span className="text-sm font-medium text-foreground">{articles.length} dated articles</span>}
               </div>
               <p className="text-sm leading-relaxed text-foreground">{data?.summary}</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                Source: {data?.source === 'gdelt_live' ? 'GDELT live news API' : 'Verified fallback'} • Last fetched {data?.fetchedAt ? new Date(data.fetchedAt).toLocaleString() : 'now'}
+                Source: {articles.length ? [...new Set(articles.map(article => article.source))].join(', ') : 'No current provider articles'}
               </p>
             </div>
 
@@ -145,9 +146,9 @@ const NewsSentimentAnalysis = () => {
               <div className="flex items-center justify-between gap-3">
                 <h4 className="text-lg font-semibold text-foreground">Latest Market Headlines</h4>
                 {articles.length > 6 && (
-                  <button onClick={() => setIsExpanded(!isExpanded)} className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90">
+                  <Button onClick={() => setIsExpanded(!isExpanded)}>
                     {isExpanded ? 'Show Less' : 'View All'}
-                  </button>
+                  </Button>
                 )}
               </div>
               {visibleArticles.map((article) => <NewsArticleRow key={article.id} article={article} />)}

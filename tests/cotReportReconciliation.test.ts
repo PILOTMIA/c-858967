@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import report from "./fixtures/cot-2026-10-27.json";
+import novemberReport from "./fixtures/cot-2026-11-03.json";
 
 test("October 27 uploaded positions and changes match all 28 stored markets", async () => {
   const url = process.env.VITE_SUPABASE_URL;
@@ -24,5 +25,30 @@ test("October 27 uploaded positions and changes match all 28 stored markets", as
     expect(current.long_positions - prior.long_positions).toBe(expected.change_long);
     expect(current.short_positions - prior.short_positions).toBe(expected.change_short);
     expect(current.source).toBe("verified_upload");
+  }
+}, 30000);
+
+test('November 3 uploaded positions and weekly changes match all 28 markets', async () => {
+  const url = process.env.VITE_SUPABASE_URL;
+  const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !key) throw new Error('Public backend connection is required');
+  const response = await fetch(`${url}/rest/v1/cot_history?select=*&report_date=in.(2026-10-27,2026-11-03)`, {
+    headers: { apikey: key, Authorization: `Bearer ${key}` },
+  });
+  expect(response.ok).toBe(true);
+  const rows = await response.json();
+  expect(novemberReport.length).toBe(28);
+  for (const expected of novemberReport) {
+    const current = rows.find((r: typeof expected) => r.currency === expected.currency && r.report_date === '2026-11-03');
+    const prior = rows.find((r: typeof expected) => r.currency === expected.currency && r.report_date === '2026-10-27');
+    expect(current).toBeDefined();
+    expect(prior).toBeDefined();
+    for (const field of ['long_positions', 'short_positions', 'change_long', 'change_short'] as const) {
+      expect(current[field]).toBe(expected[field]);
+    }
+    expect(current.net_position).toBe(expected.long_positions - expected.short_positions);
+    expect(current.long_positions - prior.long_positions).toBe(expected.change_long);
+    expect(current.short_positions - prior.short_positions).toBe(expected.change_short);
+    expect(current.source).toBe('verified_upload');
   }
 }, 30000);

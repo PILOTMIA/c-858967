@@ -1,3 +1,4 @@
+import { currentNewsTimestamp } from '../_shared/newsEvidence.ts';
 type Sentiment = 'bullish' | 'bearish' | 'neutral';
 type Impact = 'High' | 'Medium' | 'Low';
 
@@ -154,26 +155,7 @@ function pairSentiment(articles: Article[]) {
 
 
 function fallbackArticles(): Article[] {
-  const now = new Date().toISOString();
-  return [
-    {
-      id: 'fallback-usd-yields',
-      title: 'US yields and Federal Reserve expectations remain the main USD driver',
-      description: 'Live provider fallback: monitor Treasury yields, inflation releases, and Fed communication for the next directional USD impulse.',
-      url: 'https://www.federalreserve.gov/monetarypolicy.htm',
-      publishedAt: now,
-      source: 'Federal Reserve',
-      domain: 'federalreserve.gov',
-      sentiment: 'neutral',
-      score: 0.55,
-      currency: 'USD',
-      pairs: ['EURUSD', 'GBPUSD', 'USDJPY', 'XAUUSD'],
-      impact: 'High',
-      category: 'Interest Rates',
-      confidence: 72,
-      analysis: 'USD pairs and XAUUSD should be checked against US10Y direction. Falling yields usually weaken USD and support gold.',
-    },
-  ];
+  return [];
 }
 
 function buildArticle(title: string, description: string, url: string, publishedAt: string, source: string, domain: string, index: number): Article | null {
@@ -181,18 +163,13 @@ function buildArticle(title: string, description: string, url: string, published
   if (!cleanTitle || !url) return null;
   const combined = `${cleanTitle} ${description} ${domain}`;
   if (!isRelevant(`${cleanTitle} ${cleanText(description)}`)) return null;
-  const published = Date.parse(publishedAt);
-  // Drop anything older than 72 hours so the feed always reads as current.
-  if (Number.isFinite(published) && Date.now() - published > 72 * 3600 * 1000) return null;
+  const iso = currentNewsTimestamp(publishedAt);
+  if (!iso) return null;
 
   const { currency, pairs } = inferCurrency(combined);
   const { sentiment, score } = inferSentiment(combined);
   const impact = inferImpact(combined);
   const category = inferCategory(combined);
-  const iso = (() => {
-    const t = Date.parse(publishedAt);
-    return Number.isFinite(t) ? new Date(t).toISOString() : new Date().toISOString();
-  })();
   return {
     id: `${domain}-${index}-${Date.parse(publishedAt) || Date.now()}`,
     title: cleanTitle,
@@ -354,7 +331,7 @@ Deno.serve(async (req) => {
     const limit = Number.isFinite(rawLimit) ? Math.max(5, Math.min(rawLimit, 50)) : 30;
     let source: 'gdelt_live' | 'fallback' = 'gdelt_live';
     let articles = await fetchAllSources(limit);
-    if (articles.length < 3) {
+    if (articles.length === 0) {
       source = 'fallback';
       articles = fallbackArticles();
     }
@@ -367,14 +344,14 @@ Deno.serve(async (req) => {
     const highImpact = articles.filter(article => article.impact === 'High').length;
 
     // Persist today's snapshot and derive the 30/90 day sentiment trend from stored history.
-    const trend = await recordAndReadTrend({
+    const trend = articles.length ? await recordAndReadTrend({
       articles: articles.length,
       bullish,
       bearish,
       neutral: articles.length - bullish - bearish,
       score,
       overall,
-    });
+    }) : null;
 
     return new Response(JSON.stringify({
       articles,
@@ -386,7 +363,7 @@ Deno.serve(async (req) => {
       majorPairs,
       trend,
 
-      summary: `${articles.length} live market headlines aggregated from GDELT, Investing.com, ForexLive, FXStreet, MarketWatch, and WSJ. ${highImpact} high-impact items across USD pairs, central banks, yields, and gold. Only macro-relevant headlines from the last 72 hours are shown.`,
+      summary: articles.length ? `${articles.length} dated market headlines from public news feeds. ${highImpact} high-impact items. Headline sentiment is a keyword-based interpretation, not a trade signal.` : 'Current news is unavailable. No substitute headlines or sentiment evidence are shown.',
 
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
   } catch (error) {
@@ -397,9 +374,9 @@ Deno.serve(async (req) => {
       fetchedAt: new Date().toISOString(),
       nextRefreshArizona: ['2:00 PM Arizona', '3:00 PM Arizona'],
       overall: 'NEUTRAL',
-      score: 0.55,
-      majorPairs: pairSentiment(articles),
-      summary: 'Live market news provider is temporarily unavailable. Showing verified fallback context until the next refresh.',
+      score: 0,
+      majorPairs: {},
+      summary: 'Current news is unavailable. No substitute headlines or sentiment evidence are shown.',
       error: error instanceof Error ? error.message : 'Unknown error',
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
