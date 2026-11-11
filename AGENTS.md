@@ -9,3 +9,5 @@
 - Uploaded COT report fixtures are reconciled against stored positions and prior-week deltas in integration tests; age-based badges describe freshness, not independent source verification.
 - The top ticker and rate board share timestamped quote evidence; provider observation time determines freshness, daily references are never labeled live, and synthetic price/history fallbacks are forbidden.
 - Mounted API queries are invalidated at the Arizona-time refresh checkpoints; this browser refresh is separate from backend COT synchronization.
+- Current news requires a valid provider timestamp within 72 hours; unavailable feeds must not invent headlines or write empty sentiment snapshots.
+- Gold and Treasury summaries use observed quotes or dated FRED series; never estimate one maturity from another, and yield differences convert percentage points to basis points.

@@ -49,7 +49,7 @@ const fetchBondData = async (): Promise<BondRadarData> => {
 
     const buildBond = (seriesId: string, fallback: BondIndicatorData): BondIndicatorData => {
       const obs = d[seriesId]?.observations;
-      if (!obs || obs.length === 0) return fallback;
+      if (!obs || obs.length === 0) throw new Error('Official bond observations unavailable');
       const current = parseFloat(obs[0].value);
       const change1M = obs.length > 20 ? parseFloat((current - parseFloat(obs[20].value)).toFixed(2)) : 0;
       const change3M = obs.length > 60 ? parseFloat((current - parseFloat(obs[60].value)).toFixed(2)) : 0;
@@ -97,16 +97,18 @@ const fetchBondData = async (): Promise<BondRadarData> => {
     };
   } catch (error) {
     console.error('Error fetching bond data:', error);
-    return FALLBACK;
+    throw error;
   }
 };
 
 const BondRadar = () => {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['bondData'],
     queryFn: fetchBondData,
     refetchInterval: 60 * 60 * 1000,
   });
+
+  if (!isLoading && (error || !data)) return <div className="p-5 text-foreground"><h2 className="text-xl font-bold">Bond Monitor</h2><p className="mt-3 text-sm text-warning">Official bond observations are unavailable. No estimated yields, forecasts, or curve assessments are shown.</p></div>;
 
   const getTrendIcon = (trend: string) => {
     if (trend.includes('Rising') || trend.includes('Inverted')) return <TrendingUp className="w-4 h-4 text-destructive" />;

@@ -71,7 +71,7 @@ const FundamentalNewsAnalysis = () => {
         <div className="flex items-center justify-between flex-wrap gap-2">
           <CardTitle className="flex items-center gap-2 text-xl text-foreground">
             <Globe className="h-5 w-5 text-primary" />
-            Fundamental News — Live
+            Fundamental News
           </CardTitle>
           {dataUpdatedAt > 0 && (
             <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
@@ -112,7 +112,7 @@ const FundamentalNewsAnalysis = () => {
                   {getDirectionIcon(article.sentiment)}
                   <span className="ml-1">{getDirectionLabel(article.sentiment)}</span>
                 </Badge>
-                <span className="text-sm text-muted-foreground">Confidence: {article.confidence}%</span>
+                <span className="text-sm text-muted-foreground">Keyword sentiment, not entry confirmation</span>
                 <a href={article.url} target="_blank" rel="noopener noreferrer" className="text-sm text-foreground hover:text-primary sm:ml-auto">{article.source}</a>
               </div>
               <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
