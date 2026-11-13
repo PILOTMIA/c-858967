@@ -2,6 +2,7 @@
 - COT recommendation surfaces share pairBias and tradeTiming rules; directional scores are not entry signals, and daily evidence cannot validate intraday execution.
 - Market rhythm consumers use the shared useMarketRhythm query so timing evidence and historical charts read the same feed.
 - Editorial chart setups are isolated from automated recommendations and reuse shared COT reads; uploaded chart levels cannot automatically establish an active entry.
+- Current COT pages exclude undated editorial scenarios and unsupported fixed macro claims so report-derived guidance remains distinct from independently sourced price and news evidence.
 - Editorial scenario visuals are standalone diagrams, not synthetic price histories, so unverified theses cannot be mistaken for observed market data.
 - Compounding projections use a pure, tested session-based calculator separate from market feeds; risk sizing never implies or derives an expected return.
 - The compounding planner has a dedicated public route and navigation entry so native production analytics can distinguish its page traffic without custom visitor storage.

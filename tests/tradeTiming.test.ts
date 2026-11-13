@@ -31,6 +31,13 @@ describe("COT direction is not entry timing", () => {
   test("stale daily prices block timing", () => {
     expect(timingAssessment({ direction: "LONG", reportDates: ["2026-10-13"], priceDate: "2026-10-10", now: new Date("2026-10-19T12:00:00Z") }).status).toBe("WAIT");
   });
+  test("the uploaded November 3 snapshot remains available but is too old for timing on November 13", () => {
+    const result = timingAssessment({ direction: "LONG", reportDates: ["2026-11-03", "2026-11-03"], priceDate: "2026-11-12", now: new Date("2026-11-13T01:06:00Z") });
+    expect(result.status).toBe("WAIT");
+    expect(result.reason).toContain("2026-11-03");
+    expect(result.reason).toContain("over 10 days old");
+    expect(result.reason).not.toContain("missing");
+  });
   test("open markets still provide a watchlist, never a buy-now permission", () => {
     expect(timingAssessment({ direction: "LONG", reportDates: ["2026-10-13"], priceDate: "2026-10-16", now: new Date("2026-10-19T12:00:00Z") }).status).toBe("WATCHLIST");
   });

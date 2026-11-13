@@ -22,8 +22,14 @@ export function forexIsOpen(now: Date) {
 export function timingAssessment(input: { direction: "LONG" | "SHORT" | "WAIT"; reportDates: string[]; priceDate?: string; now: Date; isForex?: boolean }) {
   const { direction, reportDates, priceDate, now, isForex = true } = input;
   const age = (date: string) => (now.getTime() - Date.parse(`${date.slice(0, 10)}T00:00:00Z`)) / 86400000;
-  if (!reportDates.length || reportDates.some(d => !d || !Number.isFinite(age(d)) || age(d) < 0 || age(d) > 10) || new Set(reportDates).size !== 1) {
-    return { status: "WAIT", reason: "COT reports are missing, outdated, or from different weeks. Wait for matching reports." };
+  if (!reportDates.length || reportDates.some(d => !d || !Number.isFinite(age(d)) || age(d) < 0)) {
+    return { status: "WAIT", reason: "Valid COT report dates are unavailable. Wait for verified reports." };
+  }
+  if (new Set(reportDates).size !== 1) {
+    return { status: "WAIT", reason: "The selected currencies use different COT report weeks. Wait for matching reports." };
+  }
+  if (reportDates.some(d => age(d) > 10)) {
+    return { status: "WAIT", reason: `The displayed COT report (${reportDates[0]}) is over 10 days old. Its positioning remains the stored snapshot, but needs a newer report for entry-timing review.` };
   }
   if (!priceDate || !Number.isFinite(age(priceDate)) || age(priceDate) < 0 || age(priceDate) > 4) {
     return { status: "WAIT", reason: "Recent daily price evidence is unavailable. Direction is not an entry signal." };

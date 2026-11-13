@@ -1,3 +1,7 @@
+## Current COT consistency
+- [x] Remove older editorial scenarios and unsupported fixed gold/yield claims from current COT guidance; preserve real market conflicts and risk warnings.
+- [x] Verify all 28 November 3 positions against the upload and populated public COT/Playbook views; distinguish report age from missing data. Tests passed and no browser errors observed.
+
 ## November 3 COT and feed update
 - [x] Reconcile six November 3 reports: all 28 markets and 112 position/change fields matched; protect rows as verified uploads.
 - [x] Refresh price, news, rhythm, VIX, COT, health and macro feeds; remove invented news, gold/yield histories and unverified summary yields.
