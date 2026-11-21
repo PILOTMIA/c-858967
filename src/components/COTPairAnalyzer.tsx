@@ -4,9 +4,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, ArrowRight, Zap, Shield, BarChart3 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, LineChart, Line, CartesianGrid, Legend } from "recharts";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { latestReportDate, useLatestCOT } from "@/hooks/useLatestCOT";
+import { useLatestCOT } from "@/hooks/useLatestCOT";
+import { latestHistoryRows, useCOTHistory } from "@/hooks/useCOTHistory";
+import { pairPositioning } from "@/lib/pairCalculations";
 
 interface CurrencyPositioning {
   netPosition: number;
@@ -26,7 +26,9 @@ const COTPairAnalyzer = () => {
   const [baseCurrency, setBaseCurrency] = useState('GBP');
   const [quoteCurrency, setQuoteCurrency] = useState('JPY');
   const { data: latestCot } = useLatestCOT();
-  const reportDate = latestReportDate(latestCot);
+  const selectedBase = latestCot?.[baseCurrency];
+  const selectedQuote = latestCot?.[quoteCurrency];
+  const reportDate = selectedBase?.reportDate === selectedQuote?.reportDate ? selectedBase?.reportDate : undefined;
   const positions = useMemo(() => {
     const merged: Record<string, CurrencyPositioning> = {};
     for (const [currency, row] of Object.entries(latestCot ?? {})) {
@@ -41,54 +43,34 @@ const COTPairAnalyzer = () => {
     return merged;
   }, [latestCot]);
 
-  // Live historical net positions from cot_history (last ~10 reports)
-  const { data: historicalNet = {} } = useQuery({
-    queryKey: ['cot-pair-analyzer-history'],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('cot_history')
-        .select('currency, report_date, net_position')
-        .order('report_date', { ascending: false })
-        .limit(300);
-      const dates = [...new Set((data ?? []).map((r) => r.report_date))].sort().slice(-10);
-      const map: Record<string, { date: string; value: number }[]> = {};
-      dates.forEach((d) => {
-        (data ?? [])
-          .filter((r) => r.report_date === d)
-          .forEach((r) => {
-            const label = new Date(r.report_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            (map[r.currency] ??= []).push({ date: label, value: r.net_position });
-          });
-      });
-      return map;
-    },
-    staleTime: 1000 * 60 * 30,
-  });
-
+  const { data: historyRows } = useCOTHistory();
+  const historicalNet = useMemo(() => {
+    const map: Record<string, { date: string; value: number }[]> = {};
+    const dates = [...new Set((historyRows ?? []).map(row => row.report_date))].sort().slice(-10);
+    for (const date of dates) {
+      for (const row of latestHistoryRows(historyRows?.filter(row => row.report_date === date)).values()) {
+        if (!Number.isFinite(row.net_position) || row.net_position !== row.long_positions - row.short_positions) continue;
+        (map[row.currency] ??= []).push({ date, value: row.net_position });
+      }
+    }
+    return map;
+  }, [historyRows]);
 
   const analysis = useMemo(() => {
     const base = positions[baseCurrency];
     const quote = positions[quoteCurrency];
     if (!base || !quote) return null;
 
-    const maxPos = 100000;
-    const baseScore = (base.netPosition / maxPos) * 100;
-    const quoteScore = (quote.netPosition / maxPos) * 100;
-
-    const pairScore = baseScore - quoteScore;
-    const clampedScore = Math.max(-100, Math.min(100, pairScore));
-
-    const bullPercent = Math.round(50 + clampedScore / 2);
-    const bearPercent = 100 - bullPercent;
-
-    const bullContracts = base.long + quote.short;
-    const bearContracts = base.short + quote.long;
+    const measured = pairPositioning(selectedBase, selectedQuote);
+    if (!measured) return null;
+    const clampedScore = measured.positionScore;
+    const { bullPercent, bearPercent, bullContracts, bearContracts } = measured;
 
     let verdict: 'STRONG BULLISH' | 'BULLISH' | 'SLIGHTLY BULLISH' | 'NEUTRAL' | 'SLIGHTLY BEARISH' | 'BEARISH' | 'STRONG BEARISH';
-    if (clampedScore > 60) verdict = 'STRONG BULLISH';
-    else if (clampedScore > 30) verdict = 'BULLISH';
+    if (clampedScore >= 60) verdict = 'STRONG BULLISH';
+    else if (clampedScore >= 30) verdict = 'BULLISH';
     else if (clampedScore > 10) verdict = 'SLIGHTLY BULLISH';
-    else if (clampedScore > -10) verdict = 'NEUTRAL';
+    else if (clampedScore >= -10) verdict = 'NEUTRAL';
     else if (clampedScore > -30) verdict = 'SLIGHTLY BEARISH';
     else if (clampedScore > -60) verdict = 'BEARISH';
     else verdict = 'STRONG BEARISH';
@@ -107,7 +89,7 @@ const COTPairAnalyzer = () => {
       base: { ...base, currency: baseCurrency },
       quote: { ...quote, currency: quoteCurrency },
     };
-  }, [baseCurrency, quoteCurrency, positions]);
+  }, [baseCurrency, quoteCurrency, positions, selectedBase, selectedQuote]);
 
   const formatContracts = (n: number) => {
     if (Math.abs(n) >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
@@ -153,11 +135,11 @@ const COTPairAnalyzer = () => {
     const baseName = base.currency;
     const quoteName = quote.currency;
 
-    const baseDir = base.netPosition > 0 ? 'long' : 'short';
-    const quoteDir = quote.netPosition > 0 ? 'long' : 'short';
+    const baseDir = base.netPosition > 0 ? 'long' : base.netPosition < 0 ? 'short' : 'flat';
+    const quoteDir = quote.netPosition > 0 ? 'long' : quote.netPosition < 0 ? 'short' : 'flat';
 
-    const favoredCurrency = analysis.isBullish ? baseName : quoteName;
-    const direction = analysis.isBullish ? 'bullish' : 'bearish';
+    const favoredCurrency = analysis.pairScore === 0 ? 'neither currency' : analysis.isBullish ? baseName : quoteName;
+    const direction = analysis.pairScore === 0 ? 'neutral' : analysis.isBullish ? 'bullish' : 'bearish';
 
     const baseFlow = base.weeklyChange > 0 ? `+${formatContracts(base.weeklyChange)}` : formatContracts(base.weeklyChange);
     const quoteFlow = quote.weeklyChange > 0 ? `+${formatContracts(quote.weeklyChange)}` : formatContracts(quote.weeklyChange);
@@ -218,11 +200,12 @@ const COTPairAnalyzer = () => {
           </div>
         </div>
 
+        {!analysis && <p role="status" className="text-sm text-warning">Matching, valid COT positions are unavailable for {baseCurrency}{quoteCurrency}. No comparison is calculated.</p>}
         {analysis && smartMoneyInsight && (
           <>
             {/* Verdict */}
             <div className={`rounded-xl p-5 border ${getVerdictBg(analysis.verdict)} text-center`}>
-              <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Institutional Verdict</div>
+              <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Positioning bias · not an entry signal</div>
               <div className="flex items-center justify-center gap-2">
                 <span className="text-3xl font-display-hero font-bold text-foreground">
                   {baseCurrency}{quoteCurrency}
@@ -237,10 +220,10 @@ const COTPairAnalyzer = () => {
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="flex items-center gap-1 text-success font-medium">
-                  <TrendingUp className="w-4 h-4" /> Bulls {analysis.bullPercent}%
+                  <TrendingUp className="w-4 h-4" /> Bull-side proxy {analysis.bullPercent.toFixed(1)}%
                 </span>
                 <span className="flex items-center gap-1 text-destructive font-medium">
-                  Bears {analysis.bearPercent}% <TrendingDown className="w-4 h-4" />
+                  Bear-side proxy {analysis.bearPercent.toFixed(1)}% <TrendingDown className="w-4 h-4" />
                 </span>
               </div>
               <div className="relative h-3 bg-destructive/20 rounded-full overflow-hidden">
@@ -254,6 +237,8 @@ const COTPairAnalyzer = () => {
                 <span>{formatContracts(analysis.bearContracts)} contracts</span>
               </div>
             </div>
+
+            <p className="text-xs text-muted-foreground">Contract-count proxy: base longs + quote shorts versus base shorts + quote longs. These futures have different contract sizes; shares are not trader percentages, comparable cash exposure or win probabilities. Positioning score {analysis.pairScore.toFixed(2)}/100 uses the same scale as the scorecard’s COT component.</p>
 
             {/* Individual Currency Breakdown */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -296,7 +281,7 @@ const COTPairAnalyzer = () => {
             </div>
 
             {/* Historical Positioning Chart */}
-            {historicalChartData && baseCurrency !== 'USD' && quoteCurrency !== 'USD' && (
+            {historicalChartData && (
               <div className="rounded-xl bg-muted/10 p-5 border border-border/20">
                 <h4 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
                   <BarChart3 className="w-4 h-4 text-primary" />
@@ -305,7 +290,7 @@ const COTPairAnalyzer = () => {
                 <ResponsiveContainer width="100%" height={220}>
                   <LineChart data={historicalChartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                    <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
+                    <XAxis dataKey="date" tickFormatter={date => new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", {month:"short",day:"numeric",timeZone:"UTC"})} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
                     <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} tickFormatter={(v: number) => `${(v/1000).toFixed(0)}K`} />
                     <Tooltip
                       contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, color: 'hsl(var(--foreground))' }}

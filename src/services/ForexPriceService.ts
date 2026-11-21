@@ -1,12 +1,9 @@
-import { usableQuote } from "@/lib/quoteQuality";
+import { usableQuote, type QuoteEvidence } from "@/lib/quoteQuality";
 // Forex Price Service - Uses edge function for real-time prices
-// Falls back to fallback prices if edge function unavailable
+// Missing observations fail closed; provider evidence survives the cache.
 
 
-interface ForexPrice {
-  rate: number;
-  timestamp: number;
-}
+interface ForexPrice extends QuoteEvidence { rate: number; source: string; }
 
 interface PriceCache {
   [pair: string]: {
@@ -31,14 +28,14 @@ const getPairCode = (currency: string): string => {
   return `${currency}USD`;
 };
 
-export const fetchForexPrice = async (currency: string): Promise<number> => {
+export const fetchForexQuote = async (currency: string): Promise<ForexPrice> => {
   const pairCode = getPairCode(currency);
   
   // Check cache first
   const cached = priceCache[pairCode];
   if (cached && Date.now() - cached.fetchedAt < CACHE_DURATION) {
     console.log(`Using cached price for ${pairCode}: ${cached.price.rate}`);
-    return cached.price.rate;
+    return cached.price;
   }
 
   try {
@@ -68,11 +65,11 @@ export const fetchForexPrice = async (currency: string): Promise<number> => {
       if (usableQuote(data.rates?.[pairCode])) {
         const price = data.rates[pairCode].rate;
         priceCache[pairCode] = {
-          price: { rate: price, timestamp: Date.now() },
+          price: { ...data.rates[pairCode], rate: price },
           fetchedAt: Date.now()
         };
         console.log(`Fetched ${pairCode}: ${price} from ${data.rates[pairCode].source}`);
-        return price;
+        return priceCache[pairCode].price;
       }
     } else {
       console.error(`Edge function error: ${response.status} ${response.statusText}`);
@@ -83,6 +80,8 @@ export const fetchForexPrice = async (currency: string): Promise<number> => {
 
   throw new Error(`No verified price is available for ${pairCode}`);
 };
+
+export const fetchForexPrice = async (currency: string): Promise<number> => (await fetchForexQuote(currency)).rate;
 
 export const fetchMultipleForexPrices = async (currencies: string[]): Promise<Record<string, number>> => {
   const results: Record<string, number> = {};

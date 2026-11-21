@@ -32,6 +32,13 @@ export function computePairCall(
   q: { net?: number; weekly?: number },
   priceBias?: number
 ): PairCall {
+  if (base === quote || ![b.net, b.weekly, q.net, q.weekly].every(v => typeof v === "number" && Number.isFinite(v))) {
+    return {
+      netSpread: 0, flowSpread: 0, positionScore: 0, flowScore: 0, conviction: 0, displayConviction: 0,
+      direction: "WAIT", aligned: false, conflict: false, squeeze: false, priceBias: 0,
+      reason: "Valid positioning and weekly changes for two different currencies are unavailable. No directional comparison is calculated.",
+    };
+  }
   const netSpread = (b.net ?? 0) - (q.net ?? 0);
   const flowSpread = (b.weekly ?? 0) - (q.weekly ?? 0);
   const positionScore = clamp((netSpread / POSITION_SCALE) * 100);

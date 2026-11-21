@@ -1,3 +1,7 @@
+## Pair-tool calculation audit
+- [x] Check all 72 currency orientations: preserve selected price direction, compose exact relative/inverse returns, use shared COT score scales and measured contract shares, and match history by full report dates.
+- [x] Fix missing-input scoring, inconsistent net labels, pip conversion and negative/blank inputs. All 67 tests passed; browser checks verified JPYUSD/USDJPY prices, GBPJPY 58.1% measured share, EURUSD and JPY pip/stop values, invalid inputs and readable phone calculator; no page errors. FRED observations remain unavailable and excluded.
+
 ## November 17 COT and API update
 - [x] Reconcile all six uploads: 28 markets, 112 fields and November 10 deltas match; mark rows verified without changing values.
 - [x] Refresh price (17 quotes), dated news, COT, rhythm, VIX, BLS payroll/inflation and AI connections. FRED replacement declined; remove substitute macro values and unsupported scorecard evidence.

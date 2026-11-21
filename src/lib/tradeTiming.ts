@@ -1,3 +1,5 @@
+import { relativeReturn } from "./pairCalculations";
+
 export interface WeekdayEvidence {
   day: string;
   avgPct: number;
@@ -9,7 +11,7 @@ export function pairSpotBias(base: string, quote: string, momentum?: Record<stri
   if (!momentum) return undefined;
   const b = base === "USD" ? 0 : momentum[base];
   const q = quote === "USD" ? 0 : momentum[quote];
-  return Number.isFinite(b) && Number.isFinite(q) && b !== undefined && q !== undefined ? b - q : undefined;
+  return b !== undefined && q !== undefined ? relativeReturn(b, q) : undefined;
 }
 
 export function forexIsOpen(now: Date) {

@@ -4,7 +4,7 @@ import { computePairCall } from "../src/lib/pairBias";
 
 describe("COT direction is not entry timing", () => {
   test("USDJPY uses USD as the reference, not a synthetic basket subtraction", () => {
-    expect(pairSpotBias("USD", "JPY", { USD: -2, JPY: 1.5 })).toBe(-1.5);
+    expect(pairSpotBias("USD", "JPY", { USD: -2, JPY: 1.5 })).toBeCloseTo(-1.4778325123, 8);
   });
   test("missing daily evidence cannot confirm a directional recommendation", () => {
     expect(computePairCall("USD", "JPY", { net: 2076, weekly: 1212 }, { net: -33673, weekly: -8630 }).direction).toBe("WAIT");

@@ -13,3 +13,4 @@
 - Current news requires a valid provider timestamp within 72 hours; unavailable feeds must not invent headlines or write empty sentiment snapshots.
 - Gold and Treasury summaries use observed quotes or dated FRED series; never estimate one maturity from another, and yield differences convert percentage points to basis points.
 - Macro failures return null observations, never fixed substitutes; scorecards exclude unavailable evidence and incomparable GDP units, use shared observed rhythm history, and never derive retail sentiment from COT percentages.
+- Pair tools preserve selected base/quote orientation, compose returns with ratios, and calculate contract shares from counts; shared report histories are matched by full date and missing inputs never become zero-valued evidence.

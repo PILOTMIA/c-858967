@@ -3,17 +3,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, ArrowRight, BarChart3, Activity, Globe, Landmark, Users, DollarSign, RefreshCw } from "lucide-react";
-import { fetchForexPrice } from "@/services/ForexPriceService";
+import { fetchForexQuote } from "@/services/ForexPriceService";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
-import { latestReportDate, useLatestCOT } from "@/hooks/useLatestCOT";
+import { useLatestCOT } from "@/hooks/useLatestCOT";
 import { useSpotMomentum } from "@/hooks/useSpotMomentum";
-import { computePairCall, type PairCall } from "@/lib/pairBias";
+import { computePairScores } from "@/lib/pairScorecard";
 import { pairSpotBias } from "@/lib/tradeTiming";
 import TradeTimingGuide from "@/components/TradeTimingGuide";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMarketRhythm } from "@/hooks/useMarketRhythm";
-import { observedMacroValue, observedRateScore, UNAVAILABLE_MACRO, type MacroObservation } from "@/lib/macroEvidence";
+import { invertReturn, validPairPositions, selectedPairKey } from "@/lib/pairCalculations";
+import { quoteStatus } from "@/lib/quoteQuality";
+import { observedMacroValue, UNAVAILABLE_MACRO, type MacroObservation } from "@/lib/macroEvidence";
 
 // Fallback shape only; verified stored COT rows replace directional fields at runtime.
 interface CurrencyPositioning {
@@ -38,40 +40,6 @@ const FALLBACK_COT_POSITIONS: Record<string, CurrencyPositioning> = Object.fromE
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'NZD', 'MXN'];
 
-// ── Scoring Engine ──────────────────────────────────────────────────────────
-const safeNum = (v: any, fallback = 0): number => {
-  const n = typeof v === "number" ? v : parseFloat(v);
-  return Number.isFinite(n) ? n : fallback;
-};
-const clampScore = (raw: number, min: number, max: number) => {
-  const n = Number.isFinite(raw) ? raw : 0;
-  return Math.max(min, Math.min(max, parseFloat(n.toFixed(2))));
-};
-
-function computeScores(base: string, quote: string, fundamentals: Record<string, MacroObservation>, cotPositions: Record<string, CurrencyPositioning>, priceBias?: number, seasonalAverage?: number) {
-  const bp = { ...FALLBACK_COT_POSITIONS[base], ...(cotPositions[base] || {}) };
-  const qp = { ...FALLBACK_COT_POSITIONS[quote], ...(cotPositions[quote] || {}) };
-  // Same engine and scales as "What to Trade" so both tools agree.
-  const call: PairCall = computePairCall(
-    base, quote,
-    { net: safeNum(bp.netPosition), weekly: safeNum(bp.weeklyChange) },
-    { net: safeNum(qp.netPosition), weekly: safeNum(qp.weeklyChange) },
-    priceBias
-  );
-  const cotScore = clampScore((call.positionScore / 100) * 3, -3, 3);
-  const seasScore = seasonalAverage === undefined ? null : clampScore(seasonalAverage, -2, 2);
-  const trendScore = clampScore((call.flowScore / 100) * 2, -2, 2);
-
-  // The shared feed contains one trader category per instrument, not asset-manager positions.
-  const momentumScore = 0;
-
-  const economicScore = observedRateScore(fundamentals[base], fundamentals[quote]);
-  const totalRaw = cotScore + (seasScore ?? 0) + trendScore + momentumScore + (economicScore ?? 0);
-  const totalScore = parseFloat((Number.isFinite(totalRaw) ? totalRaw : 0).toFixed(2));
-
-  return { cotScore, seasScore, trendScore, momentumScore, economicScore, totalScore, call };
-}
-
 function getVerdict(score: number): { label: string; color: string; bgClass: string } {
   if (score >= 5) return { label: 'Strong Bullish', color: 'text-success', bgClass: 'bg-success/15 border-success/30' };
   if (score >= 2) return { label: 'Bullish', color: 'text-success', bgClass: 'bg-success/10 border-success/20' };
@@ -87,15 +55,6 @@ function getTradingViewSymbol(base: string, quote: string): string {
   if (base === 'USD') return `FX:USD${quote}`;
   if (quote === 'USD') return `FX:${base}USD`;
   return `FX:${base}${quote}`;
-}
-
-// ── Correct forex pair code for price fetching ──────────────────────────────
-function getPricePairKey(base: string, quote: string): string {
-  // If either side is USD, the ForexPriceService expects just the non-USD code
-  if (base === 'USD') return quote;
-  if (quote === 'USD') return base;
-  // Cross pair — pass as combined code (ForexPriceService has fallbacks for all)
-  return `${base}${quote}`;
 }
 
 // ── TradingView Embed Component ─────────────────────────────────────────────
@@ -158,29 +117,23 @@ const TradingViewEmbed = ({ base, quote }: { base: string; quote: string }) => {
 const COTPairScorecard = () => {
   const [baseCurrency, setBaseCurrency] = useState('AUD');
   const [quoteCurrency, setQuoteCurrency] = useState('NZD');
-  const [livePrice, setLivePrice] = useState<number | null>(null);
-  const [priceLoading, setPriceLoading] = useState(false);
-  const [cotPositions, setCotPositions] = useState<Record<string, CurrencyPositioning>>(FALLBACK_COT_POSITIONS);
-  const { data: latestCot } = useLatestCOT();
-  const cotReportDate = latestReportDate(latestCot);
 
-  useEffect(() => {
-    if (!latestCot) return;
-    setCotPositions((previous) => {
-      const merged = { ...previous };
-      for (const [key, row] of Object.entries(latestCot)) {
-        const prior = merged[key] ?? FALLBACK_COT_POSITIONS.USD;
-        merged[key] = {
-          ...prior,
-          netPosition: row.net,
-          long: row.long,
-          short: row.short,
-          sentiment: row.net > 10000 ? 'BULLISH' : row.net < -10000 ? 'BEARISH' : 'NEUTRAL',
-          weeklyChange: row.weekly,
-        };
-      }
-      return merged;
-    });
+
+  const { data: latestCot } = useLatestCOT();
+  const selectedBase = latestCot?.[baseCurrency], selectedQuote = latestCot?.[quoteCurrency];
+  const hasValidCot = validPairPositions(selectedBase, selectedQuote);
+  const cotReportDate = hasValidCot ? selectedBase?.reportDate : undefined;
+
+  const cotPositions = useMemo(() => {
+    const mapped: Record<string, CurrencyPositioning> = {};
+    for (const [key, row] of Object.entries(latestCot ?? {})) {
+      mapped[key] = {
+        netPosition: row.net, long: row.long, short: row.short, weeklyChange: row.weekly,
+        sentiment: row.net > 0 ? 'BULLISH' : row.net < 0 ? 'BEARISH' : 'NEUTRAL',
+        dealerLong: 0, dealerShort: 0, assetManagerLong: 0, assetManagerShort: 0,
+      };
+    }
+    return mapped;
   }, [latestCot]);
 
   const pair = `${baseCurrency}${quoteCurrency}`;
@@ -196,49 +149,39 @@ const COTPairScorecard = () => {
   const fundSource = Object.values(fundamentals).some(row => row.source === 'fred') ? 'fred' : 'unavailable';
   const { data: rhythm } = useMarketRhythm();
   const seasonalRow = rhythm?.find(row => row.ok && (row.pair === pair || row.pair === `${quoteCurrency}${baseCurrency}`));
-  const seasonalSign = seasonalRow?.pair === pair ? 1 : -1;
-  const seasonalAverage = seasonalRow && seasonalRow.seasonal.years >= 2 ? seasonalRow.seasonal.avgPct * seasonalSign : undefined;
+  const seasonalHistory = seasonalRow?.seasonal.history.map(row => ({
+    year: row.year,
+    pct: seasonalRow.pair === pair ? row.pct : invertReturn(row.pct),
+  })).filter((row): row is { year: number; pct: number } => row.pct !== undefined && Number.isFinite(row.pct)) ?? [];
+  const seasonalAverage = seasonalHistory.length >= 2 ? seasonalHistory.reduce((sum, row) => sum + row.pct, 0) / seasonalHistory.length : undefined;
 
-  // Fetch live price — fixed pair code logic
-  useEffect(() => {
-    let cancelled = false;
-    setPriceLoading(true);
-    setLivePrice(null);
-
-    const load = async () => {
-      try {
-        const pairKey = getPricePairKey(baseCurrency, quoteCurrency);
-        const price = await fetchForexPrice(pairKey);
-        if (!cancelled) setLivePrice(price);
-      } catch {
-        if (!cancelled) setLivePrice(null);
-      } finally {
-        if (!cancelled) setPriceLoading(false);
-      }
-    };
-    load();
-    const interval = setInterval(load, 60000);
-    return () => { cancelled = true; clearInterval(interval); };
-  }, [baseCurrency, quoteCurrency]);
+  const quoteQuery = useQuery({
+    queryKey: ['pair-tool-quote', baseCurrency, quoteCurrency],
+    queryFn: () => fetchForexQuote(selectedPairKey(baseCurrency, quoteCurrency)),
+    staleTime: 30_000, refetchInterval: 60_000,
+  });
+  const quoteEvidence = !quoteQuery.error ? quoteQuery.data : undefined;
+  const livePrice = quoteEvidence?.rate;
+  const priceLoading = quoteQuery.isLoading;
 
   const { data: spot } = useSpotMomentum();
-  const priceBias = latestCot?.[baseCurrency] && latestCot?.[quoteCurrency] && latestCot[baseCurrency].reportDate === latestCot[quoteCurrency].reportDate
+  const priceBias = hasValidCot
     ? pairSpotBias(baseCurrency, quoteCurrency, spot?.momentum) : undefined;
-  const scores = useMemo(() => computeScores(baseCurrency, quoteCurrency, fundamentals, cotPositions, priceBias, seasonalAverage), [baseCurrency, quoteCurrency, fundamentals, cotPositions, priceBias, seasonalAverage]);
+  const scores = useMemo(() => computePairScores(baseCurrency, quoteCurrency, latestCot ?? {}, fundamentals, priceBias, seasonalAverage), [baseCurrency, quoteCurrency, fundamentals, latestCot, priceBias, seasonalAverage]);
   const call = scores.call;
   const scoreDisagrees =
-    (call.direction === 'LONG' && scores.totalScore <= -0.5) ||
-    (call.direction === 'SHORT' && scores.totalScore >= 0.5);
-  const verdict = useMemo(() => getVerdict(scores.totalScore), [scores.totalScore]);
+    (call.direction === 'LONG' && (scores.totalScore ?? 0) <= -0.5) ||
+    (call.direction === 'SHORT' && (scores.totalScore ?? 0) >= 0.5);
+  const verdict = hasValidCot ? getVerdict(scores.totalScore ?? 0) : { label: 'Unavailable', color: 'text-muted-foreground', bgClass: 'bg-muted/10 border-border' };
 
   const bp = cotPositions[baseCurrency] || FALLBACK_COT_POSITIONS[baseCurrency];
   const qp = cotPositions[quoteCurrency] || FALLBACK_COT_POSITIONS[quoteCurrency];
   const bf = fundamentals[baseCurrency] || UNAVAILABLE_MACRO;
   const qf = fundamentals[quoteCurrency] || UNAVAILABLE_MACRO;
 
-  const seasonalityData = seasonalAverage === undefined ? [] : seasonalRow?.seasonal.history.map(row => ({
-    year: String(row.year), value: Number((row.pct * seasonalSign).toFixed(2)),
-  })) ?? [];
+  const seasonalityData = seasonalAverage === undefined ? [] : seasonalHistory.map(row => ({
+    year: String(row.year), value: Number(row.pct.toFixed(2)),
+  }));
 
   const baseLongPct = bp.long + bp.short > 0 ? ((bp.long / (bp.long + bp.short)) * 100).toFixed(1) : '0';
   const quoteLongPct = qp.long + qp.short > 0 ? ((qp.long / (qp.long + qp.short)) * 100).toFixed(1) : '0';
@@ -264,7 +207,7 @@ const COTPairScorecard = () => {
   const scoreBreakdown = [
     { label: 'COT', value: scores.cotScore, max: 3 },
     { label: 'Seasonality', value: scores.seasScore, max: 2 },
-    { label: 'Trend', value: scores.trendScore, max: 2 },
+    { label: 'Weekly flow', value: scores.trendScore, max: 2 },
     { label: 'Economic', value: scores.economicScore, max: 2 },
   ];
 
@@ -282,7 +225,7 @@ const COTPairScorecard = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Select value={baseCurrency} onValueChange={setBaseCurrency}>
-              <SelectTrigger className="w-24 bg-background/50 border-border/30 rounded-xl">
+              <SelectTrigger aria-label="Scorecard base currency" className="w-24 bg-background/50 border-border/30 rounded-xl">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -293,7 +236,7 @@ const COTPairScorecard = () => {
             </Select>
             <ArrowRight className="w-4 h-4 text-muted-foreground" />
             <Select value={quoteCurrency} onValueChange={setQuoteCurrency}>
-              <SelectTrigger className="w-24 bg-background/50 border-border/30 rounded-xl">
+              <SelectTrigger aria-label="Scorecard quote currency" className="w-24 bg-background/50 border-border/30 rounded-xl">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -317,25 +260,27 @@ const COTPairScorecard = () => {
               <div className="text-xl font-mono font-bold text-foreground">
                 {priceLoading ? '...' : livePrice ? livePrice.toFixed(livePrice > 100 ? 3 : 5) : '—'}
               </div>
+              <p className="text-[10px] text-muted-foreground max-w-56">{quoteEvidence ? `${quoteEvidence.source} · ${quoteStatus(quoteEvidence)} · ${quoteEvidence.asOf ? new Date(quoteEvidence.asOf).toLocaleString() : 'Time unavailable'}` : 'Quote unavailable'}</p>
             </div>
             <div className={`rounded-xl px-4 py-2 border ${verdict.bgClass}`}>
               <div className="text-xs text-foreground/70 text-center font-medium">Score</div>
               <div className={`text-2xl font-bold font-mono ${verdict.color}`}>
-                {Number.isFinite(scores.totalScore)
-                  ? `${scores.totalScore > 0 ? '+' : ''}${scores.totalScore.toFixed(2)}`
-                  : '0.00'}
+                {hasValidCot && Number.isFinite(scores.totalScore)
+                  ? `${(scores.totalScore ?? 0) > 0 ? '+' : ''}${(scores.totalScore ?? 0).toFixed(2)}`
+                  : '—'}
               </div>
             </div>
           </div>
         </div>
       </div>
 
+      {!hasValidCot && <p role="status" className="text-sm text-warning">Matching, valid COT reports are unavailable for {pair}. Positioning scores are not calculated.</p>}
       {/* Smart Money call — identical engine to "What to Trade" */}
       <div className={`rounded-2xl border p-4 ${call.direction === 'LONG' ? 'border-success/30 bg-success/[0.06]' : call.direction === 'SHORT' ? 'border-destructive/30 bg-destructive/[0.06]' : 'border-border/30 bg-card/30'}`}>
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Smart Money call</span>
           <Badge className={`font-bold ${call.direction === 'LONG' ? 'bg-success/20 text-success border-success/40' : call.direction === 'SHORT' ? 'bg-destructive/20 text-destructive border-destructive/40' : 'bg-muted/30 text-foreground/80 border-border/50'}`}>
-            {call.direction} {pair}
+            {hasValidCot ? call.direction : 'WAIT'} {pair}
           </Badge>
           {call.direction !== 'WAIT' && (
             <span className="text-xs font-mono text-foreground/80">Conviction {call.displayConviction.toFixed(0)}/100</span>
@@ -456,9 +401,9 @@ const COTPairScorecard = () => {
                 <div className="space-y-3">
                   <div>
                     <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                      <span>Net</span>
-                      <span className={`font-bold ${bp.netPosition - qp.netPosition > 0 ? 'text-success' : 'text-destructive'}`}>
-                        Long ({baseLongPct}%)
+                      <span>{baseCurrency} long share</span>
+                      <span className={`font-bold ${bp.netPosition >= 0 ? 'text-success' : 'text-destructive'}`}>
+                        {hasValidCot ? `Long (${baseLongPct}%)` : 'Unavailable'}
                       </span>
                     </div>
                     <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
@@ -468,17 +413,17 @@ const COTPairScorecard = () => {
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="bg-muted/10 rounded-lg p-2">
                       <div className="text-muted-foreground">Longs</div>
-                      <div className="font-mono font-bold text-success">{bp.long.toLocaleString()}</div>
+                      <div className="font-mono font-bold text-success">{hasValidCot ? bp.long.toLocaleString() : '—'}</div>
                     </div>
                     <div className="bg-muted/10 rounded-lg p-2">
                       <div className="text-muted-foreground">Shorts</div>
-                      <div className="font-mono font-bold text-destructive">{bp.short.toLocaleString()}</div>
+                      <div className="font-mono font-bold text-destructive">{hasValidCot ? bp.short.toLocaleString() : '—'}</div>
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/20 pt-2">
                     <span>Consensus</span>
                     <span className={`font-semibold ${bp.sentiment === 'BULLISH' ? 'text-success' : bp.sentiment === 'BEARISH' ? 'text-destructive' : 'text-muted-foreground'}`}>
-                      {bp.sentiment}
+                      {hasValidCot ? bp.sentiment : 'Unavailable'}
                     </span>
                   </div>
                 </div>
@@ -512,14 +457,14 @@ const COTPairScorecard = () => {
                 <div className="flex justify-between items-center py-2 border-b border-border/20">
                   <span className="text-sm font-medium text-foreground">Score</span>
                   <span className={`text-lg font-bold font-mono ${verdict.color}`}>
-                    {scores.totalScore > 0 ? '+' : ''}{scores.totalScore.toFixed(2)}
+                    {hasValidCot ? `${(scores.totalScore ?? 0) > 0 ? '+' : ''}${(scores.totalScore ?? 0).toFixed(2)}` : '—'}
                   </span>
                 </div>
                 {scoreBreakdown.map(item => (
                   <div key={item.label} className="flex justify-between items-center py-2 border-b border-border/10">
                     <span className="text-sm text-muted-foreground">{item.label}</span>
                     <span className={`font-mono font-bold text-sm ${item.value === null ? 'text-muted-foreground' : item.value > 0 ? 'text-success' : item.value < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                      {item.value === null ? 'Unavailable' : `${item.value > 0 ? '+' : ''}${item.value.toFixed(2)}`}
+                      {!hasValidCot || item.value === null ? 'Unavailable' : `${item.value > 0 ? '+' : ''}${item.value.toFixed(2)}`}
                     </span>
                   </div>
                 ))}
@@ -535,7 +480,7 @@ const COTPairScorecard = () => {
                 <h3 className="font-semibold text-foreground text-sm">Analysis</h3>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                {call.reason} Leveraged funds hold {bp.netPosition.toLocaleString()} net contracts in {baseCurrency} and {qp.netPosition.toLocaleString()} in {quoteCurrency}. Unavailable evidence is excluded; a directional score is not entry confirmation.
+                {hasValidCot ? `${call.reason} Leveraged funds hold ${bp.netPosition.toLocaleString()} net contracts in ${baseCurrency} and ${qp.netPosition.toLocaleString()} in ${quoteCurrency}.` : 'Matching COT observations are unavailable.'} Unavailable evidence is excluded; a directional score is not entry confirmation.
               </p>
               <div className="mt-3 text-xs text-muted-foreground">
                 Displayed CFTC report: {cotReportDate ?? 'unavailable'} • Live price confirmation refreshes independently
