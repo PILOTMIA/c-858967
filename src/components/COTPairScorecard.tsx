@@ -10,6 +10,10 @@ import { useSpotMomentum } from "@/hooks/useSpotMomentum";
 import { computePairCall, type PairCall } from "@/lib/pairBias";
 import { pairSpotBias } from "@/lib/tradeTiming";
 import TradeTimingGuide from "@/components/TradeTimingGuide";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useMarketRhythm } from "@/hooks/useMarketRhythm";
+import { observedMacroValue, observedRateScore, UNAVAILABLE_MACRO, type MacroObservation } from "@/lib/macroEvidence";
 
 // Fallback shape only; verified stored COT rows replace directional fields at runtime.
 interface CurrencyPositioning {
@@ -24,45 +28,14 @@ interface CurrencyPositioning {
   assetManagerShort: number;
 }
 
-const FALLBACK_COT_POSITIONS: Record<string, CurrencyPositioning> = {
-  EUR: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 48682, dealerShort: 396571, assetManagerLong: 439565, assetManagerShort: 148667 },
-  GBP: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 131315, dealerShort: 63446, assetManagerLong: 39695, assetManagerShort: 133448 },
-  JPY: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 84091, dealerShort: 25315, assetManagerLong: 66512, assetManagerShort: 93062 },
-  CHF: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 62055, dealerShort: 12371, assetManagerLong: 6003, assetManagerShort: 43537 },
-  AUD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 41534, dealerShort: 166752, assetManagerLong: 102988, assetManagerShort: 57891 },
-  CAD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 83444, dealerShort: 60192, assetManagerLong: 88349, assetManagerShort: 72317 },
-  MXN: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 21503, dealerShort: 60570, assetManagerLong: 91215, assetManagerShort: 35502 },
-  NZD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 61264, dealerShort: 3960, assetManagerLong: 7660, assetManagerShort: 49488 },
-  USD: { netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0, dealerLong: 0, dealerShort: 0, assetManagerLong: 0, assetManagerShort: 0 },
-};
+const CURRENCIES_WITH_COT = ['EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'MXN', 'NZD', 'USD'];
+const FALLBACK_COT_POSITIONS: Record<string, CurrencyPositioning> = Object.fromEntries(
+  CURRENCIES_WITH_COT.map(currency => [currency, {
+    netPosition: 0, long: 0, short: 0, sentiment: 'NEUTRAL', weeklyChange: 0,
+    dealerLong: 0, dealerShort: 0, assetManagerLong: 0, assetManagerShort: 0,
+  }])
+);
 
-// ── Fallback Macro Fundamentals ──────────────────────────────────────────────
-const FALLBACK_FUNDAMENTALS: Record<string, { gdp: number; cpi: number; unemployment: number; interestRate: number }> = {
-  USD: { gdp: 2.4, cpi: 2.8, unemployment: 4.1, interestRate: 4.50 },
-  EUR: { gdp: 0.9, cpi: 2.4, unemployment: 6.4, interestRate: 3.65 },
-  GBP: { gdp: 1.1, cpi: 2.8, unemployment: 4.4, interestRate: 4.50 },
-  JPY: { gdp: 1.2, cpi: 3.2, unemployment: 2.5, interestRate: 0.50 },
-  CHF: { gdp: 1.5, cpi: 1.1, unemployment: 2.3, interestRate: 1.50 },
-  AUD: { gdp: 2.6, cpi: 3.7, unemployment: 4.1, interestRate: 4.10 },
-  CAD: { gdp: 1.8, cpi: 2.7, unemployment: 6.7, interestRate: 2.75 },
-  NZD: { gdp: 1.5, cpi: 3.1, unemployment: 5.4, interestRate: 2.25 },
-  MXN: { gdp: 3.1, cpi: 4.2, unemployment: 2.8, interestRate: 9.50 },
-};
-
-// ── Seasonality (10-year historical monthly tendency) ──
-const SEASONALITY: Record<string, number[]> = {
-  EUR: [0.3, -0.5, -1.2, 0.8, 1.1, -0.3, -0.7, 0.2, 0.6, -0.4, 0.9, -0.5],
-  GBP: [0.5, -0.3, -0.8, 0.6, 0.9, -0.1, -0.5, 0.3, 0.4, -0.6, 0.7, -0.2],
-  JPY: [-0.8, 0.6, 1.2, -0.5, -0.9, 0.7, 1.0, -0.3, -0.6, 0.8, -0.4, 0.5],
-  CHF: [0.2, -0.4, -0.6, 0.3, 0.5, -0.2, -0.3, 0.1, 0.4, -0.3, 0.6, -0.1],
-  AUD: [0.7, -0.2, -0.9, 1.0, 1.3, -0.4, -0.8, 0.5, 0.8, -0.3, 0.6, -0.4],
-  CAD: [0.4, -0.6, -0.7, 0.5, 0.8, -0.3, -0.4, 0.2, 0.5, -0.5, 0.3, -0.2],
-  NZD: [0.6, -0.3, -1.0, 0.9, 1.1, -0.5, -0.6, 0.4, 0.7, -0.2, 0.5, -0.3],
-  MXN: [0.3, -0.7, -0.5, 0.4, 0.6, -0.1, -0.9, 0.3, 0.2, -0.4, 0.8, -0.6],
-  USD: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-};
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'NZD', 'MXN'];
 
 // ── Scoring Engine ──────────────────────────────────────────────────────────
@@ -75,15 +48,9 @@ const clampScore = (raw: number, min: number, max: number) => {
   return Math.max(min, Math.min(max, parseFloat(n.toFixed(2))));
 };
 
-function computeScores(base: string, quote: string, fundamentals: Record<string, typeof FALLBACK_FUNDAMENTALS['USD']>, cotPositions: Record<string, CurrencyPositioning>, priceBias?: number) {
+function computeScores(base: string, quote: string, fundamentals: Record<string, MacroObservation>, cotPositions: Record<string, CurrencyPositioning>, priceBias?: number, seasonalAverage?: number) {
   const bp = { ...FALLBACK_COT_POSITIONS[base], ...(cotPositions[base] || {}) };
   const qp = { ...FALLBACK_COT_POSITIONS[quote], ...(cotPositions[quote] || {}) };
-  const bf = { ...FALLBACK_FUNDAMENTALS[base], ...(fundamentals[base] || {}) };
-  const qf = { ...FALLBACK_FUNDAMENTALS[quote], ...(fundamentals[quote] || {}) };
-  const bSeas = SEASONALITY[base] ?? SEASONALITY.USD;
-  const qSeas = SEASONALITY[quote] ?? SEASONALITY.USD;
-  const month = new Date().getMonth();
-
   // Same engine and scales as "What to Trade" so both tools agree.
   const call: PairCall = computePairCall(
     base, quote,
@@ -92,17 +59,14 @@ function computeScores(base: string, quote: string, fundamentals: Record<string,
     priceBias
   );
   const cotScore = clampScore((call.positionScore / 100) * 3, -3, 3);
-  const seasScore = clampScore(safeNum(bSeas[month]) - safeNum(qSeas[month]), -2, 2);
+  const seasScore = seasonalAverage === undefined ? null : clampScore(seasonalAverage, -2, 2);
   const trendScore = clampScore((call.flowScore / 100) * 2, -2, 2);
 
   // The shared feed contains one trader category per instrument, not asset-manager positions.
   const momentumScore = 0;
 
-  const gdpDiff = safeNum(bf.gdp) - safeNum(qf.gdp);
-  const rateDiff = safeNum(bf.interestRate) - safeNum(qf.interestRate);
-  const economicScore = clampScore(gdpDiff * 0.3 + rateDiff * 0.15, -2, 2);
-
-  const totalRaw = cotScore + seasScore + trendScore + momentumScore + economicScore;
+  const economicScore = observedRateScore(fundamentals[base], fundamentals[quote]);
+  const totalRaw = cotScore + (seasScore ?? 0) + trendScore + momentumScore + (economicScore ?? 0);
   const totalScore = parseFloat((Number.isFinite(totalRaw) ? totalRaw : 0).toFixed(2));
 
   return { cotScore, seasScore, trendScore, momentumScore, economicScore, totalScore, call };
@@ -196,9 +160,6 @@ const COTPairScorecard = () => {
   const [quoteCurrency, setQuoteCurrency] = useState('NZD');
   const [livePrice, setLivePrice] = useState<number | null>(null);
   const [priceLoading, setPriceLoading] = useState(false);
-  const [fundamentals, setFundamentals] = useState<Record<string, typeof FALLBACK_FUNDAMENTALS['USD']>>(FALLBACK_FUNDAMENTALS);
-  const [fundSource, setFundSource] = useState<string>('fallback');
-  const [fundLoading, setFundLoading] = useState(false);
   const [cotPositions, setCotPositions] = useState<Record<string, CurrencyPositioning>>(FALLBACK_COT_POSITIONS);
   const { data: latestCot } = useLatestCOT();
   const cotReportDate = latestReportDate(latestCot);
@@ -224,47 +185,19 @@ const COTPairScorecard = () => {
 
   const pair = `${baseCurrency}${quoteCurrency}`;
 
-  // Fetch live fundamentals from FRED edge function
-  useEffect(() => {
-    const fetchMacroData = async () => {
-      setFundLoading(true);
-      try {
-        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'xkgsugennbdatwmetnxx';
-        const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
-        const currencies = [baseCurrency, quoteCurrency].filter((v, i, a) => a.indexOf(v) === i).join(',');
-        const res = await fetch(
-          `https://${projectId}.supabase.co/functions/v1/macro-data?currencies=${currencies}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${anonKey}`,
-              'apikey': anonKey,
-              'Content-Type': 'application/json',
-            },
-            signal: AbortSignal.timeout(15000),
-          }
-        );
-        if (res.ok) {
-          const json = await res.json();
-          if (json.data) {
-            setFundamentals(prev => {
-              const merged = { ...prev };
-              for (const [k, v] of Object.entries(json.data as Record<string, any>)) {
-                merged[k] = { ...FALLBACK_FUNDAMENTALS[k], ...prev[k], ...v };
-              }
-              return merged;
-            });
-            const firstKey = Object.keys(json.data)[0];
-            setFundSource(json.data[firstKey]?.source || 'fallback');
-          }
-        }
-      } catch (e) {
-        console.error('Failed to fetch macro data:', e);
-      } finally {
-        setFundLoading(false);
-      }
-    };
-    fetchMacroData();
-  }, [baseCurrency, quoteCurrency]);
+  const { data: fundamentals = {}, isFetching: fundLoading } = useQuery({
+    queryKey: ['scorecard-macro', baseCurrency, quoteCurrency],
+    queryFn: async (): Promise<Record<string, MacroObservation>> => {
+      const { data, error } = await supabase.functions.invoke(`macro-data?currencies=${baseCurrency},${quoteCurrency}`);
+      if (error) throw error;
+      return data?.data ?? {};
+    },
+  });
+  const fundSource = Object.values(fundamentals).some(row => row.source === 'fred') ? 'fred' : 'unavailable';
+  const { data: rhythm } = useMarketRhythm();
+  const seasonalRow = rhythm?.find(row => row.ok && (row.pair === pair || row.pair === `${quoteCurrency}${baseCurrency}`));
+  const seasonalSign = seasonalRow?.pair === pair ? 1 : -1;
+  const seasonalAverage = seasonalRow && seasonalRow.seasonal.years >= 2 ? seasonalRow.seasonal.avgPct * seasonalSign : undefined;
 
   // Fetch live price — fixed pair code logic
   useEffect(() => {
@@ -291,7 +224,7 @@ const COTPairScorecard = () => {
   const { data: spot } = useSpotMomentum();
   const priceBias = latestCot?.[baseCurrency] && latestCot?.[quoteCurrency] && latestCot[baseCurrency].reportDate === latestCot[quoteCurrency].reportDate
     ? pairSpotBias(baseCurrency, quoteCurrency, spot?.momentum) : undefined;
-  const scores = useMemo(() => computeScores(baseCurrency, quoteCurrency, fundamentals, cotPositions, priceBias), [baseCurrency, quoteCurrency, fundamentals, cotPositions, priceBias]);
+  const scores = useMemo(() => computeScores(baseCurrency, quoteCurrency, fundamentals, cotPositions, priceBias, seasonalAverage), [baseCurrency, quoteCurrency, fundamentals, cotPositions, priceBias, seasonalAverage]);
   const call = scores.call;
   const scoreDisagrees =
     (call.direction === 'LONG' && scores.totalScore <= -0.5) ||
@@ -300,20 +233,18 @@ const COTPairScorecard = () => {
 
   const bp = cotPositions[baseCurrency] || FALLBACK_COT_POSITIONS[baseCurrency];
   const qp = cotPositions[quoteCurrency] || FALLBACK_COT_POSITIONS[quoteCurrency];
-  const bf = fundamentals[baseCurrency] || FALLBACK_FUNDAMENTALS[baseCurrency];
-  const qf = fundamentals[quoteCurrency] || FALLBACK_FUNDAMENTALS[quoteCurrency];
+  const bf = fundamentals[baseCurrency] || UNAVAILABLE_MACRO;
+  const qf = fundamentals[quoteCurrency] || UNAVAILABLE_MACRO;
 
-  // Seasonality chart data
-  const seasonalityData = useMemo(() => {
-    const bSeas = SEASONALITY[baseCurrency];
-    const qSeas = SEASONALITY[quoteCurrency];
-    return MONTHS.map((m, i) => ({ month: m, value: parseFloat((bSeas[i] - qSeas[i]).toFixed(2)) }));
-  }, [baseCurrency, quoteCurrency]);
+  const seasonalityData = seasonalAverage === undefined ? [] : seasonalRow?.seasonal.history.map(row => ({
+    year: String(row.year), value: Number((row.pct * seasonalSign).toFixed(2)),
+  })) ?? [];
 
   const baseLongPct = bp.long + bp.short > 0 ? ((bp.long / (bp.long + bp.short)) * 100).toFixed(1) : '0';
   const quoteLongPct = qp.long + qp.short > 0 ? ((qp.long / (qp.long + qp.short)) * 100).toFixed(1) : '0';
 
-  const getFundBias = (bVal: number, qVal: number, metric: string) => {
+  const getFundBias = (bVal: number | null, qVal: number | null, metric: string) => {
+    if (bVal === null || qVal === null || metric === 'gdp') return { label: 'Not scored', color: 'text-muted-foreground' };
     const diff = bVal - qVal;
     if (metric === 'unemployment') {
       if (diff < -0.5) return { label: 'Bullish', color: 'text-success' };
@@ -337,12 +268,12 @@ const COTPairScorecard = () => {
     { label: 'Economic', value: scores.economicScore, max: 2 },
   ];
 
-  const fundRows = [
-    { label: 'GDP Growth', bVal: `${bf.gdp}%`, qVal: `${qf.gdp}%`, bias: getFundBias(bf.gdp, qf.gdp, 'gdp') },
-    { label: 'Inflation (CPI)', bVal: `${bf.cpi}%`, qVal: `${qf.cpi}%`, bias: getFundBias(bf.cpi, qf.cpi, 'cpi') },
-    { label: 'Unemployment', bVal: `${bf.unemployment}%`, qVal: `${qf.unemployment}%`, bias: getFundBias(bf.unemployment, qf.unemployment, 'unemployment') },
-    { label: 'Interest Rate', bVal: `${bf.interestRate}%`, qVal: `${qf.interestRate}%`, bias: getFundBias(bf.interestRate, qf.interestRate, 'rate') },
-  ];
+  const fundRows = ([
+    ['GDP series', 'gdp'], ['Inflation (CPI)', 'cpi'], ['Unemployment', 'unemployment'], ['Interest Rate', 'interestRate'],
+  ] as const).map(([label, field]) => {
+    const b = observedMacroValue(bf, field), q = observedMacroValue(qf, field);
+    return { label, bVal: b === null ? '—' : `${b}${field === 'gdp' ? '' : '%'}`, qVal: q === null ? '—' : `${q}${field === 'gdp' ? '' : '%'}`, bias: getFundBias(b, q, field) };
+  });
 
   return (
     <div className="space-y-4">
@@ -414,7 +345,7 @@ const COTPairScorecard = () => {
         <p className="text-sm text-foreground/85 mt-2">{call.reason}</p>
         {scoreDisagrees && (
           <p className="text-xs text-warning mt-1.5">
-            The overall score leans the other way because seasonality and economic data disagree with this week's COT and price action. The Smart Money call is the one used in "What to Trade".
+            The available seasonal and rate evidence changes the overall score relative to this week's COT and price action. The Smart Money call is the one used in "What to Trade".
           </p>
         )}
         <p className="text-[10px] text-muted-foreground mt-2">Same call as "What to Trade" • COT report {cotReportDate ?? '—'} • Daily 1W move {priceBias === undefined ? "Unavailable" : `${priceBias >= 0 ? "+" : ""}${priceBias.toFixed(2)}%`}</p>
@@ -444,7 +375,7 @@ const COTPairScorecard = () => {
                 <div className="flex items-center gap-2">
                   {fundLoading && <RefreshCw className="w-3 h-3 text-muted-foreground animate-spin" />}
                   <Badge variant="outline" className="text-[10px] border-border/30">
-                    {fundSource === 'fred' ? '🟢 FRED Live' : '⚪ Fallback'}
+                    {fundSource === 'fred' ? 'FRED observations' : 'Unavailable'}
                   </Badge>
                 </div>
               </div>
@@ -475,7 +406,7 @@ const COTPairScorecard = () => {
                 </table>
               </div>
               <p className="text-xs text-muted-foreground mt-3">
-                Source: {fundSource === 'fred' ? 'Federal Reserve Economic Data (FRED)' : 'Cached data'} • Comparing {baseCurrency} vs {quoteCurrency}
+                {fundSource === 'fred' ? 'FRED observations; GDP units differ by country and are not scored.' : 'Official macro observations unavailable; no substitute values are scored.'} • Comparing {baseCurrency} vs {quoteCurrency}
               </p>
             </CardContent>
           </Card>
@@ -490,26 +421,26 @@ const COTPairScorecard = () => {
                   <h3 className="font-semibold text-foreground text-sm">Seasonality</h3>
                 </div>
                 <div className="h-32">
-                  <ResponsiveContainer width="100%" height="100%">
+                  {seasonalityData.length ? <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={seasonalityData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
-                      <XAxis dataKey="month" tick={{ fontSize: 9, fill: 'hsl(210 40% 75%)' }} tickLine={false} axisLine={false} />
-                      <YAxis tick={{ fontSize: 9, fill: 'hsl(210 40% 75%)' }} tickLine={false} axisLine={false} />
+                      <XAxis dataKey="year" tick={{ fontSize: 9, fill: 'hsl(var(--foreground))' }} tickLine={false} axisLine={false} />
+                      <YAxis tick={{ fontSize: 9, fill: 'hsl(var(--foreground))' }} tickLine={false} axisLine={false} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: 'hsl(0 0% 8%)', border: '1px solid hsl(0 0% 15%)', borderRadius: '8px', fontSize: '12px' }}
-                        labelStyle={{ color: 'hsl(210 40% 98%)' }}
+                        contentStyle={{ backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+                        labelStyle={{ color: 'hsl(var(--foreground))' }}
                       />
                       <Bar dataKey="value" radius={[2, 2, 0, 0]}>
                         {seasonalityData.map((entry, i) => (
-                          <Cell key={i} fill={entry.value >= 0 ? 'hsl(142 76% 60%)' : 'hsl(0 84% 60%)'} />
+                          <Cell key={i} fill={entry.value >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} />
                         ))}
                       </Bar>
                     </BarChart>
-                  </ResponsiveContainer>
+                  </ResponsiveContainer> : <p className="text-xs text-muted-foreground">Observed seasonal history unavailable for {pair}.</p>}
                 </div>
                 <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-                  <span>Institutional bias:</span>
-                  <span className={`font-semibold ${scores.seasScore >= 0 ? 'text-success' : 'text-destructive'}`}>
-                    {scores.seasScore >= 0 ? 'Bullish' : 'Bearish'}
+                  <span>{seasonalRow?.seasonal.month ?? 'Seasonal evidence'}:</span>
+                  <span className={`font-semibold ${scores.seasScore === null ? 'text-muted-foreground' : scores.seasScore >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {scores.seasScore === null ? 'Unavailable' : scores.seasScore >= 0 ? 'Bullish' : 'Bearish'}
                   </span>
                 </div>
               </CardContent>
@@ -562,42 +493,7 @@ const COTPairScorecard = () => {
                   <h3 className="font-semibold text-foreground text-sm">Retail</h3>
                 </div>
                 <div className="space-y-3">
-                  {(() => {
-                    const retailLongPct = (100 - parseFloat(baseLongPct)).toFixed(1);
-                    const retailShortPct = baseLongPct;
-                    const retailBias = parseFloat(retailLongPct) > 55 ? 'Long' : parseFloat(retailLongPct) < 45 ? 'Short' : 'Mixed';
-                    return (
-                      <>
-                        <div>
-                          <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                            <span>Sentiment</span>
-                            <span className={`font-bold ${retailBias === 'Long' ? 'text-success' : retailBias === 'Short' ? 'text-destructive' : 'text-muted-foreground'}`}>
-                              {retailBias} ({retailLongPct}%)
-                            </span>
-                          </div>
-                          <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
-                            <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${retailLongPct}%` }} />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div className="bg-muted/10 rounded-lg p-2">
-                            <div className="text-muted-foreground">Longs</div>
-                            <div className="font-mono font-bold text-success">{retailLongPct}%</div>
-                          </div>
-                          <div className="bg-muted/10 rounded-lg p-2">
-                            <div className="text-muted-foreground">Shorts</div>
-                            <div className="font-mono font-bold text-destructive">{retailShortPct}%</div>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/20 pt-2">
-                          <span>Consensus</span>
-                          <span className={`font-semibold ${retailBias === 'Long' ? 'text-success' : retailBias === 'Short' ? 'text-destructive' : 'text-warning'}`}>
-                            {retailBias === 'Long' ? 'Bearish' : retailBias === 'Short' ? 'Bullish' : 'Neutral'}
-                          </span>
-                        </div>
-                      </>
-                    );
-                  })()}
+                  <p className="text-sm text-muted-foreground">Retail positioning unavailable. COT fund positions are not retail sentiment.</p>
                 </div>
               </CardContent>
             </Card>
@@ -622,8 +518,8 @@ const COTPairScorecard = () => {
                 {scoreBreakdown.map(item => (
                   <div key={item.label} className="flex justify-between items-center py-2 border-b border-border/10">
                     <span className="text-sm text-muted-foreground">{item.label}</span>
-                    <span className={`font-mono font-bold text-sm ${item.value > 0 ? 'text-success' : item.value < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                      {item.value > 0 ? '+' : ''}{item.value.toFixed(2)}
+                    <span className={`font-mono font-bold text-sm ${item.value === null ? 'text-muted-foreground' : item.value > 0 ? 'text-success' : item.value < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      {item.value === null ? 'Unavailable' : `${item.value > 0 ? '+' : ''}${item.value.toFixed(2)}`}
                     </span>
                   </div>
                 ))}
@@ -639,16 +535,10 @@ const COTPairScorecard = () => {
                 <h3 className="font-semibold text-foreground text-sm">Analysis</h3>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                {scores.totalScore > 2 ? (
-                  <>Institutional positioning and macro fundamentals align in favor of <strong className="text-success">{baseCurrency}</strong> over {quoteCurrency}. COT data shows leveraged funds are {bp.netPosition > 0 ? 'net long' : 'net short'} {baseCurrency} ({bp.netPosition.toLocaleString()} contracts) while {qp.netPosition > 0 ? 'net long' : 'net short'} {quoteCurrency}. Rate differential of {(bf.interestRate - qf.interestRate).toFixed(2)}% supports the {baseCurrency} carry.</>
-                ) : scores.totalScore < -2 ? (
-                  <>Institutional flow favors <strong className="text-destructive">{quoteCurrency}</strong> over {baseCurrency}. Leveraged funds are positioning bearishly on {baseCurrency} ({bp.netPosition.toLocaleString()} net contracts) while {quoteCurrency} carries a stronger fundamental profile. Consider short {pair} setups on rallies.</>
-                ) : (
-                  <>Mixed signals on {pair}. COT positioning is not strongly directional and fundamentals show a narrow spread. Wait for clearer institutional commitment before taking directional trades. Monitor weekly COT changes for shifts.</>
-                )}
+                {call.reason} Leveraged funds hold {bp.netPosition.toLocaleString()} net contracts in {baseCurrency} and {qp.netPosition.toLocaleString()} in {quoteCurrency}. Unavailable evidence is excluded; a directional score is not entry confirmation.
               </p>
               <div className="mt-3 text-xs text-muted-foreground">
-                Verified CFTC report: {cotReportDate ?? 'unavailable'} • Live price confirmation refreshes independently
+                Displayed CFTC report: {cotReportDate ?? 'unavailable'} • Live price confirmation refreshes independently
               </div>
             </CardContent>
           </Card>

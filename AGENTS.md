@@ -12,3 +12,4 @@
 - Mounted API queries are invalidated at the Arizona-time refresh checkpoints; this browser refresh is separate from backend COT synchronization.
 - Current news requires a valid provider timestamp within 72 hours; unavailable feeds must not invent headlines or write empty sentiment snapshots.
 - Gold and Treasury summaries use observed quotes or dated FRED series; never estimate one maturity from another, and yield differences convert percentage points to basis points.
+- Macro failures return null observations, never fixed substitutes; scorecards exclude unavailable evidence and incomparable GDP units, use shared observed rhythm history, and never derive retail sentiment from COT percentages.

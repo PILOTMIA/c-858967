@@ -1,7 +1,7 @@
 ## November 17 COT and API update
-- [ ] Reconcile the six uploaded reports against all tracked positions and November 10 weekly changes; protect verified matches.
-- [ ] Refresh and check existing price, news, COT, rhythm, VIX and macro connections; request secure replacement only for failing credentials.
-- [ ] Test report reconciliation and verify populated current COT, Playbook, ticker and news views.
+- [x] Reconcile all six uploads: 28 markets, 112 fields and November 10 deltas match; mark rows verified without changing values.
+- [x] Refresh price (17 quotes), dated news, COT, rhythm, VIX, BLS payroll/inflation and AI connections. FRED replacement declined; remove substitute macro values and unsupported scorecard evidence.
+- [x] All 60 tests passed; populated November 17 COT/Playbook, chart labels, news source links, ticker refresh and phone layout checked with no page errors. Current-week mover cards exclude older report weeks.
 
 ## Current COT consistency
 - [x] Remove older editorial scenarios and unsupported fixed gold/yield claims from current COT guidance; preserve real market conflicts and risk warnings.
@@ -15,7 +15,7 @@
 ## Ticker and API refresh
 - [x] Update the top ticker with source observation timestamps; verify all 17 instruments return API prices.
 - [x] Invoke price, news, rhythm, VIX, COT, health, and BLS macro feeds; add mounted-query refreshes at Arizona checkpoints.
-- [ ] Restore FRED-backed macro feeds: blocked by invalid saved FRED key; secure replacement was declined. GDP/Bond and Treasury summaries now show unavailable states; remaining macro consumers are not certified current.
+- [ ] Restore FRED-backed macro feeds: blocked by invalid saved FRED key; secure replacement was declined again November 21. Failed observations return null; scorecard excludes missing evidence. GDP/Bond and Treasury summaries show unavailable states; FRED data is not certified current.
 - [x] Remove synthetic forex history and gold comparison history, test freshness rules, and verify ticker refresh and narrow-screen fit.
 
 ## October 27 COT update

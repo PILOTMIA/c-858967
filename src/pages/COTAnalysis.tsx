@@ -25,7 +25,8 @@ const COTAnalysisContent = () => {
   const dates = [...new Set(latestRows?.map((r) => r.report_date) ?? [])].sort().reverse();
   const latestDate = dates[0];
 
-  const latestByCurrency = latestHistoryRows(latestRows);
+  // Current-week movers must not mix in instruments from older report weeks.
+  const latestByCurrency = latestHistoryRows(latestRows?.filter(row => row.report_date === latestDate));
 
   const wowChanges = [...latestByCurrency.values()]
     .map((r) => {
