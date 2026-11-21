@@ -1,3 +1,8 @@
+## November 17 COT and API update
+- [ ] Reconcile the six uploaded reports against all tracked positions and November 10 weekly changes; protect verified matches.
+- [ ] Refresh and check existing price, news, COT, rhythm, VIX and macro connections; request secure replacement only for failing credentials.
+- [ ] Test report reconciliation and verify populated current COT, Playbook, ticker and news views.
+
 ## Current COT consistency
 - [x] Remove older editorial scenarios and unsupported fixed gold/yield claims from current COT guidance; preserve real market conflicts and risk warnings.
 - [x] Verify all 28 November 3 positions against the upload and populated public COT/Playbook views; distinguish report age from missing data. Tests passed and no browser errors observed.
