@@ -68,4 +68,4 @@
 - [x] Bring-your-own Anthropic key (tab memory only, header per request); no site-wide key
 - [x] Manual journal mode (no AI), including outcome field
 - [x] Keep per-minute limit; drop daily cap
-- [ ] Two-account isolation test (needs test-account approval)
+- [x] Two-account isolation test
