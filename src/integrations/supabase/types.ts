@@ -273,7 +273,7 @@ export type Database = {
           archived: boolean
           created_at: string
           id: string
-          image_key: string | null
+          image_key: string
           owner_id: string
           record: Json
         }
@@ -281,7 +281,7 @@ export type Database = {
           archived?: boolean
           created_at?: string
           id?: string
-          image_key?: string | null
+          image_key: string
           owner_id: string
           record: Json
         }
@@ -289,7 +289,7 @@ export type Database = {
           archived?: boolean
           created_at?: string
           id?: string
-          image_key?: string | null
+          image_key?: string
           owner_id?: string
           record?: Json
         }
