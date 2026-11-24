@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      analysis_usage: {
+        Row: {
+          expires_at: number
+          id: string
+          used: number
+        }
+        Insert: {
+          expires_at: number
+          id: string
+          used?: number
+        }
+        Update: {
+          expires_at?: number
+          id?: string
+          used?: number
+        }
+        Relationships: []
+      }
       chat_conversations: {
         Row: {
           created_at: string
@@ -250,12 +268,42 @@ export type Database = {
         }
         Relationships: []
       }
+      trades: {
+        Row: {
+          archived: boolean
+          created_at: string
+          id: string
+          image_key: string | null
+          owner_id: string
+          record: Json
+        }
+        Insert: {
+          archived?: boolean
+          created_at?: string
+          id?: string
+          image_key?: string | null
+          owner_id: string
+          record: Json
+        }
+        Update: {
+          archived?: boolean
+          created_at?: string
+          id?: string
+          image_key?: string | null
+          owner_id?: string
+          record?: Json
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      consume_analysis_quota: {
+        Args: { _limit: number; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
