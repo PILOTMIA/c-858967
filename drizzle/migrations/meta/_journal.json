@@ -15,6 +15,13 @@
       "when": 1795550641647,
       "tag": "0001_journal_schema_alignment",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795550656979,
+      "tag": "0002_revoke_anon_trades",
+      "breakpoints": true
     }
   ]
 }
