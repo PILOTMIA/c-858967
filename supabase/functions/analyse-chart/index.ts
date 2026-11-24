@@ -4,6 +4,7 @@ import { normaliseSetupReviews, reviewParametersSchema } from "../_shared/journa
 import { describeClaudeError } from "../_shared/journal/claude-errors.ts";
 
 const RATE_LIMIT = 8; // attempts per user per minute
+const DAILY_LIMIT = 30; // attempts per user per UTC day
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -21,9 +22,10 @@ Deno.serve(async (req) => {
   if (!params.success) return json({ error: "Check the review focus, context and rules." }, 400);
 
   const db = admin();
-  const { data: allowed, error: quotaError } = await db.rpc("consume_analysis_quota", { _user_id: userId, _limit: RATE_LIMIT });
+  const { data: quota, error: quotaError } = await db.rpc("consume_analysis_quota", { _user_id: userId, _per_minute: RATE_LIMIT, _per_day: DAILY_LIMIT });
   if (quotaError) return json({ error: "Could not check your analysis limit. Try again shortly." }, 500);
-  if (!allowed) return json({ error: `You can analyse up to ${RATE_LIMIT} charts per minute. Wait a moment and try again.`, code: "rate_limit" }, 429);
+  if (quota === "day") return json({ error: `You've used today's ${DAILY_LIMIT} chart analyses. The limit resets at midnight UTC.`, code: "daily_limit" }, 429);
+  if (quota !== "ok") return json({ error: `You can analyse up to ${RATE_LIMIT} charts per minute. Wait a moment and try again.`, code: "rate_limit" }, 429);
 
   let b64 = ""; const chunk = 0x8000;
   for (let i = 0; i < image.bytes.length; i += chunk) b64 += String.fromCharCode(...image.bytes.subarray(i, i + chunk));

@@ -301,8 +301,8 @@ export type Database = {
     }
     Functions: {
       consume_analysis_quota: {
-        Args: { _limit: number; _user_id: string }
-        Returns: boolean
+        Args: { _per_day: number; _per_minute: number; _user_id: string }
+        Returns: string
       }
     }
     Enums: {
