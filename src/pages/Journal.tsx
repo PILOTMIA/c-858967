@@ -13,17 +13,18 @@ import { plannedR, riskError, SAMPLE_DRAFT, tradeInputSchema, type ChartDraft, t
 import { SETUP_FOCUS, REVIEW_DEFINITIONS, type ReviewParameters } from "@/lib/journal/setups";
 import { filterTrades, journalCsv, normaliseTrade, type JournalFilter, type JournalTrade, type TradeRow } from "@/lib/journal/records";
 
-type FormValues = { symbol: string; timeframe: string; direction: TradeInput["direction"]; entry: string; stopLoss: string; takeProfit: string; setup: string; session: TradeInput["session"]; stage: TradeInput["stage"]; tradeDate: string; notes: string };
-const emptyForm = (): FormValues => ({ symbol: "", timeframe: "", direction: "unknown", entry: "", stopLoss: "", takeProfit: "", setup: "", session: "Unknown", stage: "planned", tradeDate: "", notes: "" });
+type FormValues = { symbol: string; timeframe: string; direction: TradeInput["direction"]; entry: string; stopLoss: string; takeProfit: string; setup: string; session: TradeInput["session"]; stage: TradeInput["stage"]; tradeDate: string; notes: string; outcome: TradeInput["outcome"] };
+const emptyForm = (): FormValues => ({ symbol: "", timeframe: "", direction: "unknown", entry: "", stopLoss: "", takeProfit: "", setup: "", session: "Unknown", stage: "planned", tradeDate: "", notes: "", outcome: "not_recorded" });
 const asNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 const price = (n: number | null) => (n == null ? "—" : String(n));
+const outcomeLabels = { not_recorded: "Not recorded", win: "Win", loss: "Loss", breakeven: "Breakeven" } as const;
 const stageLabels = { planned: "Planned", open: "Open", closed: "Closed" } as const;
 const selectCls = "h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground";
 const FN_URL = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1`;
 
-async function callFunction(name: string, body: FormData) {
+async function callFunction(name: string, body: FormData, extra: Record<string, string> = {}) {
   const { data } = await supabase.auth.getSession();
-  const res = await fetch(`${FN_URL}/${name}`, { method: "POST", body, headers: { Authorization: `Bearer ${data.session?.access_token ?? ""}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } });
+  const res = await fetch(`${FN_URL}/${name}`, { method: "POST", body, headers: { ...extra, Authorization: `Bearer ${data.session?.access_token ?? ""}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } });
   const json = await res.json().catch(() => ({}));
   return { ok: res.ok, data: json };
 }
@@ -60,6 +61,9 @@ export default function Journal() {
   const [selected, setSelected] = useState<JournalTrade | null>(null);
   const [selectedImage, setSelectedImage] = useState("");
   const [archiveBusy, setArchiveBusy] = useState(false);
+  // The user's Anthropic key lives only in this component's memory: never persisted, cleared on reload.
+  const [apiKey, setApiKey] = useState("");
+  const [keyInput, setKeyInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -109,10 +113,10 @@ export default function Journal() {
     setBusy(null);
   }
   async function analyse() {
-    if (!file || busy) return;
+    if (!file || busy || !apiKey) return;
     setBusy("analyse"); setError(""); setProviderDetails(null);
     const body = new FormData(); body.append("image", file); body.append("focus", focus); body.append("context", context); body.append("rules", rules);
-    const { ok, data } = await callFunction("analyse-chart", body).catch(() => ({ ok: false, data: { error: "Could not reach the analysis service." } }));
+    const { ok, data } = await callFunction("analyse-chart", body, { "x-claude-key": apiKey }).catch(() => ({ ok: false, data: { error: "Could not reach the analysis service." } }));
     setBusy(null);
     if (!ok) { setError(data.error || "The chart could not be read."); setProviderDetails(data); return; }
     if (!data.draft?.isTradingChart) { setError(data.draft?.summary || "Try a screenshot with a financial price chart."); return; }
@@ -191,6 +195,19 @@ export default function Journal() {
                 <h2 className="font-semibold text-foreground">Your chart {isSample && <Badge variant="outline" className="ml-2">Prepared sample</Badge>}</h2>
                 {file && <Button variant="ghost" size="sm" onClick={() => inputRef.current?.click()} disabled={!!busy}>Replace</Button>}
               </div>
+              <div className="rounded-md border border-border p-3 space-y-2 text-sm">
+                <p className="font-medium text-foreground">Use my own key <span className="text-xs font-normal text-muted-foreground">(optional, for AI review)</span></p>
+                {apiKey ? (
+                  <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-foreground">Key added for this tab.</span><Button size="sm" variant="outline" onClick={() => setApiKey("")}>Remove key</Button></div>
+                ) : (
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Input type="password" autoComplete="off" spellCheck={false} aria-label="Anthropic API key" placeholder="Paste your Anthropic API key" value={keyInput} maxLength={1000} onChange={e => setKeyInput(e.target.value)} />
+                    <Button variant="outline" onClick={() => { const k = keyInput.trim(); if (k.length < 15 || /\s/.test(k)) { toast.error("Paste a valid Anthropic API key."); return; } setApiKey(k); setKeyInput(""); }}>Use for this tab</Button>
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">Your key stays in this tab and is only sent to Anthropic to run your review. Anthropic bills your account.</p>
+                {!apiKey && <p className="text-xs text-muted-foreground">Without a key, AI review is off. Get one from the <a className="text-primary underline" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">Anthropic console</a>, try the prepared sample, or fill in the trade details yourself (manual entry).</p>}
+              </div>
               <label className="block text-sm text-foreground">Review focus
                 <select className={selectCls} value={focus} onChange={e => { setFocus(e.target.value as ReviewParameters["focus"]); settingsChanged(); }} disabled={!!busy}>
                   {SETUP_FOCUS.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
@@ -223,7 +240,7 @@ export default function Journal() {
                   <img src={imageUrl} alt={isSample ? "Prepared illustrative GBP/USD 15-minute sample chart" : "Your uploaded chart"} className="w-full rounded-md border border-border" />
                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
                     <span>{isSample ? "Prepared example · no live market data" : `${file.name} · ${(file.size / 1024).toFixed(0)} KB · sent for AI analysis only when you choose`}</span>
-                    {!isSample && <Button onClick={analyse} disabled={!!busy}>{busy === "analyse" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}{busy === "analyse" ? "Reading chart…" : draft ? "Reassess setup" : "Analyse setup"}</Button>}
+                    {!isSample && <Button onClick={analyse} disabled={!!busy || !apiKey} title={apiKey ? undefined : "Add your own Anthropic key to run an AI review"}>{busy === "analyse" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}{busy === "analyse" ? "Reading chart…" : draft ? "Reassess setup" : "Analyse setup"}</Button>}
                   </div>
                 </div>
               )}
@@ -240,7 +257,7 @@ export default function Journal() {
 
           <section className="rounded-lg border border-border bg-card p-4 space-y-4" aria-labelledby="details-heading">
             <h2 id="details-heading" className="font-semibold text-foreground">Trade details <span className="text-xs font-normal text-muted-foreground">Editable</span></h2>
-            <p className="text-sm text-muted-foreground">{draft ? "Check the draft and correct anything that needs it." : "AI can fill these in, or enter them yourself."}</p>
+            <p className="text-sm text-muted-foreground">{draft ? "Check the draft and correct anything that needs it." : "Manual entry: upload your chart, then fill these in yourself. AI review is optional."}</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="text-sm text-foreground">Pair or market<Input value={form.symbol} onChange={e => update("symbol", e.target.value)} placeholder="e.g. GBPUSD" maxLength={30} /></label>
               <label className="text-sm text-foreground">Timeframe<Input value={form.timeframe} onChange={e => update("timeframe", e.target.value)} placeholder="e.g. 15m" maxLength={30} /></label>
@@ -259,6 +276,7 @@ export default function Journal() {
               <label className="text-sm text-foreground">Session<select className={selectCls} value={form.session} onChange={e => update("session", e.target.value as FormValues["session"])}>{["Unknown", "Asia", "London", "New York", "Other"].map(s => <option key={s}>{s}</option>)}</select></label>
               <label className="text-sm text-foreground">Trade stage<select className={selectCls} value={form.stage} onChange={e => update("stage", e.target.value as FormValues["stage"])}>{Object.entries(stageLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
             </div>
+            <label className="block text-sm text-foreground">Outcome (your own record)<select className={selectCls} value={form.outcome} onChange={e => update("outcome", e.target.value as FormValues["outcome"])}>{Object.entries(outcomeLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
             <label className="block text-sm text-foreground">Trade date (optional)<Input type="date" value={form.tradeDate} onChange={e => update("tradeDate", e.target.value)} /></label>
             <label className="block text-sm text-foreground">Your review note (optional)<Textarea value={form.notes} onChange={e => update("notes", e.target.value)} rows={3} maxLength={5000} placeholder="Why this setup? What will you check next time?" /></label>
             {error && <div role="alert" className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-foreground">
@@ -311,7 +329,7 @@ export default function Journal() {
             <div className="flex flex-wrap gap-2"><Badge>Confirmed by you</Badge>{selected.isSample && <Badge variant="outline">Sample chart · illustrative data</Badge>}{selected.archived && <Badge variant="secondary">Archived</Badge>}</div>
             {selected.imageKey ? (selectedImage ? <img src={selectedImage} alt={`Saved ${selected.symbol} chart`} className="w-full rounded-md border border-border" /> : <p className="text-sm text-muted-foreground">Loading private chart…</p>) : <p className="text-sm text-muted-foreground">No chart image stored.</p>}
             <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-              {([["Direction", selected.direction === "unknown" ? "Not shown" : selected.direction], ["Entry", price(selected.entry)], ["Stop loss", price(selected.stopLoss)], ["Target", price(selected.takeProfit)], ["Planned R:R", selected.plannedR == null ? "—" : `1 : ${selected.plannedR.toFixed(2)}`], ["Stage", stageLabels[selected.stage]], ["Setup", selected.setup || "Not recorded"], ["Session", selected.session], ["Trade date", selected.tradeDate || "Not recorded"]] as const).map(([l, v]) => <div key={l}><dt className="text-xs text-muted-foreground">{l}</dt><dd className="text-foreground">{v}</dd></div>)}
+              {([["Direction", selected.direction === "unknown" ? "Not shown" : selected.direction], ["Entry", price(selected.entry)], ["Stop loss", price(selected.stopLoss)], ["Target", price(selected.takeProfit)], ["Planned R:R", selected.plannedR == null ? "—" : `1 : ${selected.plannedR.toFixed(2)}`], ["Stage", stageLabels[selected.stage]], ["Setup", selected.setup || "Not recorded"], ["Session", selected.session], ["Trade date", selected.tradeDate || "Not recorded"], ["Outcome", outcomeLabels[selected.outcome]]] as const).map(([l, v]) => <div key={l}><dt className="text-xs text-muted-foreground">{l}</dt><dd className="text-foreground">{v}</dd></div>)}
             </dl>
             {selected.notes && <div><h3 className="text-sm font-medium text-foreground">Your review note</h3><p className="whitespace-pre-wrap text-sm text-foreground">{selected.notes}</p></div>}
             {selected.analysis && <SetupReviewPanel draft={selected.analysis} isSample={selected.isSample} />}

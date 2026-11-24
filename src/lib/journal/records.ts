@@ -40,7 +40,7 @@ export function normaliseTrade(row: TradeRow): JournalTrade {
     setup: str(r.setup, 100), session: oneOf(r.session, ["Unknown", "Asia", "London", "New York", "Other"] as const, "Unknown"),
     stage: oneOf(r.stage, ["planned", "open", "closed"] as const, "planned"),
     tradeDate: typeof r.tradeDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(r.tradeDate) ? r.tradeDate : "",
-    notes: str(r.notes, 5000), verified: true as const, isSample: r.isSample === true, analysis: readAnalysis(r.analysis),
+    notes: str(r.notes, 5000), outcome: oneOf(r.outcome, ["not_recorded", "win", "loss", "breakeven"] as const, "not_recorded"), verified: true as const, isSample: r.isSample === true, analysis: readAnalysis(r.analysis),
   };
   const stored = typeof r.plannedR === "number" && Number.isFinite(r.plannedR) ? r.plannedR : null;
   return { ...base, id: row.id, createdAt: row.created_at, archived: row.archived === true || row.archived === 1, plannedR: stored ?? plannedR(base), imageKey: row.image_key };
@@ -57,7 +57,7 @@ export function filterTrades(trades: JournalTrade[], opts: { archived: boolean; 
 /** Summary-only CSV (no images, no AI draft); formula-like cells are neutralised. */
 export function journalCsv(trades: JournalTrade[]): string {
   const cell = (v: unknown) => { let text = v == null ? "" : String(v); if (/^[=+@\-\t\r]/.test(text)) text = "'" + text; return `"${text.replace(/"/g, '""')}"`; };
-  const columns = ["Market", "Timeframe", "Direction", "Stage", "Trade date", "Entry", "Stop", "Target", "Planned reward/risk", "Setup", "Session", "Notes", "Sample", "Archived", "Recorded at"];
-  const rows = trades.map(t => [t.symbol, t.timeframe, t.direction, t.stage, t.tradeDate, t.entry, t.stopLoss, t.takeProfit, t.plannedR, t.setup, t.session, t.notes, t.isSample, t.archived, t.createdAt]);
+  const columns = ["Market", "Timeframe", "Direction", "Stage", "Trade date", "Entry", "Stop", "Target", "Planned reward/risk", "Setup", "Session", "Notes", "Outcome", "Sample", "Archived", "Recorded at"];
+  const rows = trades.map(t => [t.symbol, t.timeframe, t.direction, t.stage, t.tradeDate, t.entry, t.stopLoss, t.takeProfit, t.plannedR, t.setup, t.session, t.notes, t.outcome, t.isSample, t.archived, t.createdAt]);
   return "\uFEFF" + [columns, ...rows].map(r => r.map(cell).join(",")).join("\r\n");
 }

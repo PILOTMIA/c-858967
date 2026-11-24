@@ -62,3 +62,10 @@
 - [x] Build the Hyper-Quant tactical design system and shared freshness, change, conviction, and conflict controls.
 - [x] Redesign all primary trading and research pages with consistent responsive information hierarchy.
 - [x] Verify trade guidance, history, charts, mobile layouts, edge functions, and data-health states.
+
+## Trading Journal (in progress)
+- [x] Account cleanup: daily sweep removes trades and chart images of deleted accounts
+- [x] Bring-your-own Anthropic key (tab memory only, header per request); no site-wide key
+- [x] Manual journal mode (no AI), including outcome field
+- [x] Keep per-minute limit; drop daily cap
+- [ ] Two-account isolation test (needs test-account approval)

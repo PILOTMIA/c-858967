@@ -4,15 +4,18 @@ import { normaliseSetupReviews, reviewParametersSchema } from "../_shared/journa
 import { describeClaudeError } from "../_shared/journal/claude-errors.ts";
 
 const RATE_LIMIT = 8; // attempts per user per minute
-const DAILY_LIMIT = 30; // attempts per user per UTC day
+// No daily cost cap: each user pays Anthropic with their own key. The per-minute limit guards against runaway loops.
+const DAILY_LIMIT = 1_000_000;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed." }, 405);
   const userId = await requireUser(req);
   if (!userId) return json({ error: "Sign in to analyse a chart.", code: "unauthenticated" }, 401);
-  const key = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
-  if (!key) return json({ error: "Live AI analysis is not connected yet. You can still try the sample or enter details yourself.", code: "not_configured" }, 503);
+  // The user's own key, sent per request and used only for this one call. Never stored, logged or returned.
+  const key = (req.headers.get("x-claude-key") ?? "").trim();
+  if (!key) return json({ error: "Add your own Anthropic API key to run an AI review. You can still use the sample or enter details yourself.", code: "no_key" }, 400);
+  if (key.length < 15 || key.length > 1000 || /\s/.test(key)) return json({ error: "That doesn't look like a valid Anthropic API key.", code: "authentication" }, 400);
 
   let form: FormData;
   try { form = await req.formData(); } catch { return json({ error: "Send the chart as a form upload." }, 400); }
@@ -24,7 +27,6 @@ Deno.serve(async (req) => {
   const db = admin();
   const { data: quota, error: quotaError } = await db.rpc("consume_analysis_quota", { _user_id: userId, _per_minute: RATE_LIMIT, _per_day: DAILY_LIMIT });
   if (quotaError) return json({ error: "Could not check your analysis limit. Try again shortly." }, 500);
-  if (quota === "day") return json({ error: `You've used today's ${DAILY_LIMIT} chart analyses. The limit resets at midnight UTC.`, code: "daily_limit" }, 429);
   if (quota !== "ok") return json({ error: `You can analyse up to ${RATE_LIMIT} charts per minute. Wait a moment and try again.`, code: "rate_limit" }, 429);
 
   let b64 = ""; const chunk = 0x8000;

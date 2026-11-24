@@ -33,3 +33,10 @@ describe("journal rules", () => {
     expect(csv).toContain(`"'=HYPERLINK()"`); expect(csv).not.toContain("u/k.png");
   });
 });
+
+describe("manual mode outcome", () => {
+  test("outcome defaults to not recorded and is kept when given", () => {
+    expect(tradeInputSchema.parse({ ...base, verified: true }).outcome).toBe("not_recorded");
+    expect(tradeInputSchema.parse({ ...base, verified: true, outcome: "loss" }).outcome).toBe("loss");
+  });
+});

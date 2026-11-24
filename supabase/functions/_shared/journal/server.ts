@@ -1,5 +1,9 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+export const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-claude-key",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
 
 export const BUCKET = "chart-images";
 export const MAX_BYTES = 5 * 1024 * 1024;
@@ -34,4 +38,3 @@ export async function readImage(form: FormData): Promise<{ bytes: Uint8Array; mi
   if (!kind) return { error: "This file is not a valid PNG, JPG or WebP image." };
   return { bytes, ...kind };
 }
-export { corsHeaders };

@@ -18,7 +18,7 @@ export const tradeInputSchema = z.object({
   direction: z.enum(["long", "short", "unknown"]), entry: optionalPrice, stopLoss: optionalPrice, takeProfit: optionalPrice,
   setup: z.string().max(100), session: z.enum(["Unknown", "Asia", "London", "New York", "Other"]),
   stage: z.enum(["planned", "open", "closed"]), tradeDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).or(z.literal("")),
-  notes: z.string().max(5000), verified: z.literal(true), isSample: z.boolean(), analysis: chartDraftSchema.nullable(),
+  notes: z.string().max(5000), outcome: z.enum(["not_recorded", "win", "loss", "breakeven"]).default("not_recorded"), verified: z.literal(true), isSample: z.boolean(), analysis: chartDraftSchema.nullable(),
 });
 export type TradeInput = z.infer<typeof tradeInputSchema>;
 export type SavedTrade = TradeInput & { id: string; createdAt: string; plannedR: number | null; archived: boolean };
