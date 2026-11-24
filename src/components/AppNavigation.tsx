@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, Home, TrendingUp, BookOpen, Users, BarChart3, Calendar, Settings, Activity, Newspaper, Gem, Compass, Globe2, Gauge, ClipboardList, Calculator } from 'lucide-react';
+import { Menu, X, Home, TrendingUp, BookOpen, Users, BarChart3, Calendar, Settings, Activity, Newspaper, Gem, Compass, Globe2, Gauge, ClipboardList, Calculator, NotebookPen } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from './ui/button';
@@ -13,6 +13,7 @@ const AppNavigation = () => {
     { path: '/market-analysis', label: 'Market Analysis', icon: TrendingUp },
     { path: '/weekly-playbook', label: 'Weekly Playbook', icon: ClipboardList },
     { path: '/compounding', label: 'Compounding Planner', icon: Calculator },
+    { path: '/journal', label: 'Trading Journal', icon: NotebookPen },
     { path: '/cot-analysis', label: 'COT Analysis', icon: BarChart3 },
     { path: '/sentiment-matrix', label: 'Sentiment Matrix', icon: Compass },
     { path: '/currency-flow', label: 'Currency Flow', icon: Globe2 },
@@ -35,7 +36,7 @@ const AppNavigation = () => {
       <aside className="fixed bottom-0 left-0 top-[46px] z-40 hidden w-[72px] flex-col items-center border-r border-border/70 bg-card/95 py-3 backdrop-blur-xl lg:flex">
         <Link to="/" className="mb-4 flex h-10 w-10 items-center justify-center rounded-sm border border-primary/40 bg-primary/10 font-mono text-xs font-black text-primary" aria-label="MIA FX Labs dashboard">MIA</Link>
         <nav className="flex min-h-0 flex-1 flex-col items-center gap-1 overflow-y-auto px-2">
-          {menuItems.slice(0, 11).map((item) => {
+          {menuItems.slice(0, 12).map((item) => {
             const Icon = item.icon;
             const active = location.pathname === item.path;
             return <Link key={item.path} to={item.path} title={item.label} aria-label={item.label} className={`flex h-10 w-10 items-center justify-center rounded-sm border transition-colors ${active ? 'border-primary/50 bg-primary/15 text-primary' : 'border-transparent text-muted-foreground hover:border-border hover:bg-secondary hover:text-foreground'}`}><Icon className="h-4 w-4" /></Link>;

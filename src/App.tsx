@@ -12,6 +12,7 @@ import Education from "./pages/Education";
 import Community from "./pages/Community";
 import Tools from "./pages/Tools";
 import Compounding from "./pages/Compounding";
+import Journal from "./pages/Journal";
 import Profile from "./pages/Profile";
 import CentralBankRates from "./pages/CentralBankRates";
 import EconomicRadar from "./pages/EconomicRadar";
@@ -81,6 +82,7 @@ const App = () => (
                 <Route path="/community" element={<PageTransition><Community /></PageTransition>} />
                 <Route path="/tools" element={<PageTransition><Tools /></PageTransition>} />
                 <Route path="/compounding" element={<PageTransition><Compounding /></PageTransition>} />
+                <Route path="/journal/*" element={<PageTransition><Journal /></PageTransition>} />
                 <Route path="/central-bank-rates" element={<PageTransition><CentralBankRates /></PageTransition>} />
                 <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
                 <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
